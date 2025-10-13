@@ -12,4 +12,7 @@ FILES_DIR="$RECYCLE_BIN_DIR/files"
 METADATA_FILE="$RECYCLE_BIN_DIR/metadata.db"
 CONFIG_FILE="$RECYCLE_BIN_DIR/config"
 
-echo $RECYCLE_BIN_DIR
+main() {
+    echo "Hello, Recycle Bin!"
+}
+main "$@"
