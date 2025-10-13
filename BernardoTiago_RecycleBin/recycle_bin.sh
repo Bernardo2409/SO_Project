@@ -4,3 +4,12 @@
 # Date: 
 # Description: Shell-based recycle bin system
 #################################################
+
+# Global Configuration
+
+RECYCLE_BIN_DIR="$HOME/BernardoTiago_RecycleBin"
+FILES_DIR="$RECYCLE_BIN_DIR/files"
+METADATA_FILE="$RECYCLE_BIN_DIR/metadata.db"
+CONFIG_FILE="$RECYCLE_BIN_DIR/config"
+
+echo $RECYCLE_BIN_DIR
