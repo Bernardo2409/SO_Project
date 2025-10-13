@@ -12,7 +12,7 @@ METADATA_FILE="$RECYCLE_BIN_DIR/metadata.db"
 CONFIG_FILE="$RECYCLE_BIN_DIR/config"
 LOG_FILE="$RECYCLE_BIN_DIR/recyclebin.log"
 
-# Color codes for output (optional)
+# Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
