@@ -22,6 +22,7 @@ main() {
     echo "Hello, Recycle Bin!"
 
     initialize_recyclebin
+    list_recycled
 }
 
 
@@ -68,7 +69,13 @@ list_recycled() {
         return 1
     fi
 
-    awk 'NR==1 {print "\nCampos:"; print $0; next} NR>1 {print "\nEntrada:", $0}' "$METADATA_FILE"
+    awk -F"," '
+        /^#/ { next }  # Ignora linhas de comentário
+        NR == 2 { next } # Skip ao header
+        {
+            printf "ID: %-20s | Name: %-15s | Path: %-40s | Delete-Date: %-20s | File-Size: %-10s | File-Type: %-10s | Permissions: %-5s | Owner: %-15s\n", $1, $2, $3, $4, $5, $6, $7, $8 
+        }
+    ' "$METADATA_FILE"
 
     return 0
 }
