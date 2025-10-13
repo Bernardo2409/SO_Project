@@ -24,6 +24,7 @@ main() {
 
     initialize_recyclebin
     list_recycled
+    delete_file
 }
 
 #################################################
@@ -32,6 +33,7 @@ main() {
 # Parameters: None
 # Returns: 0 on success, 1 on failure
 #################################################
+
 initialize_recyclebin() {
     if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
         mkdir -p "$FILES_DIR"
@@ -140,6 +142,7 @@ delete_file() {
 # Parameters: None
 # Returns: 0 on success
 #################################################
+
 list_recycled() {
     echo "=== Recycle Bin Content ==="
 
