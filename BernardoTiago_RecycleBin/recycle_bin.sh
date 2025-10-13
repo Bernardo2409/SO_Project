@@ -45,13 +45,31 @@ initialize_recyclebin() {
         echo "MAX_SIZE_MB=1024" > "$CONFIG_FILE"
 
         #Empty LogFile
-        echo "Recycle bin initialized at $RECYCLE_BIN_DIR"
+        echo -e "${GREEN}Recycle bin initialized at $RECYCLE_BIN_DIR${NC}"
         return 0
     else
-        echo "Recycle bin already exists"
+        echo -e "${YELLOW}Recycle bin already exists${NC}"
         return 1
     fi
     return 0
 }
 
+#################################################
+# Function: list_recycled
+# Description: Lists all items in recycle bin
+# Parameters: None
+# Returns: 0 on success
+#################################################
+list_recycled() {
+    echo "=== Recycle Bin Content ==="
+
+    if [[ ! -f "$METADATA_FILE" ]]; then
+        echo -e "${RED}Error: File '$METADATA_FILE' not found${NC}"
+        return 1
+    fi
+
+    awk 'NR==1 {print "\nCampos:"; print $0; next} NR>1 {print "\nEntrada:", $0}' "$METADATA_FILE"
+
+    return 0
+}
 main "$@"
