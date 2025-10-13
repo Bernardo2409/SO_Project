@@ -13,3 +13,80 @@ METADATA_FILE="$RECYCLE_BIN_DIR/metadata.db"
 CONFIG_FILE="$RECYCLE_BIN_DIR/config"
 
 echo $RECYCLE_BIN_DIR
+
+################################################# 
+# Function: delete_file 
+# Description: Moves file/directory to recycle bin 
+# Parameters: $1 - path to file/directory 
+# Returns: 0 on success, 1 on failure 
+#################################################
+
+delete_file() {
+
+    local success=0 # Flag variable: 0 if all deletions succeed, 1 if any fail
+
+    for item in "$@"; do # Each argument represents a file or directory
+
+        # Check if the item exists
+        if [[ ! -e "$item" ]]; then
+            echo "Error: '$item' does not exist." | tee -a "$LOG_FILE"
+            success=1
+            continue
+        fi
+        # Prevent deletion of the recycle bin itself
+        if [[ "$item" == "$RECYCLE_BIN_DIR"* ]]; then
+            echo "Error: You cannot delete the recycle bin itself." | tee -a "$LOG_FILE"
+            success=1
+            continue
+        fi
+        # Check if the user has read and write permissions
+        if [[ ! -r "$item" || ! -w "$item" ]]; then
+            echo "Error: Insufficient permissions to delete '$item'." | tee -a "$LOG_FILE"
+            success=1
+            continue
+        fi
+
+    
+        # Generate unique ID for each deleted item
+        ID="$(date +%s%N)_$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 6 | head -n 1)"
+        DEST_PATH="$FILES_DIR/$UNIQUE_ID" # ex: /home/bernardoc/.recycle_bin/files/24123123123123
+
+        # Extract metadata
+        ORIGINAL_NAME="$(basename "$item")" # Original filename or directory name 
+        ORIGINAL_PATH="$(realpath "$item")" # Complete absolute path of original location 
+        DELETION_DATE="$(date '+%Y-%m-%d %H:%M:%S')" # Timestamp when deleted (YYYY-MM-DD HH:MM:SS)
+        FILE_SIZE=$(du -sh "$item" 2>/dev/null | cut -f1) # Size in bytes
+        FILE_TYPE=$(file -b "$item") # Either "file" or "directory"
+        PERMISSIONS=$(stat -c %a "$item" 2>/dev/null) # Original permission bits (e.g., 644, 755)
+        OWNER=$(stat -c %U:%G "$item" 2>/dev/null) # Original owner and group (user:group format)
+
+
+        echo ID,ORIGINAL_NAME,ORIGINAL_PATH,DELETION_DATE,FILE_SIZE,FILE_TYPE,PERMISSIONS,OWNER
+
+        # Check disk space
+        AVAIL_SPACE=$(df "$FILES_DIR" | awk 'NR==2 {print $4}')
+        REQ_SPACE=$(du -k "$item" | awk '{print $1}')
+        if (( REQ_SPACE > AVAIL_SPACE )); then
+            echo "Error: Not enough disk space to move '$item'." | tee -a "$LOG_FILE"
+            success=1
+            continue
+        fi
+
+        # Move files to ~/.recycle_bin/files/ with unique ID as filename 
+        mv "$item" "$DEST_PATH" 2>>"$LOG_FILE"
+        if [[ $? -eq 0 ]]; then
+            echo "$UNIQUE_ID,$ORIGINAL_NAME,$ABS_PATH,$TIMESTAMP,$SIZE,$TYPE,$PERMISSIONS,$OWNER" >> "$METADATA_FILE"
+            echo "Success: '$ORIGINAL_NAME' moved to recycle bin (ID: $UNIQUE_ID)." | tee -a "$LOG_FILE"
+        else
+            echo "Error: Failed to move '$item' to recycle bin." | tee -a "$LOG_FILE"
+            success=1
+        fi
+    done
+
+    # Return final status
+    if [[ $success -eq 0 ]]; then
+        return 0  # All deletions succeeded
+    else
+        return 1  # At least one deletion failed
+    fi
+}
