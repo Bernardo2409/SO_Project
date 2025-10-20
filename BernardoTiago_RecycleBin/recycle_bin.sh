@@ -25,8 +25,8 @@ main() {
     echo "Hello, Recycle Bin!"
 
     initialize_recyclebin
-    delete_file "$TEST_FILE"
-    list_recycled
+    # delete_file "$TEST_FILE"
+    # list_recycled
 }
 
 #################################################
@@ -94,8 +94,8 @@ delete_file() {
 
     
         # Generate unique ID for each deleted item
-        ID="$(date +%s%N)_$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 6 | head -n 1)"
-        DEST_PATH="$FILES_DIR/$UNIQUE_ID" # ex: /home/bernardoc/.recycle_bin/files/24123123123123
+        ID="$(date +%s%N)_$(tr -dc 'a-z0-9' </dev/urandom | head -c 6)"
+        DEST_PATH="$FILES_DIR/$ID"  # ex: /home/bernardoc/.recycle_bin/files/24123123123123
 
         # Extract metadata
         ORIGINAL_NAME="$(basename "$item")" # Original filename or directory name 
@@ -165,3 +165,70 @@ list_recycled() {
 }
 
 main "$@"
+
+
+
+#################################################
+# Function: restore_file
+# Description: Restores a file from recycle bin to its original location
+# Parameters: $1 - file ID or original name
+# Returns: 0 on success, 1 on failure
+#################################################
+
+restore_file() {
+    local query="$1"
+
+    if [[ -z "$query" ]]; then
+        echo -e "${RED}Erro:${NC} É necessário indicar o ID ou nome do ficheiro a restaurar."
+        return 1
+    fi
+
+    # Procura entrada correspondente
+    entry=$(awk -F"," -v q="$query" '$1==q || $2==q {print; exit}' "$METADATA_FILE")
+
+    if [[ -z "$entry" ]]; then
+        echo -e "${RED}Erro:${NC} Nenhum ficheiro encontrado com ID/nome '$query'."
+        return 1
+    fi
+
+    IFS=',' read -r ID ORIGINAL_NAME ORIGINAL_PATH DELETION_DATE FILE_SIZE FILE_TYPE PERMISSIONS OWNER <<< "$entry"
+
+    SRC_PATH="$FILES_DIR/$ID"
+    DEST_DIR="$(dirname "$ORIGINAL_PATH")"
+    DEST_PATH="$ORIGINAL_PATH"
+
+    # Verifica se ainda existe o ficheiro na reciclagem
+    if [[ ! -e "$SRC_PATH" ]]; then
+        echo -e "${RED}Erro:${NC} O ficheiro com ID '$ID' já não existe na reciclagem."
+        return 1
+    fi
+
+    # Cria diretórios originais se necessário
+    mkdir -p "$DEST_DIR" 2>/dev/null
+
+    # Conflito: já existe ficheiro com o mesmo nome
+    if [[ -e "$DEST_PATH" ]]; then
+        echo -e "${YELLOW}Aviso:${NC} Já existe '$DEST_PATH'."
+        echo "Escolhe uma opção: (O)verwrite / (R)ename / (C)ancel"
+        read -r choice
+
+        case "$choice" in
+            [Oo]*) rm -rf "$DEST_PATH" ;;
+            [Rr]*) DEST_PATH="${DEST_PATH}_$(date +%s)" ;;
+            [Cc]*) echo "Restauração cancelada."; return 1 ;;
+            *) echo "Opção inválida. Cancelado."; return 1 ;;
+        esac
+    fi
+
+    # Restaura ficheiro
+    if mv "$SRC_PATH" "$DEST_PATH" 2>>"$LOG_FILE"; then
+        chmod "$PERMISSIONS" "$DEST_PATH" 2>/dev/null
+        chown "$OWNER" "$DEST_PATH" 2>/dev/null
+        sed -i "/^$ID,/d" "$METADATA_FILE"
+        echo -e "${GREEN}Sucesso:${NC} '$ORIGINAL_NAME' restaurado para '$DEST_PATH'." | tee -a "$LOG_FILE"
+        return 0
+    else
+        echo -e "${RED}Erro:${NC} Falha ao restaurar '$ORIGINAL_NAME'." | tee -a "$LOG_FILE"
+        return 1
+    fi
+}
