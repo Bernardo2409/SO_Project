@@ -333,4 +333,18 @@ verif_rbin() {
     return 0
 }
 
+
+
+#################################################
+# Function: display_help
+# Description: Auxiliary funtion to verify if the recycle bin was initialized
+# Parameters: none
+# Returns: 0 on success, 1 on failure
+#################################################
+
+
+display_help()
+
+
+
 main "$@"
