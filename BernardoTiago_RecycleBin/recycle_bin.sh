@@ -24,9 +24,21 @@ main() {
     # TODO: Case $1 (para fazer ./recycle_bin.sh delete "file" | list --detailed...  ) 
     echo "Hello, Recycle Bin!"
 
-    initialize_recyclebin
-    # delete_file "$TEST_FILE"
-    # list_recycled
+    case "$1" in
+        init)
+            initialize_recyclebin
+            ;;
+        delete)
+            delete_file "${@:2}"
+            ;;
+        list)
+            list_recycled
+            ;;
+        *)
+            echo "Uso: $0 {init|delete|list|...}" #Ir terminando
+            exit 1
+            ;;
+    esac
 }
 
 #################################################
@@ -68,6 +80,11 @@ initialize_recyclebin() {
 #################################################
 
 delete_file() {
+
+    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
+        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
+        exit 1
+    fi
 
     local success=0 # Flag variable: 0 if all deletions succeed, 1 if any fail
 
