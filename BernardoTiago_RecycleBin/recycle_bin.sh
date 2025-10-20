@@ -34,6 +34,8 @@ main() {
         list)
             list_recycled "$2"
             ;;
+        search)
+
         *)
             echo "Uso: $0 {init|delete|list|...}" #Ir terminando...
             exit 1
@@ -257,4 +259,20 @@ restore_file() {
         echo -e "${RED}Erro:${NC} Falha ao restaurar '$ORIGINAL_NAME'." | tee -a "$LOG_FILE"
         return 1
     fi
+}
+
+#################################################
+# Function: search_file
+# Description: Display all the files that contains the pattern given by the user
+# Parameters: $1 - search patterns
+# Returns: 0 on success, 1 on failure
+#################################################
+
+search_file() {
+    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
+        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
+        exit 1
+    fi
+
+    
 }
