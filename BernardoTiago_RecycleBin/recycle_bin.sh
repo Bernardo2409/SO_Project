@@ -35,7 +35,8 @@ main() {
             list_recycled "$2"
             ;;
         search)
-
+            search_file "$2"
+            ;;
         *)
             echo "Uso: $0 {init|delete|list|...}" #Ir terminando...
             exit 1
@@ -192,10 +193,6 @@ list_recycled() {
     return
 }
 
-main "$@"
-
-
-
 #################################################
 # Function: restore_file
 # Description: Restores a file from recycle bin to its original location
@@ -273,6 +270,20 @@ search_file() {
         echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
         exit 1
     fi
+    pattern="$1"
 
+    if [[ -z "$pattern" ]]; then
+        echo -e "${YELLOW}Uso:${NC} $0 search <termo>"
+        return 1
+    fi
     
+    matches=$(grep -iE "$pattern" "$METADATA_FILE" | grep -vE '^\s*#|^\s*$') #Resultados
+
+    echo "=== Results ===" 
+    echo "$matches" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
+        printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
+            "$ID" "$NAME" "$PATH" "$DATE" "$SIZE" "$TYPE" "$PERMS" "$OWNER"
+    done
 }
+
+main "$@"
