@@ -240,9 +240,9 @@ restore_file() {
         read -r choice
 
         case "$choice" in
-            [Oo]*) rm -rf "$DEST_PATH" ;;
-            [Rr]*) DEST_PATH="${DEST_PATH}_$(date +%s)" ;;
-            [Cc]*) echo "Restauração cancelada."; return 1 ;;
+            [Oo]*) rm -rf "$DEST_PATH" ;; #overwrite
+            [Rr]*) DEST_PATH="${DEST_PATH}_$(date +%s)" ;; #rename
+            [Cc]*) echo "Restauração cancelada."; return 1 ;; #cancel
             *) echo "Opção inválida. Cancelado."; return 1 ;;
         esac
     fi
@@ -281,7 +281,7 @@ search_file() {
         return 1
     fi
     
-    matches=$(grep -iE "$pattern" "$METADATA_FILE" | grep -vE '^\s*#|^\s*$') #Resultados
+    matches=$(grep -iE "$pattern" "$METADATA_FILE" | grep -vE '^\s*#|^\s*$') #Results
 
     echo "=== Results ===" 
     echo "$matches" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
