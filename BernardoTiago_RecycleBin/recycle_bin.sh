@@ -243,9 +243,9 @@ restore_file() {
         read -r choice
 
         case "$choice" in
-            [Oo]*) rm -rf "$DEST_PATH" ;;
-            [Rr]*) DEST_PATH="${DEST_PATH}_$(date +%s)" ;;
-            [Cc]*) echo "Restauração cancelada."; return 1 ;;
+            [Oo]*) rm -rf "$DEST_PATH" ;; #overwrite
+            [Rr]*) DEST_PATH="${DEST_PATH}_$(date +%s)" ;; #rename
+            [Cc]*) echo "Restauração cancelada."; return 1 ;; #cancel
             *) echo "Opção inválida. Cancelado."; return 1 ;;
         esac
     fi
