@@ -21,7 +21,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 main() {
-    # TODO: Case $1 (para fazer ./recycle_bin.sh delete "file" | list --detailed...  ) 
+    # TODO: Case $1 (./recycle_bin.sh delete "file" | list --detailed...  ) 
     echo "Hello, Recycle Bin!"
 
     case "$1" in
@@ -34,8 +34,11 @@ main() {
         list)
             list_recycled
             ;;
+        restore)
+            restore_file "${@:2}"
+            ;;
         *)
-            echo "Uso: $0 {init|delete|list|...}" #Ir terminando
+            echo "Uso: $0 {init|delete|list|...}" 
             exit 1
             ;;
     esac
@@ -124,9 +127,7 @@ delete_file() {
         OWNER=$(stat -c %U:%G "$item" 2>/dev/null) # Original owner and group (user:group format)
 
 
-        echo ID,ORIGINAL_NAME,ORIGINAL_PATH,DELETION_DATE,FILE_SIZE,FILE_TYPE,PERMISSIONS,OWNER
-
-        # Check disk space
+        # Verificar espaço em disco
         AVAIL_SPACE=$(df "$FILES_DIR" | awk 'NR==2 {print $4}')
         REQ_SPACE=$(du -k "$item" | awk '{print $1}')
         if (( REQ_SPACE > AVAIL_SPACE )); then
@@ -135,13 +136,13 @@ delete_file() {
             continue
         fi
 
-        # Move files to ~/.recycle_bin/files/ with unique ID as filename 
-        mv "$item" "$DEST_PATH" 2>>"$LOG_FILE"
+        # Move arquivos para ~/.recycle_bin/files/ com ID único como nome do arquivo 
+        mv "$item" "$DEST_PATH"
         if [[ $? -eq 0 ]]; then
-            echo "$UNIQUE_ID,$ORIGINAL_NAME,$ABS_PATH,$TIMESTAMP,$SIZE,$TYPE,$PERMISSIONS,$OWNER" >> "$METADATA_FILE"
-            echo "Success: '$ORIGINAL_NAME' moved to recycle bin (ID: $UNIQUE_ID)." | tee -a "$LOG_FILE"
+            echo "$ID,$ORIGINAL_NAME,$ORIGINAL_PATH,$DELETION_DATE,$FILE_SIZE,$FILE_TYPE,$PERMISSIONS,$OWNER" >> "$METADATA_FILE"
+            echo -e "${GREEN}Sucesso:${NC} '$ORIGINAL_NAME' movido para reciclagem (ID: $ID)." | tee -a "$LOG_FILE"
         else
-            echo "Error: Failed to move '$item' to recycle bin." | tee -a "$LOG_FILE"
+            echo -e "${RED}Erro:${NC} Falha ao mover '$item' para reciclagem." | tee -a "$LOG_FILE"
             success=1
         fi
     done
@@ -181,7 +182,6 @@ list_recycled() {
     return 0
 }
 
-main "$@"
 
 
 
@@ -200,8 +200,8 @@ restore_file() {
         return 1
     fi
 
-    # Procura entrada correspondente
-    entry=$(awk -F"," -v q="$query" '$1==q || $2==q {print; exit}' "$METADATA_FILE")
+    # Search for a correspondence
+    entry=$(awk -F"," -v q="$query" '{gsub(/\r/,""); if ($1==q || $2==q) {print; exit}}' "$METADATA_FILE")
 
     if [[ -z "$entry" ]]; then
         echo -e "${RED}Erro:${NC} Nenhum ficheiro encontrado com ID/nome '$query'."
@@ -214,16 +214,16 @@ restore_file() {
     DEST_DIR="$(dirname "$ORIGINAL_PATH")"
     DEST_PATH="$ORIGINAL_PATH"
 
-    # Verifica se ainda existe o ficheiro na reciclagem
+    # Verify if recycle file exists
     if [[ ! -e "$SRC_PATH" ]]; then
         echo -e "${RED}Erro:${NC} O ficheiro com ID '$ID' já não existe na reciclagem."
         return 1
     fi
 
-    # Cria diretórios originais se necessário
+    # Create original directories
     mkdir -p "$DEST_DIR" 2>/dev/null
 
-    # Conflito: já existe ficheiro com o mesmo nome
+    # Conflict: The File name already exists
     if [[ -e "$DEST_PATH" ]]; then
         echo -e "${YELLOW}Aviso:${NC} Já existe '$DEST_PATH'."
         echo "Escolhe uma opção: (O)verwrite / (R)ename / (C)ancel"
@@ -237,10 +237,12 @@ restore_file() {
         esac
     fi
 
-    # Restaura ficheiro
-    if mv "$SRC_PATH" "$DEST_PATH" 2>>"$LOG_FILE"; then
+    # Restore Files
+    if mv "$SRC_PATH" "$DEST_DIR/$ORIGINAL_NAME" 2>>"$LOG_FILE"; then
+        DEST_PATH="$DEST_DIR/$ORIGINAL_NAME"
         chmod "$PERMISSIONS" "$DEST_PATH" 2>/dev/null
         chown "$OWNER" "$DEST_PATH" 2>/dev/null
+        
         sed -i "/^$ID,/d" "$METADATA_FILE"
         echo -e "${GREEN}Sucesso:${NC} '$ORIGINAL_NAME' restaurado para '$DEST_PATH'." | tee -a "$LOG_FILE"
         return 0
@@ -249,3 +251,5 @@ restore_file() {
         return 1
     fi
 }
+
+main "$@"
