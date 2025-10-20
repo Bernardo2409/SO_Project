@@ -40,6 +40,9 @@ main() {
         restore)
             restore_file "${@:2}"
             ;;
+        empty)
+            empty_recyclebin "${@:2}"
+            ;;
         *)
             echo "Uso: $0 {init|delete|list|search...}" 
             exit 1
@@ -87,10 +90,7 @@ initialize_recyclebin() {
 
 delete_file() {
 
-    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
-        exit 1
-    fi
+    verif_rbin
 
     local success=0 # Flag variable: 0 if all deletions succeed, 1 if any fail
 
@@ -168,10 +168,7 @@ delete_file() {
 
 list_recycled() {
 
-    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
-        exit 1
-    fi
+    verif_rbin
 
     # Se o argumento for "--detailed"
     if [[ "$1" == "--detailed" ]]; then
@@ -275,10 +272,8 @@ restore_file() {
 #################################################
 
 search_file() {
-    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
-        exit 1
-    fi
+    verif_rbin
+
     pattern="$1"
 
     if [[ -z "$pattern" ]]; then
@@ -293,6 +288,46 @@ search_file() {
         printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
             "$ID" "$NAME" "$PATH" "$DATE" "$SIZE" "$TYPE" "$PERMS" "$OWNER"
     done
+}
+
+#################################################
+# Function: empty_recyclebin
+# Description: Display all the files that contains the pattern given by the user
+# Parameters: $1 - search patterns
+# Returns: 0 on success, 1 on failure
+#################################################
+
+empty_recyclebin() {
+    verif_rbin
+
+    force=0
+    if [[ "$1" -eq "--force" ]]; then
+        force=1
+        file="$2"
+    else
+        file="$1"
+    fi
+
+    if [[ -z "$file" ]]; then
+        if [[ "$force" -eq 1 ]]; then
+        echo -e "${RED}A apagar todos os arquivos de "$FILES_DIR"${NC}"
+        rm -rf "$FILES_DIR"/*
+        
+
+}
+
+#################################################
+# Function: verif_rbin
+# Description: Auxiliary funtion to verify if the recycle bin was initialized
+# Parameters: none
+# Returns: 0 on success, 1 on failure
+#################################################
+verif_rbin() {
+    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
+        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
+        exit 1
+    fi
+    return 0
 }
 
 main "$@"
