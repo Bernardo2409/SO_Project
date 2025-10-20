@@ -203,6 +203,9 @@ list_recycled() {
 #################################################
 
 restore_file() {
+
+    verif_rbin
+    
     local query="$1"
 
     if [[ -z "$query" ]]; then
@@ -312,7 +315,7 @@ empty_recyclebin() {
         if [[ "$force" -eq 1 ]]; then
         echo -e "${RED}A apagar todos os arquivos de "$FILES_DIR"${NC}"
         rm -rf "$FILES_DIR"/*
-        
+
 
 }
 
