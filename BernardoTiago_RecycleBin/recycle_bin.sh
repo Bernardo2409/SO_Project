@@ -32,13 +32,16 @@ main() {
             delete_file "${@:2}"
             ;;
         list)
-            list_recycled
+            list_recycled "$2"
+            ;;
+        search)
+            search_file "$2"
             ;;
         restore)
             restore_file "${@:2}"
             ;;
         *)
-            echo "Uso: $0 {init|delete|list|...}" 
+            echo "Uso: $0 {init|delete|list|search...}" 
             exit 1
             ;;
     esac
@@ -164,23 +167,33 @@ delete_file() {
 #################################################
 
 list_recycled() {
-    echo "=== Recycle Bin Content ==="
 
-    if [[ ! -f "$METADATA_FILE" ]]; then
-        echo -e "${RED}Error: File '$METADATA_FILE' not found${NC}"
-        return 1
+    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
+        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
+        exit 1
     fi
 
-    awk -F"," '
-        /^#/ { next }  # Ignora linhas de comentário
-        NR == 2 { next } # Skip ao header
-        {
-            printf "ID: %-20s | Name: %-15s | Path: %-40s | Delete-Date: %-20s | File-Size: %-10s | File-Type: %-10s | Permissions: %-5s | Owner: %-15s\n", $1, $2, $3, $4, $5, $6, $7, $8 
-        }
-    ' "$METADATA_FILE"
+    # Se o argumento for "--detailed"
+    if [[ "$1" == "--detailed" ]]; then
+        echo "=== Files in recyclebin (detailed) ==="
 
-    return 0
+        # Ignora comentarios
+        grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
+            printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
+                "$ID" "$NAME" "$PATH" "$DATE" "$SIZE" "$TYPE" "$PERMS" "$OWNER"
+        done
+
+    else
+        echo "=== Files in recyclebin ==="
+
+        grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
+            printf "%s | %s | %s | %s\n" "$ID" "$NAME" "$DATE" "$SIZE"
+        done
+    fi
+
+    return
 }
+
 
 
 
@@ -250,6 +263,36 @@ restore_file() {
         echo -e "${RED}Erro:${NC} Falha ao restaurar '$ORIGINAL_NAME'." | tee -a "$LOG_FILE"
         return 1
     fi
+}
+
+
+
+#################################################
+# Function: search_file
+# Description: Display all the files that contains the pattern given by the user
+# Parameters: $1 - search patterns
+# Returns: 0 on success, 1 on failure
+#################################################
+
+search_file() {
+    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
+        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
+        exit 1
+    fi
+    pattern="$1"
+
+    if [[ -z "$pattern" ]]; then
+        echo -e "${YELLOW}Uso:${NC} $0 search <termo>"
+        return 1
+    fi
+    
+    matches=$(grep -iE "$pattern" "$METADATA_FILE" | grep -vE '^\s*#|^\s*$') #Resultados
+
+    echo "=== Results ===" 
+    echo "$matches" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
+        printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
+            "$ID" "$NAME" "$PATH" "$DATE" "$SIZE" "$TYPE" "$PERMS" "$OWNER"
+    done
 }
 
 main "$@"
