@@ -12,7 +12,7 @@ METADATA_FILE="$RECYCLE_BIN_DIR/metadata.db"
 CONFIG_FILE="$RECYCLE_BIN_DIR/config"
 LOG_FILE="$RECYCLE_BIN_DIR/recyclebin.log"
 
-TEST_FILE="/home/tiago/Documents/UA/2ano/1Sem/SistemasOperativos/SO_Project/BernardoTiago_RecycleBin/text.txt"
+TEST_FILE="SO_Project/BernardoTiago_RecycleBin/TESTING.md"
 
 # Color codes for output
 RED='\033[0;31m'
