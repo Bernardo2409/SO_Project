@@ -43,6 +43,15 @@ main() {
         empty)
             empty_recyclebin "${@:2}"
             ;;
+        help)
+            display_help
+            ;;
+        -help)
+            display_help
+            ;;
+        --help)
+            display_help
+            ;;    
         *)
             echo "Uso: $0 {init|delete|list|search|restore|empty...}" 
             exit 1
@@ -320,7 +329,8 @@ empty_recyclebin() {
             echo -e "${GREEN}Recycle Bin emptied successfully.${NC}"
             return 0
         else
-            read -e -p "${YELLOW}Are you sure you want to permanently delete all files in recycle bin? (y/n) ${NC}" res #ERRO, por algum motivo nao aparece cor
+            echo -e "${YELLOW}Are you sure you want to permanently delete '${file}'? (y/n)${NC}"
+            read -r res
             if [[ "$res" =~ ^[Yy]$ ]]; then
                 echo -e "${RED}Deleting all files from ${FILES_DIR}${NC}"
                 rm -rf "$FILES_DIR"/*
@@ -341,7 +351,8 @@ empty_recyclebin() {
             echo -e "${GREEN}${file} successfully deleted.${NC}"
             return 0
         else
-            read -e -p "${YELLOW}Are you sure you want to permanently delete '${file}'? (y/n) ${NC}" res #ERRO, por algum motivo nao aparece cor
+            echo -e "${YELLOW}Are you sure you want to permanently delete '${file}'? (y/n)${NC}"
+            read -r res
             if [[ "$res" =~ ^[Yy]$ ]]; then
                 echo -e "${RED}Deleting ${file}${NC}"
                 rm -rf "$FILES_DIR/$file"
@@ -361,7 +372,7 @@ empty_recyclebin() {
 # Function: verif_rbin
 # Description: Auxiliary funtion to verify if the recycle bin was initialized
 # Parameters: none
-# Returns: 0 on success, 1 on failure
+# Returns: 0
 #################################################
 verif_rbin() {
     if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
@@ -375,14 +386,71 @@ verif_rbin() {
 
 #################################################
 # Function: display_help
-# Description: Auxiliary funtion to verify if the recycle bin was initialized
-# Parameters: none
-# Returns: 0 on success, 1 on failure
+# Description: Displays comprehensive usage information and examples
+# Parameters: None
+# Returns: 0
 #################################################
 
+display_help() {
+    echo -e "${YELLOW}============================================================${NC}"
+    echo -e "${GREEN}          Linux Recycle Bin Simulation - Help Menu${NC}"
+    echo -e "${YELLOW}============================================================${NC}"
+    echo
+    echo -e "${BOLD}Usage:${NC}"
+    echo -e "  ./recycle_bin.sh {command} [options] [arguments]"
+    echo
+    echo -e "${BOLD}Available Commands:${NC}"
+    echo -e "  ${GREEN}init${NC}                - Initialize the recycle bin structure."
+    echo -e "                           Creates required directories and files:"
+    echo -e "                           ${RECYCLE_BIN_DIR}, ${FILES_DIR}, ${METADATA_FILE}, ${CONFIG_FILE}, ${LOG_FILE}"
+    echo
+    echo -e "  ${GREEN}delete <file1> [file2]${NC} - Move one or more files/directories to the recycle bin."
+    echo -e "                           Example: ./recycle_bin.sh delete myfile.txt folder/"
+    echo
+    echo -e "  ${GREEN}list [--detailed]${NC}   - List files currently in the recycle bin."
+    echo -e "                           Use --detailed for full metadata view."
+    echo -e "                           Example: ./recycle_bin.sh list --detailed"
+    echo
+    echo -e "  ${GREEN}search <pattern>${NC}    - Search for items matching a name or pattern in the recycle bin."
+    echo -e "                           Example: ./recycle_bin.sh search report"
+    echo
+    echo -e "  ${GREEN}restore <ID|name>${NC}   - Restore a file by its ID or original name."
+    echo -e "                           Example: ./recycle_bin.sh restore 1729424329_abc123"
+    echo -e "                           Example: ./recycle_bin.sh restore myfile.txt"
+    echo
+    echo -e "  ${GREEN}empty [--force] [ID]${NC} - Permanently delete one item or empty the entire recycle bin."
+    echo -e "                           Example: ./recycle_bin.sh empty --force          # Empty all"
+    echo -e "                           Example: ./recycle_bin.sh empty 123abc           # Delete by ID"
+    echo -e "                           Example: ./recycle_bin.sh empty --force 123abc   # Force delete by ID"
+    echo
+    echo -e "  ${GREEN}help, --help, -h${NC}    - Display this help message."
+    echo
+    echo -e "${BOLD}Configuration File:${NC}"
+    echo -e "  Location: ${CONFIG_FILE}"
+    echo -e "  Example content:"
+    echo -e "    MAX_SIZE_MB=1024"
+    echo
+    echo -e "${BOLD}Log File:${NC}"
+    echo -e "  Location: ${LOG_FILE}"
+    echo -e "  Contains all recycle bin actions and errors."
+    echo
+    echo -e "${BOLD}Metadata File:${NC}"
+    echo -e "  Location: ${METADATA_FILE}"
+    echo -e "  Stores deleted items' information in CSV format:"
+    echo -e "  ID, ORIGINAL_NAME, ORIGINAL_PATH, DELETION_DATE, FILE_SIZE, FILE_TYPE, PERMISSIONS, OWNER"
+    echo
+    echo -e "${BOLD}Examples:${NC}"
+    echo -e "  ./recycle_bin.sh init"
+    echo -e "  ./recycle_bin.sh delete myfile.txt"
+    echo -e "  ./recycle_bin.sh list --detailed"
+    echo -e "  ./recycle_bin.sh restore myfile.txt"
+    echo -e "  ./recycle_bin.sh empty --force"
+    echo
+    echo -e "${YELLOW}============================================================${NC}"
+    echo -e "${GREEN}For questions or issues, check the log file at:${NC} ${LOG_FILE}"
+    echo -e "${YELLOW}============================================================${NC}"
+    echo
+}
 
-#display_help() {
-#
-#}
 
 main "$@"
