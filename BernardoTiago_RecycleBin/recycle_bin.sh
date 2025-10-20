@@ -35,7 +35,7 @@ main() {
             list_recycled "$2"
             ;;
         search)
-            search_file "$2"
+            search_recycled "$2"
             ;;
         restore)
             restore_file "${@:2}"
@@ -44,7 +44,7 @@ main() {
             empty_recyclebin "${@:2}"
             ;;
         *)
-            echo "Uso: $0 {init|delete|list|search...}" 
+            echo "Uso: $0 {init|delete|list|search|restore|empty...}" 
             exit 1
             ;;
     esac
@@ -205,7 +205,7 @@ list_recycled() {
 restore_file() {
 
     verif_rbin
-    
+
     local query="$1"
 
     if [[ -z "$query" ]]; then
@@ -268,13 +268,13 @@ restore_file() {
 
 
 #################################################
-# Function: search_file
+# Function: search_recycled
 # Description: Display all the files that contains the pattern given by the user
 # Parameters: $1 - search patterns
 # Returns: 0 on success, 1 on failure
 #################################################
 
-search_file() {
+search_recycled() {
     verif_rbin
 
     pattern="$1"
