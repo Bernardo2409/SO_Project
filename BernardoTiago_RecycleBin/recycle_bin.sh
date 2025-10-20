@@ -12,6 +12,7 @@ METADATA_FILE="$RECYCLE_BIN_DIR/metadata.db"
 CONFIG_FILE="$RECYCLE_BIN_DIR/config"
 LOG_FILE="$RECYCLE_BIN_DIR/recyclebin.log"
 
+TEST_FILE="/home/tiago/Documents/UA/2ano/1Sem/SistemasOperativos/SO_Project/BernardoTiago_RecycleBin/text.txt"
 
 # Color codes for output
 RED='\033[0;31m'
@@ -20,11 +21,12 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 main() {
+    # TODO: Case $1 (para fazer ./recycle_bin.sh delete "file" | list --detailed...  ) 
     echo "Hello, Recycle Bin!"
 
     initialize_recyclebin
+    delete_file "$TEST_FILE"
     list_recycled
-    delete_file
 }
 
 #################################################
@@ -161,3 +163,5 @@ list_recycled() {
 
     return 0
 }
+
+main "$@"
