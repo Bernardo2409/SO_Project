@@ -320,7 +320,7 @@ empty_recyclebin() {
             echo -e "${GREEN}Recycle Bin emptied successfully.${NC}"
             return 0
         else
-            read -e -p "${YELLOW}Are you sure you want to permanently delete all files in recycle bin? (y/n) ${NC}" res
+            read -e -p "${YELLOW}Are you sure you want to permanently delete all files in recycle bin? (y/n) ${NC}" res #ERRO, por algum motivo nao aparece cor
             if [[ "$res" =~ ^[Yy]$ ]]; then
                 echo -e "${RED}Deleting all files from ${FILES_DIR}${NC}"
                 rm -rf "$FILES_DIR"/*
@@ -341,7 +341,7 @@ empty_recyclebin() {
             echo -e "${GREEN}${file} successfully deleted.${NC}"
             return 0
         else
-            read -e -p "${YELLOW}Are you sure you want to permanently delete '${file}'? (y/n) ${NC}" res
+            read -e -p "${YELLOW}Are you sure you want to permanently delete '${file}'? (y/n) ${NC}" res #ERRO, por algum motivo nao aparece cor
             if [[ "$res" =~ ^[Yy]$ ]]; then
                 echo -e "${RED}Deleting ${file}${NC}"
                 rm -rf "$FILES_DIR/$file"
@@ -381,8 +381,8 @@ verif_rbin() {
 #################################################
 
 
-display_help()
-
-
+#display_help() {
+#
+#}
 
 main "$@"
