@@ -304,20 +304,58 @@ empty_recyclebin() {
     verif_rbin
 
     force=0
-    if [[ "$1" -eq "--force" ]]; then
+    if [[ "$1" == "--force" ]]; then
         force=1
         file="$2"
     else
         file="$1"
     fi
 
+    # Se não foi passado ficheiro
     if [[ -z "$file" ]]; then
         if [[ "$force" -eq 1 ]]; then
-        echo -e "${RED}A apagar todos os arquivos de "$FILES_DIR"${NC}"
-        rm -rf "$FILES_DIR"/*
-
-
+            echo -e "${RED}Deleting all files from ${FILES_DIR}${NC}"
+            rm -rf "$FILES_DIR"/*
+            head -n 2 "$METADATA_FILE" > "$METADATA_FILE.tmp" && mv "$METADATA_FILE.tmp" "$METADATA_FILE"
+            echo -e "${GREEN}Recycle Bin emptied successfully.${NC}"
+            return 0
+        else
+            read -e -p "${YELLOW}Are you sure you want to permanently delete all files in recycle bin? (y/n) ${NC}" res
+            if [[ "$res" =~ ^[Yy]$ ]]; then
+                echo -e "${RED}Deleting all files from ${FILES_DIR}${NC}"
+                rm -rf "$FILES_DIR"/*
+                head -n 2 "$METADATA_FILE" > "$METADATA_FILE.tmp" && mv "$METADATA_FILE.tmp" "$METADATA_FILE"
+                echo -e "${GREEN}Recycle Bin emptied successfully.${NC}"
+                return 0
+            else
+                echo -e "${YELLOW}Operation cancelled.${NC}"
+                return 1
+            fi
+        fi
+    else
+        # Foi passado um ficheiro específico
+        if [[ "$force" -eq 1 ]]; then
+            echo -e "${RED}Deleting ${file}${NC}"
+            rm -rf "$FILES_DIR/$file"
+            grep -v "^$file," "$METADATA_FILE" > "$METADATA_FILE.tmp" && mv "$METADATA_FILE.tmp" "$METADATA_FILE"
+            echo -e "${GREEN}${file} successfully deleted.${NC}"
+            return 0
+        else
+            read -e -p "${YELLOW}Are you sure you want to permanently delete '${file}'? (y/n) ${NC}" res
+            if [[ "$res" =~ ^[Yy]$ ]]; then
+                echo -e "${RED}Deleting ${file}${NC}"
+                rm -rf "$FILES_DIR/$file"
+                grep -v "^$file," "$METADATA_FILE" > "$METADATA_FILE.tmp" && mv "$METADATA_FILE.tmp" "$METADATA_FILE"
+                echo -e "${GREEN}${file} successfully deleted.${NC}"
+                return 0
+            else
+                echo -e "${YELLOW}Operation cancelled.${NC}"
+                return 1
+            fi
+        fi
+    fi
 }
+
 
 #################################################
 # Function: verif_rbin
