@@ -286,7 +286,7 @@ search_file() {
         return 1
     fi
     
-    matches=$(grep -iE "$pattern" "$METADATA_FILE" | grep -vE '^\s*#|^\s*$') #Resultados
+    matches=$(grep -iE "$pattern" "$METADATA_FILE" | grep -vE '^\s*#|^\s*$') #Results
 
     echo "=== Results ===" 
     echo "$matches" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
