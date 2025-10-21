@@ -333,7 +333,7 @@ empty_recyclebin() {
 # Function: verif_rbin
 # Description: Auxiliary funtion to verify if the recycle bin was initialized
 # Parameters: none
-# Returns: 0 on success, 1 on failure
+# Returns: 0
 #################################################
 verif_rbin() {
     if [[ ! -d "${RECYCLE_BIN_DIR}" ]]; then
@@ -346,9 +346,9 @@ verif_rbin() {
 
 #################################################
 # Function: display_help
-# Description: Auxiliary funtion to verify if the recycle bin was initialized
-# Parameters: none
-# Returns: 0 on success, 1 on failure
+# Description: Displays comprehensive usage information and examples
+# Parameters: None
+# Returns: 0
 #################################################
 
 
