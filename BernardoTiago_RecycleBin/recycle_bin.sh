@@ -5,6 +5,9 @@
 # Description: Shell-based recycle bin system
 #################################################
 
+set -e
+trap 'echo -e "${RED}Operação interrompida. Saída segura.${NC}"; exit 1' SIGINT SIGTERM
+
 # Global Configuration
 RECYCLE_BIN_DIR="$HOME/BernardoTiago_RecycleBin"
 FILES_DIR="$RECYCLE_BIN_DIR/files"
@@ -59,11 +62,11 @@ main() {
 
 initialize_recyclebin() {
     if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        mkdir -p "$FILES_DIR"
+        mkdir -p "$FILES_DIR" || { echo "Erro ao criar diretórios."; return 1; }
+        touch "$CONFIG_FILE" "$LOG_FILE" "$METADATA_FILE" || { echo "Erro ao criar ficheiros."; return 1; }
 
-        touch "$CONFIG_FILE" "$LOG_FILE" "$METADATA_FILE"
 
-        #RecycleBin Metadata
+        # Metadata
         echo "# Recycle Bin Metadata" > "$METADATA_FILE"
         echo "ID,ORIGINAL_NAME,ORIGINAL_PATH,DELETION_DATE,FILE_SIZE,FILE_TYPE,PERMISSIONS,OWNER" >> "$METADATA_FILE"
 
@@ -77,7 +80,7 @@ initialize_recyclebin() {
         echo -e "${YELLOW}Recycle bin already exists${NC}"
         return 1
     fi
-    return 0
+    
 }
 
 
@@ -89,72 +92,87 @@ initialize_recyclebin() {
 #################################################
 
 delete_file() {
+    # Verifica se o recycle bin foi inicializado
+    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
+        echo -e "${RED}RecycleBin não inicializada! Para inicializar: $0 init${NC}"
+        return 1
+    fi
+    local success=0
 
-    verif_rbin
-
-    local success=0 # Flag variable: 0 if all deletions succeed, 1 if any fail
-
-    for item in "$@"; do # Each argument represents a file or directory
-
-        # Check if the item exists
-        if [[ ! -e "$item" ]]; then
-            echo "Error: '$item' does not exist." | tee -a "$LOG_FILE"
+    for item in "$@"; do
+        # Validate existence
+        if [[ ! -e "${item}" ]]; then
+            echo "Erro: '${item}' não existe." | tee -a "${LOG_FILE}"
             success=1
             continue
         fi
+
         # Prevent deletion of the recycle bin itself
-        if [[ "$item" == "$RECYCLE_BIN_DIR"* ]]; then
-            echo "Error: You cannot delete the recycle bin itself." | tee -a "$LOG_FILE"
-            success=1
-            continue
-        fi
-        # Check if the user has read and write permissions
-        if [[ ! -r "$item" || ! -w "$item" ]]; then
-            echo "Error: Insufficient permissions to delete '$item'." | tee -a "$LOG_FILE"
+        if [[ "${item}" == "${RECYCLE_BIN_DIR}"* ]]; then
+            echo "Erro: Não é permitido eliminar a reciclagem." | tee -a "${LOG_FILE}"
             success=1
             continue
         fi
 
-    
+        # Security checks
+        if [[ "${item}" == *".."* ]]; then
+            echo "Erro: Caminho inseguro '${item}'." | tee -a "${LOG_FILE}"
+            success=1
+            continue
+        fi
+        if [[ -L "${item}" ]]; then
+            echo "Erro: Links simbólicos não são permitidos." | tee -a "${LOG_FILE}"
+            success=1
+            continue
+        fi
+
+        # Check permissions
+        if [[ ! -r "${item}" || ! -w "${item}" ]]; then
+            echo "Erro: Permissões insuficientes para eliminar '${item}'." | tee -a "${LOG_FILE}"
+            success=1
+            continue
+        fi
+
         # Generate unique ID for each deleted item
-        ID="$(date +%s%N)_$(tr -dc 'a-z0-9' </dev/urandom | head -c 6)"
-        DEST_PATH="$FILES_DIR/$ID"  # ex: /home/bernardoc/.recycle_bin/files/24123123123123
+        local id
+        id="$(date +%s%N)_$(tr -dc 'a-z0-9' </dev/urandom | head -c 6)"
+        local dest_path="${FILES_DIR}/${id}"
 
         # Extract metadata
-        ORIGINAL_NAME="$(basename "$item")" # Original filename or directory name 
-        ORIGINAL_PATH="$(realpath "$item")" # Complete absolute path of original location 
-        DELETION_DATE="$(date '+%Y-%m-%d %H:%M:%S')" # Timestamp when deleted (YYYY-MM-DD HH:MM:SS)
-        FILE_SIZE=$(du -sh "$item" 2>/dev/null | cut -f1) # Size in bytes
-        FILE_TYPE=$(file -b "$item") # Either "file" or "directory"
-        PERMISSIONS=$(stat -c %a "$item" 2>/dev/null) # Original permission bits (e.g., 644, 755)
-        OWNER=$(stat -c %U:%G "$item" 2>/dev/null) # Original owner and group (user:group format)
+        local original_name original_path deletion_date file_size file_type permissions owner
+        original_name="$(basename "${item}")"
+        original_path="$(realpath "${item}")"
+        deletion_date="$(date '+%Y-%m-%d %H:%M:%S')"
+        file_size=$(du -sh "${item}" 2>/dev/null | cut -f1)
+        file_type=$(file -b "${item}")
+        permissions=$(stat -c %a "${item}" 2>/dev/null)
+        owner=$(stat -c %U:%G "${item}" 2>/dev/null)
 
-
-        # Verificar espaço em disco
-        AVAIL_SPACE=$(df "$FILES_DIR" | awk 'NR==2 {print $4}')
-        REQ_SPACE=$(du -k "$item" | awk '{print $1}')
-        if (( REQ_SPACE > AVAIL_SPACE )); then
-            echo "Error: Not enough disk space to move '$item'." | tee -a "$LOG_FILE"
+        # Disk space check
+        local avail_space req_space
+        avail_space=$(df "${FILES_DIR}" | awk 'NR==2 {print $4}')
+        req_space=$(du -k "${item}" | awk '{print $1}')
+        if (( req_space > avail_space )); then
+            echo "Erro: Espaço em disco insuficiente para mover '${item}'." | tee -a "${LOG_FILE}"
             success=1
             continue
         fi
 
-        # Move arquivos para ~/.recycle_bin/files/ com ID único como nome do arquivo 
-        mv "$item" "$DEST_PATH"
-        if [[ $? -eq 0 ]]; then
-            echo "$ID,$ORIGINAL_NAME,$ORIGINAL_PATH,$DELETION_DATE,$FILE_SIZE,$FILE_TYPE,$PERMISSIONS,$OWNER" >> "$METADATA_FILE"
-            echo -e "${GREEN}Sucesso:${NC} '$ORIGINAL_NAME' movido para reciclagem (ID: $ID)." | tee -a "$LOG_FILE"
+        # Move file/folder
+        if mv "${item}" "${dest_path}"; then
+            echo "${id},${original_name},${original_path},${deletion_date},${file_size},${file_type},${permissions},${owner}" >> "${METADATA_FILE}"
+            echo -e "${GREEN}Sucesso:${NC} '${original_name}' movido para reciclagem (ID: ${id})." | tee -a "${LOG_FILE}"
         else
-            echo -e "${RED}Erro:${NC} Falha ao mover '$item' para reciclagem." | tee -a "$LOG_FILE"
+            echo -e "${RED}Erro:${NC} Falha ao mover '${item}' para reciclagem." | tee -a "${LOG_FILE}"
             success=1
         fi
     done
 
-    # Return final status
+    # Retorna status final
     if [[ $success -eq 0 ]]; then
-        return 0  # All deletions succeeded
+        return 0  # Todas as eliminações foram bem-sucedidas
     else
-        return 1  # At least one deletion failed
+        return 1  # Pelo menos uma eliminação falhou
     fi
 }
 
@@ -170,28 +188,19 @@ list_recycled() {
 
     verif_rbin
 
-    # Se o argumento for "--detailed"
+    echo "=== Ficheiros na reciclagem ==="
+
     if [[ "$1" == "--detailed" ]]; then
-        echo "=== Files in recyclebin (detailed) ==="
-
-        # Ignora comentarios
-        grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
+        grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | while IFS=',' read -r id name path date size type perms owner; do
             printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
-                "$ID" "$NAME" "$PATH" "$DATE" "$SIZE" "$TYPE" "$PERMS" "$OWNER"
+                "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
         done
-
     else
-        echo "=== Files in recyclebin ==="
-
-        grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
-            printf "%s | %s | %s | %s\n" "$ID" "$NAME" "$DATE" "$SIZE"
+        grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | while IFS=',' read -r id name path date size _; do
+            printf "%s | %s | %s | %s\n" "${id}" "${name}" "${date}" "${size}"
         done
     fi
-
-    return
 }
-
-
 
 
 
@@ -205,62 +214,53 @@ list_recycled() {
 restore_file() {
 
     verif_rbin
-
+    
     local query="$1"
 
-    if [[ -z "$query" ]]; then
-        echo -e "${RED}Erro:${NC} É necessário indicar o ID ou nome do ficheiro a restaurar."
+    if [[ -z "${query}" ]]; then
+        echo -e "${RED}Erro:${NC} Indica o ID ou nome do ficheiro a restaurar."
         return 1
     fi
 
-    # Search for a correspondence
-    entry=$(awk -F"," -v q="$query" '{gsub(/\r/,""); if ($1==q || $2==q) {print; exit}}' "$METADATA_FILE")
+    local entry
+    entry=$(awk -F"," -v q="${query}" '{gsub(/\r/,""); if ($1==q || $2==q) {print; exit}}' "${METADATA_FILE}")
 
-    if [[ -z "$entry" ]]; then
-        echo -e "${RED}Erro:${NC} Nenhum ficheiro encontrado com ID/nome '$query'."
+    if [[ -z "${entry}" ]]; then
+        echo -e "${RED}Erro:${NC} Nenhum ficheiro encontrado com ID/nome '${query}'."
         return 1
     fi
 
-    IFS=',' read -r ID ORIGINAL_NAME ORIGINAL_PATH DELETION_DATE FILE_SIZE FILE_TYPE PERMISSIONS OWNER <<< "$entry"
+    IFS=',' read -r id original_name original_path deletion_date file_size file_type permissions owner <<< "${entry}"
+    src_path="${FILES_DIR}/${id}"
+    dest_dir="$(dirname "${original_path}")"
+    dest_path="${original_path}"
 
-    SRC_PATH="$FILES_DIR/$ID"
-    DEST_DIR="$(dirname "$ORIGINAL_PATH")"
-    DEST_PATH="$ORIGINAL_PATH"
-
-    # Verify if recycle file exists
-    if [[ ! -e "$SRC_PATH" ]]; then
-        echo -e "${RED}Erro:${NC} O ficheiro com ID '$ID' já não existe na reciclagem."
+    if [[ ! -e "${src_path}" ]]; then
+        echo -e "${RED}Erro:${NC} O ficheiro com ID '${id}' já não existe na reciclagem."
         return 1
     fi
 
-    # Create original directories
-    mkdir -p "$DEST_DIR" 2>/dev/null
+    mkdir -p "${dest_dir}" 2>/dev/null
 
-    # Conflict: The File name already exists
-    if [[ -e "$DEST_PATH" ]]; then
-        echo -e "${YELLOW}Aviso:${NC} Já existe '$DEST_PATH'."
+    if [[ -e "${dest_path}" ]]; then
+        echo -e "${YELLOW}Aviso:${NC} Já existe '${dest_path}'."
         echo "Escolhe uma opção: (O)verwrite / (R)ename / (C)ancel"
         read -r choice
-
-        case "$choice" in
-            [Oo]*) rm -rf "$DEST_PATH" ;; #overwrite
-            [Rr]*) DEST_PATH="${DEST_PATH}_$(date +%s)" ;; #rename
-            [Cc]*) echo "Restauração cancelada."; return 1 ;; #cancel
+        case "${choice}" in
+            [Oo]*) rm -rf "${dest_path}" ;;
+            [Rr]*) dest_path="${dest_path}_$(date +%s)" ;;
+            [Cc]*) echo "Restauração cancelada."; return 1 ;;
             *) echo "Opção inválida. Cancelado."; return 1 ;;
         esac
     fi
 
-    # Restore Files
-    if mv "$SRC_PATH" "$DEST_DIR/$ORIGINAL_NAME" 2>>"$LOG_FILE"; then
-        DEST_PATH="$DEST_DIR/$ORIGINAL_NAME"
-        chmod "$PERMISSIONS" "$DEST_PATH" 2>/dev/null
-        chown "$OWNER" "$DEST_PATH" 2>/dev/null
-        
-        sed -i "/^$ID,/d" "$METADATA_FILE"
-        echo -e "${GREEN}Sucesso:${NC} '$ORIGINAL_NAME' restaurado para '$DEST_PATH'." | tee -a "$LOG_FILE"
-        return 0
+    if mv "${src_path}" "${dest_path}" 2>>"${LOG_FILE}"; then
+        chmod "${permissions}" "${dest_path}" 2>/dev/null
+        chown "${owner}" "${dest_path}" 2>/dev/null
+        sed -i "/^${id},/d" "${METADATA_FILE}"
+        echo -e "${GREEN}Sucesso:${NC} '${original_name}' restaurado para '${dest_path}'." | tee -a "${LOG_FILE}"
     else
-        echo -e "${RED}Erro:${NC} Falha ao restaurar '$ORIGINAL_NAME'." | tee -a "$LOG_FILE"
+        echo -e "${RED}Erro:${NC} Falha ao restaurar '${original_name}'." | tee -a "${LOG_FILE}"
         return 1
     fi
 }
@@ -276,26 +276,23 @@ restore_file() {
 
 search_recycled() {
     verif_rbin
+    local pattern="$1"
 
-    pattern="$1"
-
-    if [[ -z "$pattern" ]]; then
+    if [[ -z "${pattern}" ]]; then
         echo -e "${YELLOW}Uso:${NC} $0 search <termo>"
         return 1
     fi
-    
-    matches=$(grep -iE "$pattern" "$METADATA_FILE" | grep -vE '^\s*#|^\s*$') #Results
 
-    echo "=== Results ===" 
-    echo "$matches" | while IFS=',' read -r ID NAME PATH DATE SIZE TYPE PERMS OWNER; do
+    echo "=== Resultados ==="
+    grep -iE "${pattern}" "${METADATA_FILE}" | grep -vE '^\s*#|^\s*$' | while IFS=',' read -r id name path date size type perms owner; do
         printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
-            "$ID" "$NAME" "$PATH" "$DATE" "$SIZE" "$TYPE" "$PERMS" "$OWNER"
+            "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
     done
 }
 
 #################################################
 # Function: empty_recyclebin
-# Description: Display all the files that contains the pattern given by the user
+# Description: Permanently deletes all items in recycle bin
 # Parameters: $1 - search patterns
 # Returns: 0 on success, 1 on failure
 #################################################
@@ -303,18 +300,31 @@ search_recycled() {
 empty_recyclebin() {
     verif_rbin
 
-    force=0
-    if [[ "$1" -eq "--force" ]]; then
+    local force=0
+    local file="$1"
+
+    if [[ "$1" == "--force" ]]; then
         force=1
         file="$2"
-    else
-        file="$1"
     fi
 
-    if [[ -z "$file" ]]; then
-        if [[ "$force" -eq 1 ]]; then
-        echo -e "${RED}A apagar todos os arquivos de "$FILES_DIR"${NC}"
-        rm -rf "$FILES_DIR"/*
+    if [[ -z "${file}" ]]; then
+        if [[ "${force}" -eq 1 ]]; then
+            echo -e "${RED}A apagar todos os arquivos de ${FILES_DIR}${NC}"
+            rm -rf "${FILES_DIR:?}"/*
+            head -n 2 "${METADATA_FILE}" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "${METADATA_FILE}"
+            echo -e "${GREEN}Reciclagem esvaziada com sucesso.${NC}"
+        else
+            read -e -p "${YELLOW}Tens a certeza que queres apagar todos os ficheiros? (y/n) ${NC}" res
+            if [[ "${res}" =~ ^[Yy]$ ]]; then
+                rm -rf "${FILES_DIR:?}"/*
+                head -n 2 "${METADATA_FILE}" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "${METADATA_FILE}"
+                echo -e "${GREEN}Reciclagem esvaziada.${NC}"
+            else
+                echo -e "${YELLOW}Operação cancelada.${NC}"
+            fi
+        fi
+    fi
 
 
 }
@@ -326,11 +336,10 @@ empty_recyclebin() {
 # Returns: 0 on success, 1 on failure
 #################################################
 verif_rbin() {
-    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        echo -e "${RED}RecycleBin não inicializada! Para inicializar $0 init${NC}"
+    if [[ ! -d "${RECYCLE_BIN_DIR}" ]]; then
+        echo -e "${RED}Erro:${NC} Reciclagem não inicializada! Usa: $0 init"
         exit 1
     fi
-    return 0
 }
 
 
@@ -343,7 +352,18 @@ verif_rbin() {
 #################################################
 
 
-display_help()
+display_help() {
+    echo "Uso: $0 {init|delete|list|search|restore|empty}"
+    echo
+    echo "Comandos disponíveis:"
+    echo "  init       Inicializa a reciclagem"
+    echo "  delete     Move ficheiro(s) para a reciclagem"
+    echo "  list       Lista ficheiros eliminados (--detailed para detalhes)"
+    echo "  search     Pesquisa ficheiros eliminados"
+    echo "  restore    Restaura ficheiro pelo ID ou nome original"
+    echo "  empty      Esvazia a reciclagem (--force para não pedir confirmação)"
+    echo
+}
 
 
 
