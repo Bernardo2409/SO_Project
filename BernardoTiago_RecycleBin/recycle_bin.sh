@@ -62,6 +62,9 @@ main() {
         clean)
             auto_cleanup
             ;;
+        preview)
+            preview_file "${@:2}"
+            ;;
         *)
             echo -e "   Use: ${YELLOW}$0 help${NC}"
             echo "   It shows all available commands!" 
@@ -625,6 +628,38 @@ check_quota() {
     return 0
 }
 
+#################################################
+# Function: preview_file
+# Description: Show first 10 lines for text files in recycle bin
+# Parameters: $1 fileID (not full path)
+# Returns: 0 on success, 1 on failure
+#################################################
+preview_file() {
+    local fileID="$1"
+    local file_path="$FILES_DIR/$fileID"
 
+    # Verify if fileID is null
+    if [[ -z "$fileID" ]]; then
+        echo -e "${YELLOW}Usage:${NC} preview_file <fileID>"
+        return 1
+    fi
+
+    # Verify if file exists
+    if [[ ! -f "$file_path" ]]; then
+        echo -e "${RED}ERROR:${NC} File id '$fileID' does not exist."
+        return 1
+    fi
+
+    # Verify if is a text file
+    if file "$file_path" | grep -qi "text"; then
+        echo "---------------------------------------------"
+        head -n 10 "$file_path"
+        echo "---------------------------------------------"
+        return 0
+    else
+        echo -e "${YELLOW}Warning:${NC} '$fileID' Is in binary format."
+        return 1
+    fi
+}
 
 main "$@"
