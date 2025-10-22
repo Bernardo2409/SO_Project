@@ -25,7 +25,7 @@ NC='\033[0m' # No Color
 
 main() {
    
-    echo "Hello $(whoami) ! "
+    echo "Hello $(whoami)! "
 
     case "$1" in
         init)
