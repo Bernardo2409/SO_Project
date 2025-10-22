@@ -15,7 +15,7 @@ METADATA_FILE="$RECYCLE_BIN_DIR/metadata.db"
 CONFIG_FILE="$RECYCLE_BIN_DIR/config"
 LOG_FILE="$RECYCLE_BIN_DIR/recyclebin.log"
 
-TEST_FILE="SO_Project/BernardoTiago_RecycleBin/TESTING.md"
+TEST_FILE="./TESTING.md"
 
 # Color codes for output
 RED='\033[0;31m'
@@ -223,7 +223,8 @@ list_recycled() {
 
     verif_rbin
 
-    echo "=== Files on RecyleBin ==="
+
+    echo "=== Files on RecycleBin ==="
 
     if [[ "$1" == "--detailed" ]]; then
         grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | while IFS=',' read -r id name path date size type perms owner; do
@@ -378,7 +379,7 @@ empty_recyclebin() {
             if [[ "${res}" =~ ^[Yy]$ ]]; then
                 rm -rf "${FILES_DIR:?}"/*
                 head -n 2 "${METADATA_FILE}" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "${METADATA_FILE}"
-                echo -e "${GREEN}Emptied RecycleBin.${NC}"
+                echo -e "${GREEN}Recycle Bin is empty..${NC}"
             else
                 echo -e "${YELLOW}Operation canceled.${NC}"
             fi
