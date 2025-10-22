@@ -27,10 +27,13 @@ main() {
    
     echo -e " Hello $(whoami)! \n"
 
-    case "$1" in    
-        init)
-            initialize_recyclebin
-            ;;
+    # Optional auto-init if not already created
+    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
+        echo -e "${YELLOW}Recycle Bin not found. Initializing automatically...${NC}"
+        initialize_recyclebin
+    fi
+
+    case "$1" in
         delete)
             check_quota
             quota_status=$?
@@ -83,25 +86,32 @@ main() {
 #################################################
 
 initialize_recyclebin() {
-    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        mkdir -p "$FILES_DIR" || { echo "Error creating directories."; return 1; }
-        touch "$CONFIG_FILE" "$LOG_FILE" "$METADATA_FILE" || { echo "Error creaing files."; return 1; }
-
-
-        # Metadata
-        echo "# Recycle Bin Metadata" > "$METADATA_FILE"
-        echo "ID,ORIGINAL_NAME,ORIGINAL_PATH,DELETION_DATE,FILE_SIZE,FILE_TYPE,PERMISSIONS,OWNER" >> "$METADATA_FILE"
-
-        #Config File
-        echo "MAX_SIZE_MB=1024" > "$CONFIG_FILE"
-
-        #Empty LogFile
-        echo -e "${GREEN}Recycle bin initialized at $RECYCLE_BIN_DIR${NC}"
+    # Check if recycle bin already exists
+    if [[ -d "$RECYCLE_BIN_DIR" ]]; then
+        echo -e "${YELLOW}Recycle bin already exists at:${NC} $RECYCLE_BIN_DIR"
         return 0
-    else
-        echo -e "${YELLOW}Recycle bin already exists${NC}"
-        return 1
     fi
+
+    # Create directory structure
+    mkdir -p "$FILES_DIR" || {
+        echo -e "${RED}Error:${NC} Failed to create recycle bin directories."
+        return 1
+    }
+
+    # Create metadata file
+    echo "# Recycle Bin Metadata" > "$METADATA_FILE"
+    echo "ID,ORIGINAL_NAME,ORIGINAL_PATH,DELETION_DATE,FILE_SIZE,FILE_TYPE,PERMISSIONS,OWNER" >> "$METADATA_FILE"
+
+    # Create config file (default values)
+    echo "MAX_SIZE_MB=1024" > "$CONFIG_FILE"
+    echo "RETENTION_DAYS=30" >> "$CONFIG_FILE"
+
+    # Create empty log file
+    : > "$LOG_FILE"
+
+    # Success message
+    echo -e "${GREEN}Recycle bin successfully initialized at:${NC} $RECYCLE_BIN_DIR"
+    return 0
     
 }
 
@@ -420,7 +430,6 @@ verif_rbin() {
 
 
 display_help() {
-    echo "  init:      Inicialize the RecycleBin"
     echo "  delete:    Move files to RecycleBin"
     echo "  list:      List deleted files (--detailed for details)"
     echo "  restore:   Restore the file by its original name or ID"
