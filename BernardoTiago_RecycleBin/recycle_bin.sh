@@ -38,7 +38,7 @@ main() {
             list_recycled "$2"
             ;;
         search)
-            search_recycled "$2"
+            search_recycled "${@:2}"
             ;;
         restore)
             restore_file "${@:2}"
@@ -294,19 +294,34 @@ restore_file() {
 search_recycled() {
     verif_rbin
     local pattern="$1"
+    local caseInsensitive=0  # false at start
 
+    if [[ "$2" == "-i" ]]; then
+        caseInsensitive=1 # if -i then caseInsensitve = true
+    fi
 
     if [[ -z "${pattern}" ]]; then
-        echo -e "${YELLOW}Use:${NC} $0 search <term>"
+        echo -e "${YELLOW}Use:${NC} $0 search <term> [-i]"
         return 1
     fi
 
     echo "=== Results ==="
-    grep -iE "${pattern}" "${METADATA_FILE}" | grep -vE '^\s*#|^\s*$' | while IFS=',' read -r id name path date size type perms owner; do
-        printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
-            "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
-    done
+
+    if [[ "$caseInsensitive" -eq 1 ]]; then
+        # caseIsensitive = true
+        grep -iE "${pattern}" "${METADATA_FILE}" | grep -vE '^\s*#|^\s*$' | while IFS=',' read -r id name path date size type perms owner; do
+            printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
+                "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
+        done
+    else
+        # no -i
+        grep -E --no-ignore-case "${pattern}" "${METADATA_FILE}" | grep -vE '^\s*#|^\s*$' | while IFS=',' read -r id name path date size type perms owner; do
+            printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
+                "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
+        done
+    fi
 }
+
 
 #################################################
 # Function: empty_recyclebin
