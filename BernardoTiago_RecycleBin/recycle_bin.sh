@@ -127,11 +127,11 @@ initialize_recyclebin() {
 #################################################
 
 delete_file() {
-    # Verify is RecycleBin was inicialize
+    # Auto-initialize Recycle Bin if missing
     if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        echo -e "${RED}RecycleBin unitialized! To inicialize: $0 init${NC}"
-        return 1
+        initialize_recyclebin
     fi
+
     local success=0
 
     for item in "$@"; do
@@ -144,36 +144,31 @@ delete_file() {
 
         # Prevent deletion of the recycle bin itself
         if [[ "${item}" == "${RECYCLE_BIN_DIR}"* ]]; then
-            echo "Error: u can't delete RecycleBin." | tee -a "${LOG_FILE}"
+            echo "Error: Cannot delete the Recycle Bin itself." | tee -a "${LOG_FILE}"
             success=1
             continue
         fi
 
         # Security checks
-        if [[ "${item}" == *".."* ]]; then
-            echo "Erroe: Insecure Path'${item}'." | tee -a "${LOG_FILE}"
-            success=1
-            continue
-        fi
-        if [[ -L "${item}" ]]; then
-            echo "Error: Symbolic links are not allowed." | tee -a "${LOG_FILE}"
+        if [[ "${item}" == *".."* || -L "${item}" ]]; then
+            echo "Error: Insecure or symbolic path '${item}'." | tee -a "${LOG_FILE}"
             success=1
             continue
         fi
 
         # Check permissions
         if [[ ! -r "${item}" || ! -w "${item}" ]]; then
-            echo "Error: Insuficient permissions to delete '${item}'." | tee -a "${LOG_FILE}"
+            echo "Error: Insufficient permissions for '${item}'." | tee -a "${LOG_FILE}"
             success=1
             continue
         fi
 
-        # Generate unique ID for each deleted item
+        # Generate unique ID
         local id
         id="$(date +%s%N)_$(tr -dc 'a-z0-9' </dev/urandom | head -c 6)"
         local dest_path="${FILES_DIR}/${id}"
 
-        # Extract metadata
+        # Collect metadata
         local original_name original_path deletion_date file_size file_type permissions owner
         original_name="$(basename "${item}")"
         original_path="$(realpath "${item}")"
@@ -183,33 +178,19 @@ delete_file() {
         permissions=$(stat -c %a "${item}" 2>/dev/null)
         owner=$(stat -c %U:%G "${item}" 2>/dev/null)
 
-        # Disk space check
-        local avail_space req_space
-        avail_space=$(df "${FILES_DIR}" | awk 'NR==2 {print $4}')
-        req_space=$(du -k "${item}" | awk '{print $1}')
-        if (( req_space > avail_space )); then
-            echo "Error: Not enough space on disk to delete '${item}'." | tee -a "${LOG_FILE}"
-            success=1
-            continue
-        fi
-
         # Move file/folder
         if mv "${item}" "${dest_path}"; then
             echo "${id},${original_name},${original_path},${deletion_date},${file_size},${file_type},${permissions},${owner}" >> "${METADATA_FILE}"
-            echo -e "${GREEN}Sucess:${NC} '${original_name}' moved to RecycleBin (ID: ${id})." | tee -a "${LOG_FILE}"
+            echo -e "${GREEN}Success:${NC} '${original_name}' moved to RecycleBin (ID: ${id})." | tee -a "${LOG_FILE}"
         else
-            echo -e "${RED}Error:${NC} Failed to move '${item}' to RecycleBin." | tee -a "${LOG_FILE}"
+            echo -e "${RED}Error:${NC} Failed to move '${item}'." | tee -a "${LOG_FILE}"
             success=1
         fi
     done
 
-    # Return final status
-    if [[ $success -eq 0 ]]; then
-        return 0  
-    else
-        return 1 
-    fi
+    return $success
 }
+
 
 
 #################################################
@@ -220,23 +201,38 @@ delete_file() {
 #################################################
 
 list_recycled() {
-
     verif_rbin
 
+    echo -e "${YELLOW}=== Files on Recycle Bin ===${NC}"
 
-    echo "=== Files on RecycleBin ==="
+    # Conta quantas linhas válidas existem (ignora cabeçalho e comentários)
+    local total_items
+    total_items=$(grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | wc -l)
 
+    # Se não houver ficheiros
+    if [[ "$total_items" -eq 0 ]]; then
+        echo -e "${YELLOW}Recycle Bin is empty.${NC}"
+        return 0
+    fi
+
+    # Se houver ficheiros, mostra quantos há
+    echo -e "${GREEN}${total_items}${NC} file(s) found in Recycle Bin:"
+    echo
+
+    # Mostrar detalhes ou resumo
     if [[ "$1" == "--detailed" ]]; then
-        grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | while IFS=',' read -r id name path date size type perms owner; do
+        grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | while IFS=',' read -r id name path date size type perms owner; do
             printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
                 "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
         done
     else
-        grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | while IFS=',' read -r id name path date size _; do
-            printf "%s | %s | %s | %s\n" "${id}" "${name}" "${date}" "${size}"
+        # Formato simples para compatibilidade com testes
+        grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | while IFS=',' read -r id name path date size _; do
+            printf "%s %s %s %s\n" "${id}" "${name}" "${date}" "${size}"
         done
     fi
 }
+
 
 
 
@@ -248,63 +244,68 @@ list_recycled() {
 #################################################
 
 restore_file() {
-
     verif_rbin
-    
+
     local query="$1"
 
-    #Check if a file ID or name was provided
-    if [[ -z "${query}" ]]; then
-        echo -e "${RED}Error:${NC} Indicates the ID or name of the file to be restored."
+    if [[ -z "$query" ]]; then
+        echo -e "${RED}Error:${NC} Please specify the file ID or original name to restore."
         return 1
     fi
 
+    # Procura por ID exato primeiro, depois por nome
     local entry
-    entry=$(awk -F"," -v q="${query}" '{gsub(/\r/,""); if ($1==q || $2==q) {print; exit}}' "${METADATA_FILE}")
+    entry=$(grep -E "^${query}," "$METADATA_FILE" 2>/dev/null || grep -E ",${query}," "$METADATA_FILE" 2>/dev/null | head -n1)
 
-    if [[ -z "${entry}" ]]; then
-        echo -e "${RED}Error:${NC} No files found with ID/name '${query}'."
+    if [[ -z "$entry" ]]; then
+        echo -e "${RED}Error:${NC} No file found with ID or name '${query}'."
         return 1
     fi
 
-    IFS=',' read -r id original_name original_path deletion_date file_size file_type permissions owner <<< "${entry}"
-    src_path="${FILES_DIR}/${id}"
-    dest_dir="$(dirname "${original_path}")"
-    dest_path="${original_path}"
+    IFS=',' read -r id original_name original_path deletion_date file_size file_type permissions owner <<< "$entry"
+    local src_path="${FILES_DIR}/${id}"
+    local dest_dir
+    dest_dir="$(dirname "$original_path")"
+    local dest_path="$original_path"
 
-    #Check if file still exists in the RecycleBin
-    if [[ ! -e "${src_path}" ]]; then
-        echo -e "${RED}Error:${NC} The file with ID '${id}' no longer exists in the RecycleBin."
+    # Verifica se o arquivo ainda existe na reciclagem
+    if [[ ! -e "$src_path" ]]; then
+        echo -e "${RED}Error:${NC} The file '${original_name}' no longer exists in the recycle bin."
+        # Remove entrada órfã dos metadados
+        sed -i "/^${id},/d" "$METADATA_FILE"
         return 1
     fi
 
-    #Recreate original directory if missing
-    mkdir -p "${dest_dir}" 2>/dev/null
+    # Cria diretório de destino se necessário
+    mkdir -p "$dest_dir" 2>/dev/null
 
-    # Handle conflict if a file with the same name already exists
-    if [[ -e "${dest_path}" ]]; then
-        echo -e "${YELLOW}Warning:${NC} Already exists '${dest_path}'."
-        echo "Choose a option: (O)verwrite / (R)ename / (C)ancel"
-        read -r choice
-        case "${choice}" in
-            [Oo]*) rm -rf "${dest_path}" ;;
-            [Rr]*) dest_path="${dest_path}_$(date +%s)" ;;
-            [Cc]*) echo "Restore canceled."; return 1 ;;
-            *) echo "Invalid option. Canceled."; return 1 ;;
-        esac
+    # Se já existir ficheiro com o mesmo nome, renomeia automaticamente
+    if [[ -e "$dest_path" ]]; then
+        dest_path="${dest_path}_restored_$(date +%s)"
+        echo -e "${YELLOW}Warning:${NC} File already exists. Restoring as '$(basename "$dest_path")'."
     fi
 
-     # Move the file back to its original location
-    if mv "${src_path}" "${dest_path}" 2>>"${LOG_FILE}"; then
-        chmod "${permissions}" "${dest_path}" 2>/dev/null
-        chown "${owner}" "${dest_path}" 2>/dev/null
-        sed -i "/^${id},/d" "${METADATA_FILE}"
-        echo -e "${GREEN}Sucess:${NC} '${original_name}' restored to '${dest_path}'." | tee -a "${LOG_FILE}"
+    # Restaura o arquivo
+    if mv "$src_path" "$dest_path" 2>>"$LOG_FILE"; then
+        # Restaura permissões originais
+        chmod "$permissions" "$dest_path" 2>/dev/null || true
+        chown "$owner" "$dest_path" 2>/dev/null || true
+        
+        # Remove entrada dos metadados
+        sed -i "/^${id},/d" "$METADATA_FILE"
+        
+        echo -e "${GREEN}Success:${NC} '${original_name}' restored to '${dest_path}'."
+        return 0   
     else
-        echo -e "${RED}Error:${NC} Failed to restore '${original_name}'." | tee -a "${LOG_FILE}"
-        return 1
+        echo -e "${RED}Error:${NC} Failed to restore '${original_name}'."
+        return 1   
     fi
 }
+
+
+
+
+
 
 
 

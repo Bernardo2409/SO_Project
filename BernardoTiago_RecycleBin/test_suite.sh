@@ -16,6 +16,15 @@ NC='\033[0m'
 setup() { 
     mkdir -p "$TEST_DIR" 
     rm -rf ~/.recycle_bin 
+
+    # Run initialization to create a fresh structure
+    bash "$SCRIPT" init > /dev/null 2>&1
+
+    # Clean metadata file (keep only headers)
+    if [[ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ]]; then
+        head -n 2 "$HOME/BernardoTiago_RecycleBin/metadata.db" > "$HOME/BernardoTiago_RecycleBin/metadata.tmp"
+        mv "$HOME/BernardoTiago_RecycleBin/metadata.tmp" "$HOME/BernardoTiago_RecycleBin/metadata.db"
+    fi
 } 
  
 teardown() { 
@@ -92,7 +101,7 @@ test_restore_file() {
     $SCRIPT restore "$ID" 
     assert_success "Restore file" 
     [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
-} 
+}
  
 # Run all tests 
 echo "=========================================" 
