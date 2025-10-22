@@ -581,7 +581,35 @@ auto_cleanup() {
     echo -e "Total space cleared:  ${readable_size}\n"
 }
 
+#################################################
+# Function: check_quota
+# Description: Check if recycle bin exceeds MAX_SIZE_MB
+# Parameters: 0
+# Returns: 0 on success, 1 on failure
+#################################################
+check_quota() {
+    # Size usage in bytes
+    total_size=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | awk -F',' '
+        {
+            size=$5
+            gsub(/[^0-9.]/,"",size)
+            if ($5 ~ /K/) size *= 1024
+            else if ($5 ~ /M/) size *= 1024*1024
+            else if ($5 ~ /G/) size *= 1024*1024*1024
+            total += size
+        }
+        END {print total}
+    ')
+    quota_mb=$(grep "^MAX_SIZE_MB=" $CONFIG_FILE | cut -d'=' -f2) # quota_mb = MAX_SIZE_MB
+    
+    #maxSize in bytes
+    quota=$((quota_mb * 1024 * 1024))
 
+    if [[ total_size -gt quota ]]; then
+        echo -e "${RED} !WARNING!: Max size exceeded! ${NC}"
+        echo -e "Trigger auto-clean"
+    fi
+}
 
 
 
