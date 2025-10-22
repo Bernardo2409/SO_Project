@@ -48,9 +48,7 @@ assert_fail() {
 # Test Cases 
 
 reset_metadata() {
-    verif_rbin
     echo -e "${YELLOW}Resetting Recycle Bin metadata...${NC}"
-    rm -rf "${FILES_DIR:?}"/*
     head -n 2 "${METADATA_FILE}" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "${METADATA_FILE}"
     echo -e "${GREEN}Recycle Bin metadata cleared.${NC}"
 }
@@ -67,7 +65,7 @@ test_initialization() {
 } 
  
 test_delete_file() { 
-    echo "\n=== Test: Delete File ===" 
+    echo -e "\n=== Test: Delete File ===" 
     setup 
     echo "test content" > "$TEST_DIR/test.txt" 
     $SCRIPT delete "$TEST_DIR/test.txt" 
@@ -77,14 +75,14 @@ location"
 } 
  
 test_list_empty() { 
-    echo "=== Test: List Empty Bin ===" 
+    echo -e "\n=== Test: List Empty Bin ===" 
     setup 
     $SCRIPT list | grep -q "empty" 
     assert_success "List empty recycle bin" 
 } 
  
 test_restore_file() { 
-    echo "=== Test: Restore File ===" 
+    echo -e "\n=== Test: Restore File ===" 
     setup 
     echo "test" > "$TEST_DIR/restore_test.txt" 
     $SCRIPT delete "$TEST_DIR/restore_test.txt" 
