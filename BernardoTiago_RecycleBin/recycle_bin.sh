@@ -25,7 +25,7 @@ NC='\033[0m' # No Color
 
 main() {
    
-    echo "Hello, Recycle Bin!"
+    echo "Hello $(whoami) ! "
 
     case "$1" in
         init)
@@ -46,15 +46,10 @@ main() {
         empty)
             empty_recyclebin "${@:2}"
             ;;
-        help)
+        help|-h|--help)
             display_help
             ;;
-        -help)
-            display_help
-            ;;
-        --help)
-            display_help
-            ;;
+
         *)
             echo "Use: $0 {init|delete|list|search|restore|empty|show}" 
             exit 1
