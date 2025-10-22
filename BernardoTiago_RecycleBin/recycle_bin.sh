@@ -25,7 +25,8 @@ NC='\033[0m' # No Color
 
 main() {
    
-    echo "Hello $(whoami)! "
+    echo -e " Hello $(whoami)! \n"
+
     case "$1" in
         init)
             initialize_recyclebin
@@ -36,11 +37,11 @@ main() {
         list)
             list_recycled "$2"
             ;;
-        search)
-            search_recycled "${@:2}"
-            ;;
         restore)
             restore_file "${@:2}"
+            ;;
+        search)
+            search_recycled "${@:2}"
             ;;
         empty)
             empty_recyclebin "${@:2}"
@@ -48,9 +49,15 @@ main() {
         help|-h|--help)
             display_help
             ;;
-
+        show)
+            show_statistics
+            ;;
+        clean)
+            auto_cleanup
+            ;;
         *)
-            echo "Use: $0 {init|delete|list|search|restore|empty|show}" 
+            echo -e "   Use: ${YELLOW}$0 help${NC}"
+            echo "   It shows all available commands!" 
             exit 1
             ;;
     esac
@@ -409,15 +416,14 @@ verif_rbin() {
 
 
 display_help() {
-    echo "Use: $0 {init|delete|list|search|restore|empty}"
-    echo
-    echo " HELP: Available commands"
-    echo "  init:      Initialize RecycleBin"
+    echo "  init:      Inicialize the RecycleBin"
     echo "  delete:    Move files to RecycleBin"
     echo "  list:      List deleted files (--detailed for details)"
-    echo "  search:    Search for deleted files"
     echo "  restore:   Restore the file by its original name or ID"
+    echo "  search:    Search for deleted files"
     echo "  empty:     Empty the RecycleBin (--force to don't ask for comfirmation)"
+    echo "  show:      Displays overall statistics of the recycle bin"
+    echo "  clean:     Automatically deletes items older than the configured retention period"
     echo
 }
 
