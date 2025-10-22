@@ -46,6 +46,9 @@ main() {
         empty)
             empty_recyclebin "${@:2}"
             ;;
+        show)
+            show_statistics
+            ;;
         *)
             echo "Uso: $0 {init|delete|list|search|restore|empty...}" 
             exit 1
@@ -225,6 +228,7 @@ restore_file() {
     
     local query="$1"
 
+    #Check if a file ID or name was provided
     if [[ -z "${query}" ]]; then
         echo -e "${RED}Error:${NC} Indicates the ID or name of the file to be restored."
         return 1
@@ -243,13 +247,16 @@ restore_file() {
     dest_dir="$(dirname "${original_path}")"
     dest_path="${original_path}"
 
+    #Check if file still exists in the RecycleBin
     if [[ ! -e "${src_path}" ]]; then
         echo -e "${RED}Error:${NC} The file with ID '${id}' no longer exists in the RecycleBin."
         return 1
     fi
 
+    #Recreate original directory if missing
     mkdir -p "${dest_dir}" 2>/dev/null
 
+    # Handle conflict if a file with the same name already exists
     if [[ -e "${dest_path}" ]]; then
         echo -e "${YELLOW}Warning:${NC} Already exists '${dest_path}'."
         echo "Choose a option: (O)verwrite / (R)ename / (C)ancel"
@@ -262,6 +269,7 @@ restore_file() {
         esac
     fi
 
+     # Move the file back to its original location
     if mv "${src_path}" "${dest_path}" 2>>"${LOG_FILE}"; then
         chmod "${permissions}" "${dest_path}" 2>/dev/null
         chown "${owner}" "${dest_path}" 2>/dev/null
@@ -397,7 +405,80 @@ display_help() {
     echo
 }
 
- #show_statistics() { }
+#################################################
+# Function: show_statistics
+# Description: Displays overall statistics of the recycle bin
+# Parameters: None
+# Returns: 0 on success, 1 on failure
+#################################################
+
+show_statistics() {
+    verif_rbin
+
+    if [[ ! -f "$METADATA_FILE" ]]; then
+        echo -e "${RED}Error:${NC} metadata file not found."
+        return 1
+    fi
+
+    echo -e "\n${YELLOW}=== Recycle Bin Statistics ===${NC}\n"
+
+    # Ignore commented lines and blanked lines
+    total_items=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | wc -l)
+
+    if [[ "$total_items" -eq 0 ]]; then
+        echo -e "${YELLOW}Recycle Bin is empty.${NC}"
+        return 0
+    fi
+
+    # Total size in bytes
+    total_size_bytes=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | awk -F',' '
+        {
+            size=$5
+            gsub(/[^0-9.]/,"",size)
+            if ($5 ~ /K/) size *= 1024
+            else if ($5 ~ /M/) size *= 1024*1024
+            else if ($5 ~ /G/) size *= 1024*1024*1024
+            total += size
+        }
+        END {print total}
+    ')
+
+    readable_total=$(numfmt --to=iec-i --suffix=B $total_size_bytes 2>/dev/null)
+
+    # Calculate quoto (MAX_SIZE_MB)
+    quota_mb=$(grep "MAX_SIZE_MB" "$CONFIG_FILE" | cut -d'=' -f2)
+    quota_bytes=$((quota_mb * 1024 * 1024))
+    quota_percent=$(awk -v used="$total_size_bytes" -v quota="$quota_bytes" 'BEGIN {printf "%.2f", (used/quota)*100}')
+
+    # Counter by type
+    file_count=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | awk -F',' '$6 ~ /file/ {count++} END {print count+0}')
+    dir_count=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | awk -F',' '$6 ~ /directory/ {count++} END {print count+0}')
+
+    # Oldest and Newest
+    oldest_line=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | sort -t',' -k4 | head -n 1)
+    newest_line=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | sort -t',' -k4 | tail -n 1)
+
+    oldest_name=$(echo "$oldest_line" | awk -F',' '{print $2}')
+    oldest_date=$(echo "$oldest_line" | awk -F',' '{print $4}')
+    newest_name=$(echo "$newest_line" | awk -F',' '{print $2}')
+    newest_date=$(echo "$newest_line" | awk -F',' '{print $4}')
+
+    # Average Size
+    avg_size=$(awk -v total="$total_size_bytes" -v n="$total_items" 'BEGIN {if (n>0) printf "%.0f", total/n; else print 0}')
+    readable_avg=$(numfmt --to=iec-i --suffix=B $avg_size 2>/dev/null)
+
+    # Formatted
+    echo -e "${GREEN}Total items:           ${NC}${total_items}"
+    echo -e "${GREEN}Total storage used:    ${NC}${readable_total} (${quota_percent}% of quota)"
+    echo -e "${GREEN}Files:                 ${NC}${file_count}"
+    echo -e "${GREEN}Directories:           ${NC}${dir_count}"
+    echo -e "${GREEN}Oldest item:           ${NC}${oldest_name} (${oldest_date})"
+    echo -e "${GREEN}Newest item:           ${NC}${newest_name} (${newest_date})"
+    echo -e "${GREEN}Average file size:     ${NC}${readable_avg}\n"
+
+    return 0
+}
+
 
 
 
