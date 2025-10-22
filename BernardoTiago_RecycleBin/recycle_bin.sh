@@ -56,7 +56,7 @@ main() {
             display_help
             ;;
         *)
-            echo "Uso: $0 {init|delete|list|search|restore|empty...}" 
+            echo "Use: $0 {init|delete|list|search|restore|empty|show}" 
             exit 1
             ;;
     esac
@@ -499,6 +499,77 @@ show_statistics() {
     echo -e "${GREEN}Average file size:     ${NC}${readable_avg}\n"
 
     return 0
+}
+
+#################################################
+# Function: auto_cleanup
+# Description: Automatically deletes items older than the configured retention period
+# Parameters: None
+# Returns: 0 on success, 1 on failure
+#################################################
+
+auto_cleanup() {
+    verif_rbin
+
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo -e "${RED}Error:${NC} Config file not found."
+        return 1
+    fi
+
+    if [[ ! -f "$METADATA_FILE" ]]; then
+        echo -e "${RED}Error:${NC} Metadata file not found."
+        return 1
+    fi
+
+    # Read retention period from config (default 30 days if not defined)
+    RETENTION_DAYS=$(grep "RETENTION_DAYS" "$CONFIG_FILE" | cut -d'=' -f2)
+    if [[ -z "$RETENTION_DAYS" ]]; then
+        RETENTION_DAYS=30
+    fi
+
+    echo -e "\n${YELLOW}=== Auto Cleanup Started ===${NC}"
+    echo -e "Retention period: ${RETENTION_DAYS} days\n"
+
+    local current_time cutoff_time
+    current_time=$(date +%s)
+    cutoff_time=$(date -d "-${RETENTION_DAYS} days" +%s)
+
+    local deleted_count=0
+    local total_size_deleted=0
+
+    # Iterate over metadata entries (ignore header and comments)
+    grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | while IFS=',' read -r id name path deletion_date size type perms owner; do
+        # Convert deletion date to timestamp
+        item_time=$(date -d "$deletion_date" +%s 2>/dev/null || echo 0)
+
+        if (( item_time > 0 && item_time < cutoff_time )); then
+            item_path="${FILES_DIR}/${id}"
+
+            if [[ -e "$item_path" ]]; then
+                # Try to remove the file
+                rm -rf "$item_path" 2>>"$LOG_FILE" && {
+                    deleted_count=$((deleted_count + 1))
+                    # Convert human-readable size to bytes
+                    numeric_size=$(echo "$size" | awk '
+                        /[0-9]+K/ {sub(/K/,"",$1); print $1*1024; next}
+                        /[0-9]+M/ {sub(/M/,"",$1); print $1*1024*1024; next}
+                        /[0-9]+G/ {sub(/G/,"",$1); print $1*1024*1024*1024; next}
+                        /^[0-9]+$/ {print $1*1; next}
+                    ')
+                    total_size_deleted=$((total_size_deleted + numeric_size))
+                    echo -e "${GREEN}Deleted:${NC} '${name}' (older than ${RETENTION_DAYS} days)" | tee -a "$LOG_FILE"
+                    # Remove metadata line
+                    sed -i "/^${id},/d" "$METADATA_FILE"
+                }
+            fi
+        fi
+    done
+
+    readable_size=$(numfmt --to=iec-i --suffix=B $total_size_deleted 2>/dev/null)
+
+    echo -e "\n${GREEN}=== Auto Cleanup Summary ===${NC}"
+    echo -e "Items deleted:        $deleted_count"
+    echo -e "Total space cleared:  ${readable_size}\n"
 }
 
 
