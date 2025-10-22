@@ -355,13 +355,13 @@ verif_rbin() {
 display_help() {
     echo "Uso: $0 {init|delete|list|search|restore|empty}"
     echo
-    echo "Comandos disponíveis:"
-    echo "  init       Inicializa a reciclagem"
-    echo "  delete     Move ficheiro(s) para a reciclagem"
-    echo "  list       Lista ficheiros eliminados (--detailed para detalhes)"
-    echo "  search     Pesquisa ficheiros eliminados"
-    echo "  restore    Restaura ficheiro pelo ID ou nome original"
-    echo "  empty      Esvazia a reciclagem (--force para não pedir confirmação)"
+    echo " HELP: Comandos disponíveis:"
+    echo "  init:      Inicializa a reciclagem"
+    echo "  delete:    Move ficheiro(s) para a reciclagem"
+    echo "  list:      Lista os ficheiros eliminados (--detailed para detalhes)"
+    echo "  search:    Pesquisa os ficheiros eliminados"
+    echo "  restore:   Restaura os ficheiro pelo ID ou nome original"
+    echo "  empty:     Esvazia a reciclagem (--force para não pedir confirmação)"
     echo
 }
 
