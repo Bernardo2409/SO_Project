@@ -27,12 +27,16 @@ main() {
    
     echo -e " Hello $(whoami)! \n"
 
-    case "$1" in
+    case "$1" in    
         init)
             initialize_recyclebin
             ;;
         delete)
-            delete_file "${@:2}"
+            check_quota
+            quota_status=$?
+            if [[ $quota_status -eq 0 ]]; then
+                delete_file "${@:2}"
+            fi
             ;;
         list)
             list_recycled "$2"
@@ -576,9 +580,10 @@ auto_cleanup() {
 # Function: check_quota
 # Description: Check if recycle bin exceeds MAX_SIZE_MB
 # Parameters: 0
-# Returns: 0 on success, 1 on failure
+# Returns: 0 on success, 1 on max size exceeded
 #################################################
 check_quota() {
+
     # Size usage in bytes
     total_size=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | awk -F',' '
         {
@@ -596,10 +601,18 @@ check_quota() {
     #maxSize in bytes
     quota=$((quota_mb * 1024 * 1024))
 
-    if [[ total_size -gt quota ]]; then
+    if [[ total_size -ge quota ]]; then
         echo -e "${RED} !WARNING!: Max size exceeded! ${NC}"
-        echo -e "Trigger auto-clean"
+        echo -e "${YELLOW}Trigger auto-cleanup?${NC} (y/n)"
+        read res
+        if [[ "$res" =~ ^[Yy]$ ]]; then
+            auto_cleanup
+            return 0
+        else
+            return 1
+        fi
     fi
+    return 0
 }
 
 
