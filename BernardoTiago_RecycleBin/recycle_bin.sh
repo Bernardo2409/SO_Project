@@ -46,6 +46,15 @@ main() {
         empty)
             empty_recyclebin "${@:2}"
             ;;
+        help)
+            display_help
+            ;;
+        -help)
+            display_help
+            ;;
+        --help)
+            display_help
+            ;;
         *)
             echo "Uso: $0 {init|delete|list|search|restore|empty...}" 
             exit 1
@@ -285,6 +294,7 @@ restore_file() {
 search_recycled() {
     verif_rbin
     local pattern="$1"
+
 
     if [[ -z "${pattern}" ]]; then
         echo -e "${YELLOW}Use:${NC} $0 search <term>"
