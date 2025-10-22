@@ -46,6 +46,17 @@ assert_fail() {
  
  
 # Test Cases 
+
+reset_metadata() {
+    verif_rbin
+    echo -e "${YELLOW}Resetting Recycle Bin metadata...${NC}"
+    rm -rf "${FILES_DIR:?}"/*
+    head -n 2 "${METADATA_FILE}" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "${METADATA_FILE}"
+    echo -e "${GREEN}Recycle Bin metadata cleared.${NC}"
+}
+
+
+
 test_initialization() { 
     echo "=== Test: Initialization ===" 
     setup 
@@ -90,6 +101,7 @@ echo "========================================="
 echo "  Recycle Bin Test Suite" 
 echo "=========================================" 
  
+reset_metadata
 test_initialization 
 test_delete_file 
 test_list_empty 
