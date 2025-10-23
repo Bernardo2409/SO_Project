@@ -181,6 +181,42 @@ test_restore_file() {
     assert_success "Restore file" 
     [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
 }
+# Test: Delete Empty Directory
+test_delete_empty_directory() {
+    echo -e "\n=== Test: Delete Empty Directory ==="
+    setup
+
+    # Create empty directory
+    mkdir "$TEST_DIR/empty_dir"
+
+    # Verify directory was created and is empty
+    if [[ ! -d "$TEST_DIR/empty_dir" || -n "$(ls -A "$TEST_DIR/empty_dir")" ]]; then
+        echo -e "${RED}✗ FAIL${NC}: Failed to create empty directory"
+        ((FAIL++))
+        return 1
+    fi
+
+    # Delete the empty directory
+    $SCRIPT delete "$TEST_DIR/empty_dir" > /dev/null 2>&1
+    exit_code=$?
+
+    # Verify: directory removed from original location
+    if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/empty_dir" ]]; then
+        # Verify if the directory is in metadata (should have type "directory")
+        dir_entry=$(grep -E ",empty_dir," "$HOME/BernardoTiago_RecycleBin/metadata.db")
+        if [[ -n "$dir_entry" && $(echo "$dir_entry" | cut -d',' -f6) == *"directory"* ]]; then
+            echo -e "${GREEN}✓ PASS${NC}: Empty directory deleted and correctly registered in Recycle Bin"
+            ((PASS++))
+        else
+            echo -e "${RED}✗ FAIL${NC}: Directory not properly registered in metadata"
+            ((FAIL++))
+        fi
+    else
+        echo -e "${RED}✗ FAIL${NC}: Failed to delete empty directory"
+        echo "  Exit code: $exit_code"
+        ((FAIL++))
+    fi
+}
  
 # Run all tests 
 echo "=========================================" 
@@ -194,6 +230,7 @@ test_empty_recyclebin
 test_delete_multiple_files
 test_list_empty 
 test_restore_file 
+test_delete_empty_directory 
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
@@ -203,7 +240,7 @@ bash "$SCRIPT" empty --force > /dev/null 2>&1
 teardown 
 
 echo "=========================================" 
-echo "Results: $PASS passed, $FAIL failed" 
+echo "Results: $PASS passed, $FAIL failed"
 echo "========================================="
 
 [ $FAIL -eq 0 ] && exit 0 || exit 1 
