@@ -227,28 +227,28 @@ list_recycled() {
 
     echo -e "${YELLOW}=== Files on Recycle Bin ===${NC}"
 
-    # Conta quantas linhas válidas existem (ignora cabeçalho e comentários)
+    # Valid lines??
     local total_items
     total_items=$(grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | wc -l)
 
-    # Se não houver ficheiros
+    # If there are no files
     if [[ "$total_items" -eq 0 ]]; then
         echo -e "${YELLOW}Recycle Bin is empty.${NC}"
         return 0
     fi
 
-    # Se houver ficheiros, mostra quantos há
+    # Count how many files are
     echo -e "${GREEN}${total_items}${NC} file(s) found in Recycle Bin:"
     echo
 
-    # Mostrar detalhes ou resumo
+    # Show details
     if [[ "$1" == "--detailed" ]]; then
         grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | while IFS=',' read -r id name path date size type perms owner; do
             printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
                 "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
         done
     else
-        # Formato simples para compatibilidade com testes
+        # Simple format
         grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | while IFS=',' read -r id name path date size _; do
             printf "%s %s %s %s\n" "${id}" "${name}" "${date}" "${size}"
         done
