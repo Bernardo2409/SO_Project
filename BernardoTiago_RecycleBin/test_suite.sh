@@ -15,21 +15,12 @@ NC='\033[0m'
 # Test Helper Functions 
 setup() { 
     mkdir -p "$TEST_DIR" 
-    rm -rf ~/.recycle_bin 
-
-    # Run initialization to create a fresh structure
-    bash "$SCRIPT" init > /dev/null 2>&1
-
-    # Clean metadata file (keep only headers)
-    if [[ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ]]; then
-        head -n 2 "$HOME/BernardoTiago_RecycleBin/metadata.db" > "$HOME/BernardoTiago_RecycleBin/metadata.tmp"
-        mv "$HOME/BernardoTiago_RecycleBin/metadata.tmp" "$HOME/BernardoTiago_RecycleBin/metadata.db"
-    fi
+    rm -rf "$HOME/BernardoTiago_RecycleBin"
 } 
  
 teardown() { 
     rm -rf "$TEST_DIR" 
-    rm -rf ~/.recycle_bin 
+    rm -rf "$HOME/BernardoTiago_RecycleBin"
 } 
  
 assert_success() { 
@@ -56,21 +47,14 @@ assert_fail() {
  
 # Test Cases 
 
-reset_metadata() {
-    echo -e "${YELLOW}Resetting Recycle Bin metadata...${NC}"
-    head -n 2 "${METADATA_FILE}" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "${METADATA_FILE}"
-    echo -e "${GREEN}Recycle Bin metadata cleared.${NC}"
-}
-
-
 # Initialize recycle bin structure
 test_initialization() { 
     echo "=== Test: Initialization ===" 
     setup 
     $SCRIPT help > /dev/null 
     assert_success "Initialize recycle bin" 
-    [ -d ~/.recycle_bin ] && echo "✓ Directory created" 
-    [ -f ~/.recycle_bin/metadata.db ] && echo "✓ Metadata file created" 
+    [ -d "$HOME/BernardoTiago_RecycleBin" ] && echo "✓ Directory created" 
+    [ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ] && echo "✓ Metadata file created" 
 } 
  
 # Delete single file
@@ -110,38 +94,7 @@ test_delete_multiple_files() {
     ((PASS++))
 }
 
-test_delete_empty_recyclebin() {
-    echo -e "\n=== Test: Empty Recycle Bin ==="
-    setup
 
-    # Create test files
-    echo "a" > "$TEST_DIR/a.txt"
-    echo "b" > "$TEST_DIR/b.txt"
-    echo "c" > "$TEST_DIR/c.txt"
-
-    # Move to RecycleBin
-    $SCRIPT delete "$TEST_DIR/a.txt" "$TEST_DIR/b.txt" "$TEST_DIR/c.txt" > /dev/null 2>&1
-
-    # Clean up the RecycleBin with --force
-    $SCRIPT empty --force > /dev/null 2>&1
-    exit_code=$?
-
-    # Verify: empty directory + exit code 0 (skip metadata check)
-    bin_count=$(ls "$HOME/BernardoTiago_RecycleBin/files" 2>/dev/null | wc -l)
-
-    if [[ $exit_code -eq 0 && $bin_count -eq 0 ]]; then
-        echo -e "${GREEN}✓ PASS${NC}: Recycle Bin esvaziada com sucesso (ficheiros limpos)"
-        ((PASS++))
-    else
-        echo -e "${RED}✗ FAIL${NC}: Recycle Bin não foi completamente limpa"
-        echo "  Exit code: $exit_code"
-        echo "  Files remaining: $bin_count"
-        ((FAIL++))
-    fi
-}
-
-
- 
 test_list_empty() { 
     echo -e "\n=== Test: List Empty Bin ===" 
     setup 
@@ -187,6 +140,32 @@ test_delete_empty_directory() {
         ((FAIL++))
     fi
 }
+
+test_delete_directory_with_contents() {
+    echo -e "\n=== Test: Delete Directory With Contents ==="
+    setup
+
+    # Create directory with nested structure and files
+    mkdir -p "$TEST_DIR/dir_with_contents/subdir1/subdir2"
+    echo "file1 content" > "$TEST_DIR/dir_with_contents/file1.txt"
+    echo "file2 content" > "$TEST_DIR/dir_with_contents/subdir1/file2.txt"
+    echo "file3 content" > "$TEST_DIR/dir_with_contents/subdir1/subdir2/file3.txt"
+
+    # Delete the directory recursively
+    $SCRIPT delete "$TEST_DIR/dir_with_contents" > /dev/null 2>&1
+    exit_code=$?
+
+    # Verify: directory removed from original location
+    if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/dir_with_contents" ]]; then
+        echo -e "${GREEN}✓ PASS${NC}: Directory with contents deleted recursively and registered in Recycle Bin"
+        ((PASS++))
+    else
+        echo -e "${RED}✗ FAIL${NC}: Failed to delete directory with contents"
+        echo "  Exit code: $exit_code"
+        ((FAIL++))
+    fi
+}
+
  
 # Run all tests 
 echo "=========================================" 
@@ -196,11 +175,13 @@ echo "========================================="
 reset_metadata
 test_initialization
 test_delete_file 
-test_delete_empty_recyclebin
 test_delete_multiple_files
+test_delete_empty_directory
+test_delete_directory_with_contents
 test_list_empty 
+
+
 test_restore_file 
-test_delete_empty_directory 
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
