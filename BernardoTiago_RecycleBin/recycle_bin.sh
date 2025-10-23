@@ -15,6 +15,8 @@ METADATA_FILE="$RECYCLE_BIN_DIR/metadata.db"
 CONFIG_FILE="$RECYCLE_BIN_DIR/config"
 LOG_FILE="$RECYCLE_BIN_DIR/recyclebin.log"
 
+
+
 TEST_FILE="./TESTING.md"
 
 # Color codes for output
@@ -32,6 +34,7 @@ main() {
         echo -e "${YELLOW}Recycle Bin not found. Initializing automatically...${NC}"
         initialize_recyclebin
     fi
+    
 
     case "$1" in
         delete)
@@ -139,6 +142,13 @@ delete_file() {
         }
     fi
 
+    # Safety checks
+    if [[ ! -f "$METADATA_FILE" ]]; then
+        echo -e "${YELLOW}Metadata file missing, reinitializing Recycle Bin...${NC}"
+        initialize_recyclebin
+    fi
+
+
     local success=0
 
     for item in "$@"; do
@@ -186,13 +196,18 @@ delete_file() {
         owner=$(stat -c %U:%G "${item}" 2>/dev/null)
 
         # Move file/folder
-        if ! mv "${item}" "${dest_path}" 2>>"$LOG_FILE"; then
+        if mv "${item}" "${dest_path}" 2>>"$LOG_FILE"; then
+            if echo "${id},${original_name},${original_path},${deletion_date},${file_size},${file_type},${permissions},${owner}" >> "${METADATA_FILE}"; then
+                echo -e "${GREEN}Success:${NC} '${original_name}' moved to RecycleBin (ID: ${id})." | tee -a "${LOG_FILE}"
+            else
+                echo -e "${RED}Error:${NC} Failed to record metadata for '${original_name}'." | tee -a "${LOG_FILE}"
+                success=1
+            fi
+        else
             echo -e "${RED}Error:${NC} Failed to move '${item}'." | tee -a "${LOG_FILE}"
             success=1
-        else
-            echo "${id},${original_name},${original_path},${deletion_date},${file_size},${file_type},${permissions},${owner}" >> "${METADATA_FILE}"
-            echo -e "${GREEN}Success:${NC} '${original_name}' moved to RecycleBin (ID: ${id})." | tee -a "${LOG_FILE}"
         fi
+
     done
 
     return $success

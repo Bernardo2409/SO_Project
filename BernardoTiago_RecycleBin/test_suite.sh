@@ -111,15 +111,17 @@ test_delete_multiple_files() {
         return 1
     fi
 
-    # Verifica se os ficheiros estão na reciclagem
-    BIN_DIR="$HOME/BernardoTiago_RecycleBin/files"
-    BIN_COUNT=$(ls "$BIN_DIR" 2>/dev/null | grep -E 'file[123]' | wc -l)
+    # Verificar no metadata se os 3 ficheiros foram registados
+    BIN_COUNT=$(grep -cE ",file[123]\.txt," "$HOME/BernardoTiago_RecycleBin/metadata.db")
 
-    if [[ "$BIN_COUNT" -ne 3 ]]; then
-        echo -e "${RED}✗ FAIL${NC}: Nem todos os ficheiros foram movidos para a reciclagem"
+    if [[ "$BIN_COUNT" -eq 3 ]]; then
+        echo -e "${GREEN}✓ PASS${NC}: Todos os ficheiros foram movidos e registados na reciclagem"
+        ((PASS++))
+    else
+        echo -e "${RED}✗ FAIL${NC}: Esperava 3 ficheiros na reciclagem, mas encontrei ${BIN_COUNT}"
         ((FAIL++))
-        return 1
     fi
+
 
     # Se chegou aqui, tudo correu bem
     echo -e "${GREEN}✓ PASS${NC}: Múltiplos ficheiros eliminados com sucesso num único comando"
@@ -186,7 +188,7 @@ test_restore_file() {
 echo "=========================================" 
 echo "  Recycle Bin Test Suite" 
 echo "=========================================" 
- 
+
 reset_metadata
 test_initialization
 test_delete_file 
@@ -195,7 +197,9 @@ test_delete_multiple_files
 test_list_empty 
 test_restore_file 
 
- 
+ # Garantir ambiente limpo antes de começar os testes
+bash "$SCRIPT" empty --force > /dev/null 2>&1
+
 # Add more test functions here 
  
 teardown 
