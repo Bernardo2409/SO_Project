@@ -89,29 +89,29 @@ test_delete_multiple_files() {
     echo -e "\n=== Test: Delete Multiple Files ==="
     setup
 
-    # Cria ficheiros de teste
+    # Create test files
     echo "file1" > "$TEST_DIR/file1.txt"
     echo "file2" > "$TEST_DIR/file2.txt"
     echo "file3" > "$TEST_DIR/file3.txt"
 
-    # Verifica criação
+    # Verify if they were created
     if [[ ! -f "$TEST_DIR/file1.txt" || ! -f "$TEST_DIR/file2.txt" || ! -f "$TEST_DIR/file3.txt" ]]; then
         echo -e "${RED}✗ FAIL${NC}: Falha ao criar ficheiros de teste"
         ((FAIL++))
         return 1
     fi
 
-    # Executa o comando para apagar vários ficheiros de uma só vez
+    # Delete all the files on the same time
     $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" > /dev/null 2>&1
 
-    # Verifica se foram removidos do diretório original
+    # Verify if they were deleted
     if [[ -f "$TEST_DIR/file1.txt" || -f "$TEST_DIR/file2.txt" || -f "$TEST_DIR/file3.txt" ]]; then
         echo -e "${RED}✗ FAIL${NC}: Um ou mais ficheiros ainda existem no diretório original"
         ((FAIL++))
         return 1
     fi
 
-    # Verificar no metadata se os 3 ficheiros foram registados
+    # Verify if the files are in metadata
     BIN_COUNT=$(grep -cE ",file[123]\.txt," "$HOME/BernardoTiago_RecycleBin/metadata.db")
 
     if [[ "$BIN_COUNT" -eq 3 ]]; then
@@ -123,7 +123,7 @@ test_delete_multiple_files() {
     fi
 
 
-    # Se chegou aqui, tudo correu bem
+    # Sucess?????????????????????????????
     echo -e "${GREEN}✓ PASS${NC}: Múltiplos ficheiros eliminados com sucesso num único comando"
     ((PASS++))
 }
@@ -132,19 +132,19 @@ test_empty_recyclebin() {
     echo -e "\n=== Test: Empty Recycle Bin ==="
     setup
 
-    # Cria ficheiros de teste
+    # Create test files
     echo "a" > "$TEST_DIR/a.txt"
     echo "b" > "$TEST_DIR/b.txt"
     echo "c" > "$TEST_DIR/c.txt"
 
-    # Move para a reciclagem
+    # Move to RecycleBin
     $SCRIPT delete "$TEST_DIR/a.txt" "$TEST_DIR/b.txt" "$TEST_DIR/c.txt" > /dev/null 2>&1
 
-    # Esvazia a reciclagem com --force
+    # Clean up the RecycleBin with --force
     $SCRIPT empty --force > /dev/null 2>&1
     exit_code=$?
 
-    # Verifica o estado final: diretório vazio + metadata limpo + exit code 0
+    # Verify: empyt directory + clean metadata + exit code 0
     bin_count=$(ls "$HOME/BernardoTiago_RecycleBin/files" 2>/dev/null | wc -l)
     meta_lines=$(grep -vE '^\s*$' "$HOME/BernardoTiago_RecycleBin/metadata.db" | wc -l)
 
@@ -159,8 +159,6 @@ test_empty_recyclebin() {
         ((FAIL++))
     fi
 }
-
-
 
 
  
@@ -197,7 +195,7 @@ test_delete_multiple_files
 test_list_empty 
 test_restore_file 
 
- # Garantir ambiente limpo antes de começar os testes
+# Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
 
 # Add more test functions here 

@@ -275,7 +275,7 @@ restore_file() {
         return 1
     fi
 
-    # Procura por ID exato primeiro, depois por nome
+    # Search for the ID and Original name
     local entry
     entry=$(grep -E "^${query}," "$METADATA_FILE" 2>/dev/null || grep -E ",${query}," "$METADATA_FILE" 2>/dev/null | head -n1)
 
@@ -290,30 +290,30 @@ restore_file() {
     dest_dir="$(dirname "$original_path")"
     local dest_path="$original_path"
 
-    # Verifica se o arquivo ainda existe na reciclagem
+    # Verify if file exists in RecycleBin
     if [[ ! -e "$src_path" ]]; then
         echo -e "${RED}Error:${NC} The file '${original_name}' no longer exists in the recycle bin."
-        # Remove entrada órfã dos metadados
+        
         sed -i "/^${id},/d" "$METADATA_FILE"
         return 1
     fi
 
-    # Cria diretório de destino se necessário
+    # Create directs if needed
     mkdir -p "$dest_dir" 2>/dev/null
 
-    # Se já existir ficheiro com o mesmo nome, renomeia automaticamente
+    # If the file as the same name, rename automatically
     if [[ -e "$dest_path" ]]; then
         dest_path="${dest_path}_restored_$(date +%s)"
         echo -e "${YELLOW}Warning:${NC} File already exists. Restoring as '$(basename "$dest_path")'."
     fi
 
-    # Restaura o arquivo
+    # Restaure the file
     if mv "$src_path" "$dest_path" 2>>"$LOG_FILE"; then
-        # Restaura permissões originais
+        # Restaure all original permissions
         chmod "$permissions" "$dest_path" 2>/dev/null || true
         chown "$owner" "$dest_path" 2>/dev/null || true
         
-        # Remove entrada dos metadados
+        # Remove all metadata
         sed -i "/^${id},/d" "$METADATA_FILE"
         
         echo -e "${GREEN}Success:${NC} '${original_name}' restored to '${dest_path}'."
