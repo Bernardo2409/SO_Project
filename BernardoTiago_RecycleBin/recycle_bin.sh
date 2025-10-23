@@ -132,6 +132,13 @@ delete_file() {
         initialize_recyclebin
     fi
 
+    if [[ ! -d "$FILES_DIR" ]]; then
+        mkdir -p "$FILES_DIR" || {
+            echo -e "${RED}Error:${NC} Failed to create files directory: $FILES_DIR" | tee -a "$LOG_FILE"
+            return 1
+        }
+    fi
+
     local success=0
 
     for item in "$@"; do
@@ -173,18 +180,18 @@ delete_file() {
         original_name="$(basename "${item}")"
         original_path="$(realpath "${item}")"
         deletion_date="$(date '+%Y-%m-%d %H:%M:%S')"
-        file_size=$(du -sh "${item}" 2>/dev/null | cut -f1)
+        file_size=$(stat -c%s "${item}" 2>/dev/null) # tamanho em bytes (sem vírgulas nem letras)
         file_type=$(file -b "${item}")
         permissions=$(stat -c %a "${item}" 2>/dev/null)
         owner=$(stat -c %U:%G "${item}" 2>/dev/null)
 
         # Move file/folder
-        if mv "${item}" "${dest_path}"; then
-            echo "${id},${original_name},${original_path},${deletion_date},${file_size},${file_type},${permissions},${owner}" >> "${METADATA_FILE}"
-            echo -e "${GREEN}Success:${NC} '${original_name}' moved to RecycleBin (ID: ${id})." | tee -a "${LOG_FILE}"
-        else
+        if ! mv "${item}" "${dest_path}" 2>>"$LOG_FILE"; then
             echo -e "${RED}Error:${NC} Failed to move '${item}'." | tee -a "${LOG_FILE}"
             success=1
+        else
+            echo "${id},${original_name},${original_path},${deletion_date},${file_size},${file_type},${permissions},${owner}" >> "${METADATA_FILE}"
+            echo -e "${GREEN}Success:${NC} '${original_name}' moved to RecycleBin (ID: ${id})." | tee -a "${LOG_FILE}"
         fi
     done
 
