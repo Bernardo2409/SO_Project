@@ -216,7 +216,9 @@ test_empty_recycle() {
     # Deletar todos os arquivos de uma vez
     $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
 
-    empty_recyclebin
+    $SCRIPT empty
+    
+
 
     # Verificar se a lixeira foi esvaziada corretamente
     if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
