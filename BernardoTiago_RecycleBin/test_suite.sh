@@ -477,6 +477,63 @@ test_handle_filenames_wSpecialChars() {
 }
 
 
+test_handle_long_filenames() {
+    echo -e "\n=== Test: Handle very long filenames (255 characters) ==="
+
+    teardown
+    setup
+
+    # Create a filename with exactly 255 characters (max filename length on most systems)
+    LONG_FILENAME="long_filename_$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 240).txt"
+    echo "test content" > "$TEST_DIR/$LONG_FILENAME"
+
+    # Check that the file was created
+    if [[ -f "$TEST_DIR/$LONG_FILENAME" ]]; then
+        echo -e "${GREEN}✓ PASS${NC}: Long filename created successfully"
+        ((PASS++))
+    else
+        echo -e "${RED}✗ FAIL${NC}: Long filename creation failed"
+        ((FAIL++))
+        return 1
+    fi
+
+    # Delete the file with the long filename
+    $SCRIPT delete "$TEST_DIR/$LONG_FILENAME"
+
+    # List the files in the recycle bin to confirm deletion
+    deleted_files=$($SCRIPT list)
+
+    # Escape special characters for grep to handle them correctly
+    ESCAPED_LONG_FILENAME=$(echo "$LONG_FILENAME" | sed 's/[]\/$*.^[]/\\&/g')
+
+    # Ensure the file is in the recycle bin by checking the list of deleted files
+    if echo "$deleted_files" | grep -q "$ESCAPED_LONG_FILENAME"; then
+        echo -e "${GREEN}✓ PASS${NC}: Long filename deleted successfully"
+        ((PASS++))
+    else
+        echo -e "${RED}✗ FAIL${NC}: Long filename not found in the recycle bin"
+        ((FAIL++))
+        return 1
+    fi
+
+    # Attempt to restore the file with the long filename
+    $SCRIPT restore "$LONG_FILENAME"
+    
+    # The file should be restored to its original path or a default location.
+    # Let's assume it is restored back to the TEST_DIR, as that's where the original file was.
+    restored_file="$TEST_DIR/$LONG_FILENAME"
+
+    # Verify if the file was restored (check TEST_DIR for restored file)
+    if [[ -f "$restored_file" ]]; then
+        echo -e "${GREEN}✓ PASS${NC}: Long filename restored successfully as $restored_file"
+        assert_success "Restore file with long filename"
+    else
+        echo -e "${RED}✗ FAIL${NC}: File with long filename was not restored"
+        assert_fail "Restore file with long filename"
+    fi
+}
+
+
 
 
  
@@ -508,7 +565,8 @@ test_delete_file_without_permissions
 test_restore_when_original_location_has_same_filename
 test_restore_with_unexistent_id
 test_handle_filenames_wSpaces
-test_handle_filenames_wSpecialChars 
+test_handle_filenames_wSpecialChars
+test_handle_long_filenames 
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
