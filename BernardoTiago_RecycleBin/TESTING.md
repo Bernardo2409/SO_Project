@@ -37,3 +37,14 @@ Success: 'test2.txt' moved to RecycleBin (ID: 1761263749221991032_jvmsjq).
 Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 **Status:** x Pass ☐ Fail
 **Screenshots:** ![TestCase1](/BernardoTiago_RecycleBin/screenshots/TestCase2.png)
+
+### Test Case 3: List Empty
+1. Make sure you have no files in the recycle_bin
+2. Run `./recycle_bin list`
+
+**Expected Result:**
+- List empty Recycle Bin
+
+**Actual Result:** [Recycle Bin is empty.]
+**Status:** x Pass ☐ Fail
+**Screenshots:** ![TestCase1](/BernardoTiago_RecycleBin/screenshots/TestCase3.png)
