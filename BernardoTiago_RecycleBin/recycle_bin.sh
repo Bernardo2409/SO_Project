@@ -147,98 +147,6 @@ delete_file() {
         echo -e "${YELLOW}Metadata file missing, reinitializing Recycle Bin...${NC}"
         initialize_recyclebin
     fi
-delete_file() {
-    # Auto-initialize Recycle Bin if missing
-    if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        initialize_recyclebin
-    fi
-
-    if [[ ! -d "$FILES_DIR" ]]; then
-        mkdir -p "$FILES_DIR" || {
-            echo -e "${RED}Error:${NC} Failed to create files directory: $FILES_DIR" | tee -a "$LOG_FILE"
-            return 1
-        }
-    fi
-
-    # Safety checks
-    if [[ ! -f "$METADATA_FILE" ]]; then
-        echo -e "${YELLOW}Metadata file missing, reinitializing Recycle Bin...${NC}"
-        initialize_recyclebin
-    fi
-
-    local success=0
-
-    for item in "$@"; do
-        # Validate existence
-        if [[ ! -e "$item" ]]; then
-            echo "Error: '${item}' doesn't exist." | tee -a "$LOG_FILE"
-            success=1
-            continue
-        fi
-
-        # Prevent deletion of the recycle bin itself
-        if [[ "$item" == "${RECYCLE_BIN_DIR}"* ]]; then
-            echo "Error: Cannot delete the Recycle Bin itself." | tee -a "$LOG_FILE"
-            success=1
-            continue
-        fi
-
-        # Security checks
-        if [[ "$item" == *".."* || -L "$item" ]]; then
-            echo "Error: Insecure or symbolic path '${item}'." | tee -a "$LOG_FILE"
-            success=1
-            continue
-        fi
-
-        # Check permissions
-        if [[ ! -r "$item" || ! -w "$item" ]]; then
-            echo "Error: Insufficient permissions for '${item}'." | tee -a "$LOG_FILE"
-            success=1
-            continue
-        fi
-
-        # Truncate or hash filenames longer than 255 characters
-        local original_name="$(basename "$item")"
-        local original_path="$(realpath "$item")"
-
-        if [[ ${#original_name} -gt 255 ]]; then
-            # Hash the filename if it's too long
-            original_name=$(echo -n "$original_name" | sha256sum | awk '{print $1}')
-            echo -e "${YELLOW}Warning:${NC} Filename too long, using hash: $original_name"
-        fi
-
-        # Generate unique ID
-        local id
-        id="$(date +%s%N)_$(tr -dc 'a-z0-9' </dev/urandom | head -c 6)"
-        local dest_path="${FILES_DIR}/${id}"
-
-        # Collect metadata
-        local deletion_date file_size file_type permissions owner
-        deletion_date="$(date '+%Y-%m-%d %H:%M:%S')"
-        file_size=$(stat -c%s "$item" 2>/dev/null)  # size in bytes
-        file_type=$(file -b "$item")
-        permissions=$(stat -c %a "$item" 2>/dev/null)
-        owner=$(stat -c %U:%G "$item" 2>/dev/null)
-
-        # Move file/folder to recycle bin
-        if mv "$item" "$dest_path" 2>>"$LOG_FILE"; then
-            # Safely write metadata with printf (quotes filenames with special chars)
-            printf '%s,"%s","%s","%s",%s,"%s",%s,%s\n' \
-                "$id" "$original_name" "$original_path" "$deletion_date" "$file_size" "$file_type" "$permissions" "$owner" >> "$METADATA_FILE" || {
-                echo -e "${RED}Error:${NC} Failed to record metadata for '${original_name}'." | tee -a "$LOG_FILE"
-                success=1
-            }
-
-            echo -e "${GREEN}Success:${NC} '${original_name}' moved to RecycleBin (ID: ${id})." | tee -a "$LOG_FILE"
-        else
-            echo -e "${RED}Error:${NC} Failed to move '${item}'." | tee -a "$LOG_FILE"
-            success=1
-        fi
-
-    done
-
-    return $success
-}
 
 
     local success=0
@@ -387,6 +295,7 @@ restore_file() {
     local entry
     entry=$(grep -F -- "${query}," "$METADATA_FILE" 2>/dev/null || grep -F -- ",${query}," "$METADATA_FILE" 2>/dev/null | head -n1)
 
+
     if [[ -z "$entry" ]]; then
         echo -e "${RED}Error:${NC} No file found with ID or name '${query}'."
         return 1
@@ -398,11 +307,6 @@ restore_file() {
     dest_dir="$(dirname "$original_path")"
     local dest_path="$original_path"
 
-    # If filename was hashed, use the original filename from metadata
-    if [[ ${#original_name} -gt 255 ]]; then
-        original_name="$(grep -F -- "$original_name," "$METADATA_FILE" | cut -d',' -f2)"
-    fi
-
     # Verify if file exists in RecycleBin
     if [[ ! -e "$src_path" ]]; then
         echo -e "${RED}Error:${NC} The file '${original_name}' no longer exists in the recycle bin."
@@ -411,22 +315,22 @@ restore_file() {
         return 1
     fi
 
-    # Create directories if needed
+    # Create directs if needed
     mkdir -p "$dest_dir" 2>/dev/null
 
-    # If the file has the same name, rename automatically
+    # If the file as the same name, rename automatically
     if [[ -e "$dest_path" ]]; then
         dest_path="${dest_path}_restored_$(date +%s)"
         echo -e "${YELLOW}Warning:${NC} File already exists. Restoring as '$(basename "$dest_path")'."
     fi
 
-    # Restore the file
+    # Restaure the file
     if mv "$src_path" "$dest_path" 2>>"$LOG_FILE"; then
-        # Restore original permissions
+        # Restaure all original permissions
         chmod "$permissions" "$dest_path" 2>/dev/null || true
         chown "$owner" "$dest_path" 2>/dev/null || true
         
-        # Remove metadata
+        # Remove all metadata
         sed -i "/^${id},/d" "$METADATA_FILE"
         
         echo -e "${GREEN}Success:${NC} '${original_name}' restored to '${dest_path}'."
@@ -436,7 +340,6 @@ restore_file() {
         return 1   
     fi
 }
-
 
 
 

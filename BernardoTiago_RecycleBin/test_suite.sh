@@ -1,582 +1,622 @@
-#!/bin/bash 
- 
-# Test Suite for Recycle Bin System 
- 
-SCRIPT="./recycle_bin.sh" 
-TEST_DIR="test_data" 
-PASS=0 
-FAIL=0 
- 
-# Colors 
-GREEN='\033[0;32m' 
-RED='\033[0;31m' 
-NC='\033[0m' 
- 
-# Test Helper Functions 
-setup() { 
-    mkdir -p "$TEST_DIR" 
-    rm -rf "$HOME/BernardoTiago_RecycleBin"
-} 
- 
-teardown() { 
-    rm -rf "$TEST_DIR" 
-    rm -rf "$HOME/BernardoTiago_RecycleBin"
-} 
- 
-assert_success() { 
-    if [ $? -eq 0 ]; then 
-        echo -e "${GREEN}✓ PASS${NC}: $1" 
-        ((PASS++)) 
-    else 
-        echo -e "${RED}✗ FAIL${NC}: $1" 
-        ((FAIL++)) 
-    fi 
-} 
- 
-assert_fail() { 
-    if [ $? -ne 0 ]; then 
-        echo -e "${GREEN}✓ PASS${NC}: $1" 
-        ((PASS++)) 
-    else 
-        echo -e "${RED}✗ FAIL${NC}: $1" 
-        ((FAIL++)) 
-    fi 
-} 
- 
- 
- 
-# Test Cases 
+    #!/bin/bash 
+    
+    # Test Suite for Recycle Bin System 
+    
+    SCRIPT="./recycle_bin.sh" 
+    TEST_DIR="test_data" 
+    PASS=0 
+    FAIL=0 
+    
+    # Colors 
+    GREEN='\033[0;32m' 
+    RED='\033[0;31m' 
+    NC='\033[0m' 
+    
+    # Test Helper Functions 
+    setup() { 
+        mkdir -p "$TEST_DIR" 
+        rm -rf "$HOME/BernardoTiago_RecycleBin"
+    } 
+    
+    teardown() { 
+        rm -rf "$TEST_DIR" 
+        rm -rf "$HOME/BernardoTiago_RecycleBin"
+    } 
+    
+    assert_success() { 
+        if [ $? -eq 0 ]; then 
+            echo -e "${GREEN}✓ PASS${NC}: $1" 
+            ((PASS++)) 
+        else 
+            echo -e "${RED}✗ FAIL${NC}: $1" 
+            ((FAIL++)) 
+        fi 
+    } 
+    
+    assert_fail() { 
+        if [ $? -ne 0 ]; then 
+            echo -e "${GREEN}✓ PASS${NC}: $1" 
+            ((PASS++)) 
+        else 
+            echo -e "${RED}✗ FAIL${NC}: $1" 
+            ((FAIL++)) 
+        fi 
+    } 
+    
+    
+    
+    # Test Cases 
 
-# Initialize recycle bin structure
-test_initialization() { 
-    echo "=== Test: Initialization ===" 
-    setup 
-    $SCRIPT help > /dev/null 
-    assert_success "Initialize recycle bin" 
-    [ -d "$HOME/BernardoTiago_RecycleBin" ] && echo "✓ Directory created" 
-    [ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ] && echo "✓ Metadata file created" 
-} 
- 
-# Delete single file
-test_delete_file() { 
-    echo -e "\n=== Test: Delete File ===" 
-    setup 
-    echo "test content" > "$TEST_DIR/test.txt" 
-    $SCRIPT delete "$TEST_DIR/test.txt" 
-    assert_success "Delete existing file" 
-    [ ! -f "$TEST_DIR/test.txt" ] && echo "✓ File removed from original 
-location" 
-} 
+    # Initialize recycle bin structure
+    test_initialization() { 
+        echo "=== Test: Initialization ===" 
+        setup 
+        $SCRIPT help > /dev/null 
+        assert_success "Initialize recycle bin" 
+        [ -d "$HOME/BernardoTiago_RecycleBin" ] && echo "✓ Directory created" 
+        [ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ] && echo "✓ Metadata file created" 
+    } 
+    
+    # Delete single file
+    test_delete_file() { 
+        echo -e "\n=== Test: Delete File ===" 
+        setup 
+        echo "test content" > "$TEST_DIR/test.txt" 
+        $SCRIPT delete "$TEST_DIR/test.txt" 
+        assert_success "Delete existing file" 
+        [ ! -f "$TEST_DIR/test.txt" ] && echo "✓ File removed from original 
+    location" 
+    } 
 
-# Delete multiple files in one command
-test_delete_multiple_files() {
-    echo -e "\n=== Test: Delete Multiple Files ==="
-    setup
+    # Delete multiple files in one command
+    test_delete_multiple_files() {
+        echo -e "\n=== Test: Delete Multiple Files ==="
+        setup
 
-    # Create test files
-    echo "file1" > "$TEST_DIR/file1.txt"
-    echo "file2" > "$TEST_DIR/file2.txt"
-    echo "file3" > "$TEST_DIR/file3.txt"
-
-
-    # Delete all the files on the same time
-    $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
-
-    # Verify if they were deleted
-    if [[ -f "$TEST_DIR/file1.txt" || -f "$TEST_DIR/file2.txt" || -f "$TEST_DIR/file3.txt" ]]; then
-        echo -e "${RED}✗ FAIL${NC}: One or more files in original directory"
-        return 1
-    fi
-
-    # Sucess?????????????????????????????
-    echo -e "${GREEN}✓ PASS${NC}: Multiple files deleted with sucess"
-    assert_success
-}
+        # Create test files
+        echo "file1" > "$TEST_DIR/file1.txt"
+        echo "file2" > "$TEST_DIR/file2.txt"
+        echo "file3" > "$TEST_DIR/file3.txt"
 
 
+        # Delete all the files on the same time
+        $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
 
-# Test: Delete Empty Directory
-test_delete_empty_directory() {
-    echo -e "\n=== Test: Delete Empty Directory ==="
-    setup
+        # Verify if they were deleted
+        if [[ -f "$TEST_DIR/file1.txt" || -f "$TEST_DIR/file2.txt" || -f "$TEST_DIR/file3.txt" ]]; then
+            echo -e "${RED}✗ FAIL${NC}: One or more files in original directory"
+            return 1
+        fi
 
-    # Create empty directory
-    mkdir "$TEST_DIR/empty_dir"
+        # Sucess?????????????????????????????
+        echo -e "${GREEN}✓ PASS${NC}: Multiple files deleted with sucess"
+        assert_success
+    }
 
 
-    # Delete the empty directory
-    $SCRIPT delete "$TEST_DIR/empty_dir" 
-    exit_code=$?
 
-    # Verify: directory removed from original location
-    if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/empty_dir" ]]; then
+    # Test: Delete Empty Directory
+    test_delete_empty_directory() {
+        echo -e "\n=== Test: Delete Empty Directory ==="
+        setup
+
+        # Create empty directory
+        mkdir "$TEST_DIR/empty_dir"
+
+
+        # Delete the empty directory
+        $SCRIPT delete "$TEST_DIR/empty_dir" 
+        exit_code=$?
+
+        # Verify: directory removed from original location
+        if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/empty_dir" ]]; then
+            
+            echo -e "${GREEN}✓ PASS${NC}: Empty directory deleted and correctly registered in Recycle Bin"
+            ((PASS++))
         
-        echo -e "${GREEN}✓ PASS${NC}: Empty directory deleted and correctly registered in Recycle Bin"
+        else
+            echo -e "${RED}✗ FAIL${NC}: Failed to delete empty directory"
+            echo "  Exit code: $exit_code"
+            ((FAIL++))
+        fi
+    }
+
+    test_delete_directory_with_contents() {
+        echo -e "\n=== Test: Delete Directory With Contents ==="
+        setup
+
+        # Create directory with nested structure and files
+        mkdir -p "$TEST_DIR/dir_with_contents/subdir1/subdir2"
+        echo "file1 content" > "$TEST_DIR/dir_with_contents/file1.txt"
+        echo "file2 content" > "$TEST_DIR/dir_with_contents/subdir1/file2.txt"
+        echo "file3 content" > "$TEST_DIR/dir_with_contents/subdir1/subdir2/file3.txt"
+
+        # Delete the directory recursively
+        $SCRIPT delete "$TEST_DIR/dir_with_contents" > /dev/null 2>&1
+        exit_code=$?
+
+        # Verify: directory removed from original location
+        if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/dir_with_contents" ]]; then
+            echo -e "${GREEN}✓ PASS${NC}: Directory with contents deleted recursively and registered in Recycle Bin"
+            ((PASS++))
+        else
+            echo -e "${RED}✗ FAIL${NC}: Failed to delete directory with contents"
+            echo "  Exit code: $exit_code"
+            ((FAIL++))
+        fi
+    }
+
+
+    test_list_empty() { 
+        echo -e "\n=== Test: List Empty Bin ===" 
+        setup 
+        $SCRIPT list | grep -q "empty"  # found the word 'empty' on the function
+        assert_success "List empty recycle bin" 
+    } 
+
+    test_list_with_items() {
+        echo -e "\n=== Test: List Bin With Items ===" 
+        setup
+
+        echo "file1" > "$TEST_DIR/file1.txt"
+        echo "file2" > "$TEST_DIR/file2.txt"
+        echo "file3" > "$TEST_DIR/file3.txt"
+
+        $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt"  
+
+        $SCRIPT list | grep -q "file(s)" # found the word 'file(s)' on the function
+
+        assert_success "List recycle bin with items" 
+
+    }
+    
+    test_restore_file() { 
+        echo -e "\n=== Test: Restore File ===" 
+        setup 
+        echo "test" > "$TEST_DIR/restore_test.txt" 
+        $SCRIPT delete "$TEST_DIR/restore_test.txt" 
+        
+        # Get file ID from list 
+        ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
+        $SCRIPT restore "$ID" 
+        assert_success "Restore file" 
+        [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
+
+    }
+
+    test_restore_non_existent() { 
+        echo -e "\n=== Test: Restore to non-existent original path ===" 
+        
+        setup 
+
+        # Simulate a non-existent original path for restoration
+        NON_EXISTENT_PATH="$TEST_DIR/non_existent_directory/restore_test.txt"
+        
+        # Attempt to restore the file to the non-existent path
+        $SCRIPT restore "$ID" "$NON_EXISTENT_PATH"
+        
+        # Assert that the restore didn't happen (file should not be restored to non-existent path)
+        if [ ! -f "$NON_EXISTENT_PATH" ]; then
+            echo "✓ File not restored to non-existent path"
+            assert_success "Restore to non-existent original path"
+        else
+            echo "✗ Test failed: File was restored to a non-existent path"
+            assert_fail "Restore to non-existent original path"
+        fi
+
+    }
+
+    test_empty_recycle() {
+        echo -e "\n=== Test: Empty entire recycle bin ==="
+        setup
+
+        # Criar arquivos de teste
+        echo "file1" > "$TEST_DIR/file1.txt"
+        echo "file2" > "$TEST_DIR/file2.txt"
+        echo "file3" > "$TEST_DIR/file3.txt"
+
+        # Deletar todos os arquivos de uma vez
+        $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
+
+        echo "y" | $SCRIPT empty
+        
+
+
+        # Verificar se a lixeira foi esvaziada corretamente
+        if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
+            echo -e "${GREEN}✓ PASS${NC}: RecycleBin empty with sucess"
+            assert_success
+
+        else
+            echo -e "${RED}✗ FAIL${NC}: RecycleBin is not empty"
+            return 1
+        fi
+    }
+
+    test_search_exist_file() {
+        echo -e "\n=== Test: Search for existing file ==="
+        setup
+
+        # Create a test file
+        echo "test content" > "$TEST_DIR/file1.txt"
+
+        # Delete the file (move it to recycle bin)
+        $SCRIPT delete "$TEST_DIR/file1.txt"
+
+        # Get the file ID
+        ID=$($SCRIPT list | grep "file1.txt" | awk '{print $1}')
+
+        # Search for the existing file
+        RESULT=$($SCRIPT search "file1.txt")
+
+        # Check if the file appears in the search results
+        if echo "$RESULT" | grep -q "file1.txt"; then
+            echo -e "${GREEN}✓ PASS${NC}: File successfully found via search"
+            assert_success
+        else
+            echo -e "${RED}✗ FAIL${NC}: File not found in the search"
+            ((FAIL++))
+            assert_fail
+        fi
+
+        # Empty the recycle bin at the end
+        empty_recyclebin --force
+    }
+
+    test_search_non_exist_file() {
+        echo -e "\n=== Test: Search for non-existent file ==="
+        setup
+
+
+        # Search for the non-existent file
+        RESULT=$($SCRIPT search "nonfile.txt")
+
+        # Check that the non-existent file is not found in the search results
+        if echo "$RESULT" | grep -q "nonfile.txt"; then
+            echo -e "${RED}✗ FAIL${NC}: Non-existent file found in the search"
+            assert_fail
+            return 1
+        else
+            echo -e "${GREEN}✓ PASS${NC}: Non-existent file was not found in the search"
+            assert_success
+        fi
+
+        # Empty the recycle bin at the end
+        empty_recyclebin --force
+
+    }
+
+    test_display_help() {
+        echo -e "\n=== Test: Display help information ==="
+        setup
+
+        # Capture the output of the help command
+        HELP_OUTPUT=$($SCRIPT --help)
+
+        # Check if the last line of the help contains "clean: Automatically deletes items"
+        if echo "$HELP_OUTPUT" | tail -n 1 | grep -q "clean:.*Automatically deletes items"; then
+            echo -e "${GREEN}✓ PASS${NC}: Last line of help information displayed correctly"
+            ((PASS++))
+        else
+            echo -e "${RED}✗ FAIL${NC}: Last line of help information not displayed correctly"
+            ((FAIL++))
+            return 1
+        fi
+    }
+
+
+    ############################################################
+    ##################    EDGE CASES     #########################
+    ############################################################
+
+
+    test_delete_non-existent_file() {
+        echo -e "\n=== Test: Delete non_existent file ==="
+        teardown
+        setup
+
+        # Attempt to delete non-existent_file.txt
+        $SCRIPT "$TEST_DIR/delete non-existent_file.txt"
+
+        # Assert that there is no file named non-existent_file.txt in metadata
+        if grep -q "non-existent_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
+            echo "✗ Non-existent file deleted"
+            assert_fail "Delete non-existent file"
+        else
+            echo "✓ Non-existent file not deleted"
+            assert_success "Delete non-existent file"
+        fi
+    }
+
+    test_delete_file_without_permissions() {
+        echo -e "\n=== Test: Delete file without permissions ==="
+        teardown
+        setup
+
+        # Create file, and then remove permissions
+        echo "file1" > "$TEST_DIR/file1.txt"
+        chmod -rwx "$TEST_DIR/file1.txt"
+
+        # Attempt to delete the file
+        $SCRIPT delete "$TEST_DIR/file1.txt"
+
+
+        # Assert that the file was not deleted (Insufficient permissions)
+        if grep -q "file1.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
+            echo "✗ File without permissions was deleted"
+            assert_fail "Delete file without permissions"
+        else
+            echo "✓ File without permissions wasn't deleted"
+            assert_success "Delete file without permissions"
+        fi
+    }
+
+    test_restore_when_original_location_has_same_filename() {
+        echo -e "\n=== Test: Restore when original location has same filename ==="
+        teardown
+        setup
+
+        # Create test file to delete named sameName_file.txt
+        echo "file1" > "$TEST_DIR/sameName_file.txt"
+        # Delete it
+        $SCRIPT delete "$TEST_DIR/sameName_file.txt"
+        # Create another file with the same name in the same original location
+        echo "file1" > "$TEST_DIR/sameName_file.txt"
+
+        # Attempt to restore deleted file
+        $SCRIPT restore sameName_file.txt
+
+        # Capture the restored file name (it should have a suffix like "_restored_XXXX")
+        restored_file=$(ls "$TEST_DIR" | grep "sameName_file.txt_restored")
+
+
+        # Verify if the file was restored (isn't in the metadata no more) with a different name
+        if grep -q "sameName_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
+            echo "✗ File was not restored"
+            assert_fail "Restore when original location has same filename"
+        else
+            echo "✓ File was restored"
+            assert_success "Restore when original location has same filename"
+        fi
+    }
+
+    test_restore_with_unexistent_id() {
+        echo -e "\n=== Test: Restore with ID that doesn't exist ==="
+        teardown
+        setup
+
+        # Metadata file is empty now, so there are no file IDs
+        # Attempt to restore a non-existent ID
+        $SCRIPT restore 0123456789_nreal
+
+        # Check if no file was restored
+        restored_file=$(ls "$TEST_DIR")
+
+        if [[ -z "$restored_file" ]]; then
+            echo "✓ File was not restored"
+            assert_success "Restore with ID that doesn't exist"
+        else
+            echo "✗ Some file was restored"
+            assert_fail "Restore with ID that doesn't exist"
+        fi
+    }
+
+    test_handle_filenames_wSpaces() {
+        echo -e "\n=== Test: Handle filenames with spaces ==="
+
+        teardown
+        setup
+
+        # Create filename with special characters in TEST_DIR
+        echo "file name with spaces" > "$TEST_DIR/file name with spaces.txt"
+
+        # Try to delete the file with spaces in the filename
+        $SCRIPT delete "$TEST_DIR/file name with spaces.txt"
+
+        # List the files in the recycle bin to confirm deletion
+        deleted_files=$($SCRIPT list)
+
+
+        # Attempt to restore the file with spaces in the filename
+        $SCRIPT restore "file name with spaces.txt"
+
+        # Capture the restored file name
+        restored_file=$(ls "$TEST_DIR" | grep "file name with spaces.txt")
+
+        # Verify if the file was restored (check TEST_DIR for restored file)
+        if [[ -n "$restored_file" ]]; then
+            echo "✓ File with spaces was restored successfully as $restored_file"
+            assert_success "Restore file with spaces"
+        else
+            echo "✗ File was not restored"
+            assert_fail "Restore file with spaces"
+        fi
+    }
+
+    test_handle_filenames_wSpecialChars() {
+        echo -e "\n=== Test: Handle filenames with special characters ==="
+
+        teardown
+        setup
+
+        # Create filename with special characters in TEST_DIR
+        FILE_NAME="!@#$%^&*().txt"
+        echo "test content" > "$TEST_DIR/$FILE_NAME"
+
+        # Try to delete the file with special characters in the filename
+        $SCRIPT delete "$TEST_DIR/$FILE_NAME"
+
+        # List the files in the recycle bin to confirm deletion
+        deleted_files=$($SCRIPT list)
+
+        # Escape special characters for grep to handle them correctly
+        ESCAPED_FILE_NAME=$(echo "$FILE_NAME" | sed 's/[]\/$*.^[]/\\&/g')
+
+        # Ensure the file is in the recycle bin by checking the list of deleted files
+        if echo "$deleted_files" | grep -q "$ESCAPED_FILE_NAME"; then
+            echo -e "${GREEN}✓ PASS${NC}: File with special characters deleted successfully"
+        else
+            echo -e "${RED}✗ FAIL${NC}: File with special characters not found in the recycle bin"
+        fi
+
+        # Attempt to restore the file with special characters in the filename
+        $SCRIPT restore "$FILE_NAME"
+        
+        # The file should be restored to its original path or a default location.
+        # Let's assume it is restored back to the TEST_DIR, as that's where the original file was.
+        restored_file="$TEST_DIR/$FILE_NAME"
+
+        # Verify if the file was restored (check TEST_DIR for restored file)
+        if [[ -f "$restored_file" ]]; then
+            echo -e "${GREEN}✓ PASS${NC}: File with special characters was restored successfully as $restored_file"
+            assert_success "Restore file with special characters"
+        else
+            echo -e "${RED}✗ FAIL${NC}: File was not restored"
+            assert_fail "Restore file with special characters"
+        fi
+    }
+
+
+    test_handle_long_filenames() {
+        echo -e "\n=== Test: Handle very long filenames (255+ characters) ==="
+
+        teardown
+        setup
+
+        # === PASSO 1: Criar nome com EXATAMENTE 260 caracteres (255 + 5 do ".txt") ===
+        local base_name=$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 255)
+        local LONG_FILENAME="${base_name}.txt"  # 255 + 4 = 259 caracteres
+        local full_path="$TEST_DIR/$LONG_FILENAME"
+
+        echo "test content for long file" > "$full_path"
+
+        if [[ ! -f "$full_path" ]]; then
+            echo -e "${RED}FAIL${NC}: Failed to create long filename"
+            ((FAIL++))
+            return 1
+        fi
+
+        # === PASSO 2: Verificar comprimento ===
+        local name_length=${#LONG_FILENAME}
+        echo "Filename length: $name_length characters"
+        if (( name_length <= 255 )); then
+            echo -e "${RED}FAIL${NC}: Filename is not long enough ($name_length <= 255)"
+            ((FAIL++))
+            return 1
+        fi
+
+        # === PASSO 3: Deletar o arquivo ===
+        $SCRIPT delete "$full_path" > delete_output.log 2>&1
+        local delete_exit=$?
+
+        if (( delete_exit != 0 )); then
+            echo -e "${RED}FAIL${NC}: Failed to delete long filename"
+            cat delete_output.log
+            ((FAIL++))
+            return 1
+        fi
+
+        # Verificar se houve aviso de hash
+        if ! grep -q "Filename too long, using hash" delete_output.log; then
+            echo -e "${RED}FAIL${NC}: Expected hash warning not found"
+            ((FAIL++))
+            return 1
+        fi
+
+        # === PASSO 4: Pegar o ID do metadata.db (usando nome original) ===
+        local id=$(grep -F "$LONG_FILENAME" "$HOME/BernardoTiago_RecycleBin/metadata.db" | cut -d',' -f1)
+
+        if [[ -z "$id" ]]; then
+            echo -e "${RED}FAIL${NC}: Long filename not found in metadata.db"
+            ((FAIL++))
+            return 1
+        fi
+
+        # Verificar se o arquivo físico tem nome hashado
+        if [[ ! -e "$HOME/BernardoTiago_RecycleBin/files/$id" ]]; then
+            echo -e "${RED}FAIL${NC}: Hashed file not found in recycle bin"
+            ((FAIL++))
+            return 1
+        fi
+
+        # === PASSO 5: Restaurar pelo NOME ORIGINAL (deve funcionar!) ===
+        $SCRIPT restore "$LONG_FILENAME" > restore_output.log 2>&1
+        local restore_exit=$?
+
+        if (( restore_exit != 0 )); then
+            echo -e "${RED}FAIL${NC}: Failed to restore by original name"
+            cat restore_output.log
+            ((FAIL++))
+            return 1
+        fi
+
+        # === PASSO 6: Verificar se o arquivo foi restaurado com nome original ===
+        if [[ ! -f "$full_path" ]]; then
+            echo -e "${RED}FAIL${NC}: File not restored with original long name"
+            ((FAIL++))
+            return 1
+        fi
+
+        # === PASSO 7: Verificar conteúdo ===
+        if ! grep -q "test content for long file" "$full_path"; then
+            echo -e "${RED}FAIL${NC}: Restored file content corrupted"
+            ((FAIL++))
+            return 1
+        fi
+
+        # === SUCESSO ===
+        echo -e "${GREEN}PASS${NC}: Long filename (>255 chars) handled correctly:"
+        echo "    • Created: $name_length chars"
+        echo "    • Hashed on delete"
+        echo "    • Preserved original name in metadata"
+        echo "    • Restored correctly by original name"
         ((PASS++))
-       
-    else
-        echo -e "${RED}✗ FAIL${NC}: Failed to delete empty directory"
-        echo "  Exit code: $exit_code"
-        ((FAIL++))
-    fi
-}
-
-test_delete_directory_with_contents() {
-    echo -e "\n=== Test: Delete Directory With Contents ==="
-    setup
-
-    # Create directory with nested structure and files
-    mkdir -p "$TEST_DIR/dir_with_contents/subdir1/subdir2"
-    echo "file1 content" > "$TEST_DIR/dir_with_contents/file1.txt"
-    echo "file2 content" > "$TEST_DIR/dir_with_contents/subdir1/file2.txt"
-    echo "file3 content" > "$TEST_DIR/dir_with_contents/subdir1/subdir2/file3.txt"
-
-    # Delete the directory recursively
-    $SCRIPT delete "$TEST_DIR/dir_with_contents" > /dev/null 2>&1
-    exit_code=$?
-
-    # Verify: directory removed from original location
-    if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/dir_with_contents" ]]; then
-        echo -e "${GREEN}✓ PASS${NC}: Directory with contents deleted recursively and registered in Recycle Bin"
-        ((PASS++))
-    else
-        echo -e "${RED}✗ FAIL${NC}: Failed to delete directory with contents"
-        echo "  Exit code: $exit_code"
-        ((FAIL++))
-    fi
-}
+    }
 
 
-test_list_empty() { 
-    echo -e "\n=== Test: List Empty Bin ===" 
-    setup 
-    $SCRIPT list | grep -q "empty"  # found the word 'empty' on the function
-    assert_success "List empty recycle bin" 
-} 
 
-test_list_with_items() {
-    echo -e "\n=== Test: List Bin With Items ===" 
-    setup
 
-    echo "file1" > "$TEST_DIR/file1.txt"
-    echo "file2" > "$TEST_DIR/file2.txt"
-    echo "file3" > "$TEST_DIR/file3.txt"
-
-    $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt"  
-
-    $SCRIPT list | grep -q "file(s)" # found the word 'file(s)' on the function
-
-    assert_success "List recycle bin with items" 
-
-}
- 
-test_restore_file() { 
-    echo -e "\n=== Test: Restore File ===" 
-    setup 
-    echo "test" > "$TEST_DIR/restore_test.txt" 
-    $SCRIPT delete "$TEST_DIR/restore_test.txt" 
-     
-    # Get file ID from list 
-    ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
-    $SCRIPT restore "$ID" 
-    assert_success "Restore file" 
-    [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
-
-}
-
-test_restore_non_existent() { 
-    echo -e "\n=== Test: Restore to non-existent original path ===" 
     
-    setup 
+    # Run all tests 
+    echo "=========================================" 
+    echo "  Recycle Bin Test Suite" 
+    echo "=========================================" 
 
-    # Simulate a non-existent original path for restoration
-    NON_EXISTENT_PATH="$TEST_DIR/non_existent_directory/restore_test.txt"
+    #Basic Funtionality Tests (13)
+
+    test_initialization
+    test_delete_file 
+    test_delete_multiple_files
+    test_delete_empty_directory
+    test_delete_directory_with_contents
+    test_list_empty 
+    test_list_with_items
+    test_restore_file 
+    test_restore_non_existent
+    test_empty_recycle
+    test_search_exist_file
+    test_search_non_exist_file
+    test_display_help
+
+
+    #Edge Cases
+    test_delete_non-existent_file
+    test_delete_file_without_permissions
+    test_restore_when_original_location_has_same_filename
+    test_restore_with_unexistent_id
+    test_handle_filenames_wSpaces
+    test_handle_filenames_wSpecialChars
+    test_handle_long_filenames 
+
+    # Clean the RecycleBin files after all the tests
+    bash "$SCRIPT" empty --force > /dev/null 2>&1
+
+    # Add more test functions here 
     
-    # Attempt to restore the file to the non-existent path
-    $SCRIPT restore "$ID" "$NON_EXISTENT_PATH"
-    
-    # Assert that the restore didn't happen (file should not be restored to non-existent path)
-    if [ ! -f "$NON_EXISTENT_PATH" ]; then
-        echo "✓ File not restored to non-existent path"
-        assert_success "Restore to non-existent original path"
-    else
-        echo "✗ Test failed: File was restored to a non-existent path"
-        assert_fail "Restore to non-existent original path"
-    fi
+    teardown 
 
-}
+    echo "=========================================" 
+    echo "Results: $PASS passed, $FAIL failed"
+    echo "========================================="
 
-test_empty_recycle() {
-    echo -e "\n=== Test: Empty entire recycle bin ==="
-    setup
-
-    # Criar arquivos de teste
-    echo "file1" > "$TEST_DIR/file1.txt"
-    echo "file2" > "$TEST_DIR/file2.txt"
-    echo "file3" > "$TEST_DIR/file3.txt"
-
-    # Deletar todos os arquivos de uma vez
-    $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
-
-      echo "y" | $SCRIPT empty
-    
-
-
-    # Verificar se a lixeira foi esvaziada corretamente
-    if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
-        echo -e "${GREEN}✓ PASS${NC}: RecycleBin empty with sucess"
-        assert_success
-
-    else
-        echo -e "${RED}✗ FAIL${NC}: RecycleBin is not empty"
-        return 1
-    fi
-}
-
-test_search_exist_file() {
-    echo -e "\n=== Test: Search for existing file ==="
-    setup
-
-    # Create a test file
-    echo "test content" > "$TEST_DIR/file1.txt"
-
-    # Delete the file (move it to recycle bin)
-    $SCRIPT delete "$TEST_DIR/file1.txt"
-
-    # Get the file ID
-    ID=$($SCRIPT list | grep "file1.txt" | awk '{print $1}')
-
-    # Search for the existing file
-    RESULT=$($SCRIPT search "file1.txt")
-
-    # Check if the file appears in the search results
-    if echo "$RESULT" | grep -q "file1.txt"; then
-        echo -e "${GREEN}✓ PASS${NC}: File successfully found via search"
-        assert_success
-    else
-        echo -e "${RED}✗ FAIL${NC}: File not found in the search"
-        ((FAIL++))
-        assert_fail
-    fi
-
-    # Empty the recycle bin at the end
-    empty_recyclebin --force
-}
-
-test_search_non_exist_file() {
-    echo -e "\n=== Test: Search for non-existent file ==="
-    setup
-
-
-    # Search for the non-existent file
-    RESULT=$($SCRIPT search "nonfile.txt")
-
-    # Check that the non-existent file is not found in the search results
-    if echo "$RESULT" | grep -q "nonfile.txt"; then
-        echo -e "${RED}✗ FAIL${NC}: Non-existent file found in the search"
-        assert_fail
-        return 1
-    else
-        echo -e "${GREEN}✓ PASS${NC}: Non-existent file was not found in the search"
-        assert_success
-    fi
-
-    # Empty the recycle bin at the end
-    empty_recyclebin --force
-
-}
-
-test_display_help() {
-    echo -e "\n=== Test: Display help information ==="
-    setup
-
-    # Capture the output of the help command
-    HELP_OUTPUT=$($SCRIPT --help)
-
-    # Check if the last line of the help contains "clean: Automatically deletes items"
-    if echo "$HELP_OUTPUT" | tail -n 1 | grep -q "clean:.*Automatically deletes items"; then
-        echo -e "${GREEN}✓ PASS${NC}: Last line of help information displayed correctly"
-        ((PASS++))
-    else
-        echo -e "${RED}✗ FAIL${NC}: Last line of help information not displayed correctly"
-        ((FAIL++))
-        return 1
-    fi
-}
-
-
-############################################################
-##################    EDGE CASES     #########################
-############################################################
-
-
-test_delete_non-existent_file() {
-    echo -e "\n=== Test: Delete non_existent file ==="
-    teardown
-    setup
-
-    # Attempt to delete non-existent_file.txt
-    $SCRIPT "$TEST_DIR/delete non-existent_file.txt"
-
-    # Assert that there is no file named non-existent_file.txt in metadata
-    if grep -q "non-existent_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
-        echo "✗ Non-existent file deleted"
-        assert_fail "Delete non-existent file"
-    else
-        echo "✓ Non-existent file not deleted"
-        assert_success "Delete non-existent file"
-    fi
-}
-
-test_delete_file_without_permissions() {
-    echo -e "\n=== Test: Delete file without permissions ==="
-    teardown
-    setup
-
-    # Create file, and then remove permissions
-    echo "file1" > "$TEST_DIR/file1.txt"
-    chmod -rwx "$TEST_DIR/file1.txt"
-
-    # Attempt to delete the file
-    $SCRIPT delete "$TEST_DIR/file1.txt"
-
-
-    # Assert that the file was not deleted (Insufficient permissions)
-    if grep -q "file1.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
-        echo "✗ File without permissions was deleted"
-        assert_fail "Delete file without permissions"
-    else
-        echo "✓ File without permissions wasn't deleted"
-        assert_success "Delete file without permissions"
-    fi
-}
-
-test_restore_when_original_location_has_same_filename() {
-    echo -e "\n=== Test: Restore when original location has same filename ==="
-    teardown
-    setup
-
-    # Create test file to delete named sameName_file.txt
-    echo "file1" > "$TEST_DIR/sameName_file.txt"
-    # Delete it
-    $SCRIPT delete "$TEST_DIR/sameName_file.txt"
-    # Create another file with the same name in the same original location
-    echo "file1" > "$TEST_DIR/sameName_file.txt"
-
-    # Attempt to restore deleted file
-    $SCRIPT restore sameName_file.txt
-
-    # Capture the restored file name (it should have a suffix like "_restored_XXXX")
-    restored_file=$(ls "$TEST_DIR" | grep "sameName_file.txt_restored")
-
-
-    # Verify if the file was restored (isn't in the metadata no more) with a different name
-    if grep -q "sameName_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
-        echo "✗ File was not restored"
-        assert_fail "Restore when original location has same filename"
-    else
-        echo "✓ File was restored"
-        assert_success "Restore when original location has same filename"
-    fi
-}
-
-test_restore_with_unexistent_id() {
-    echo -e "\n=== Test: Restore with ID that doesn't exist ==="
-    teardown
-    setup
-
-    # Metadata file is empty now, so there are no file IDs
-    # Attempt to restore a non-existent ID
-    $SCRIPT restore 0123456789_nreal
-
-    # Check if no file was restored
-    restored_file=$(ls "$TEST_DIR")
-
-    if [[ -z "$restored_file" ]]; then
-        echo "✓ File was not restored"
-        assert_success "Restore with ID that doesn't exist"
-    else
-        echo "✗ Some file was restored"
-        assert_fail "Restore with ID that doesn't exist"
-    fi
-}
-
-test_handle_filenames_wSpaces() {
-    echo -e "\n=== Test: Handle filenames with spaces ==="
-
-    teardown
-    setup
-
-    # Create filename with special characters in TEST_DIR
-    echo "file name with spaces" > "$TEST_DIR/file name with spaces.txt"
-
-    # Try to delete the file with spaces in the filename
-    $SCRIPT delete "$TEST_DIR/file name with spaces.txt"
-
-    # List the files in the recycle bin to confirm deletion
-    deleted_files=$($SCRIPT list)
-
-
-    # Attempt to restore the file with spaces in the filename
-    $SCRIPT restore "file name with spaces.txt"
-
-    # Capture the restored file name
-    restored_file=$(ls "$TEST_DIR" | grep "file name with spaces.txt")
-
-    # Verify if the file was restored (check TEST_DIR for restored file)
-    if [[ -n "$restored_file" ]]; then
-        echo "✓ File with spaces was restored successfully as $restored_file"
-        assert_success "Restore file with spaces"
-    else
-        echo "✗ File was not restored"
-        assert_fail "Restore file with spaces"
-    fi
-}
-
-test_handle_filenames_wSpecialChars() {
-    echo -e "\n=== Test: Handle filenames with special characters ==="
-
-    teardown
-    setup
-
-    # Create filename with special characters in TEST_DIR
-    FILE_NAME="!@#$%^&*().txt"
-    echo "test content" > "$TEST_DIR/$FILE_NAME"
-
-    # Try to delete the file with special characters in the filename
-    $SCRIPT delete "$TEST_DIR/$FILE_NAME"
-
-    # List the files in the recycle bin to confirm deletion
-    deleted_files=$($SCRIPT list)
-
-    # Escape special characters for grep to handle them correctly
-    ESCAPED_FILE_NAME=$(echo "$FILE_NAME" | sed 's/[]\/$*.^[]/\\&/g')
-
-    # Ensure the file is in the recycle bin by checking the list of deleted files
-    if echo "$deleted_files" | grep -q "$ESCAPED_FILE_NAME"; then
-        echo -e "${GREEN}✓ PASS${NC}: File with special characters deleted successfully"
-    else
-        echo -e "${RED}✗ FAIL${NC}: File with special characters not found in the recycle bin"
-    fi
-
-    # Attempt to restore the file with special characters in the filename
-    $SCRIPT restore "$FILE_NAME"
-    
-    # The file should be restored to its original path or a default location.
-    # Let's assume it is restored back to the TEST_DIR, as that's where the original file was.
-    restored_file="$TEST_DIR/$FILE_NAME"
-
-    # Verify if the file was restored (check TEST_DIR for restored file)
-    if [[ -f "$restored_file" ]]; then
-        echo -e "${GREEN}✓ PASS${NC}: File with special characters was restored successfully as $restored_file"
-        assert_success "Restore file with special characters"
-    else
-        echo -e "${RED}✗ FAIL${NC}: File was not restored"
-        assert_fail "Restore file with special characters"
-    fi
-}
-
-
-test_handle_long_filenames() {
-    echo -e "\n=== Test: Handle very long filenames (255 characters) ==="
-
-    teardown
-    setup
-
-    # Create a filename with exactly 255 characters (max filename length on most systems)
-    LONG_FILENAME="long_filename_$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 240).txt"
-    echo "test content" > "$TEST_DIR/$LONG_FILENAME"
-
-    # Check that the file was created
-    if [[ -f "$TEST_DIR/$LONG_FILENAME" ]]; then
-        echo -e "${GREEN}✓ PASS${NC}: Long filename created successfully"
-        ((PASS++))
-    else
-        echo -e "${RED}✗ FAIL${NC}: Long filename creation failed"
-        ((FAIL++))
-        return 1
-    fi
-
-    # Delete the file with the long filename
-    $SCRIPT delete "$TEST_DIR/$LONG_FILENAME"
-
-    # List the files in the recycle bin to confirm deletion
-    deleted_files=$($SCRIPT list)
-
-    # Escape special characters for grep to handle them correctly
-    ESCAPED_LONG_FILENAME=$(echo "$LONG_FILENAME" | sed 's/[]\/$*.^[]/\\&/g')
-
-    # Ensure the file is in the recycle bin by checking the list of deleted files
-    if echo "$deleted_files" | grep -q "$ESCAPED_LONG_FILENAME"; then
-        echo -e "${GREEN}✓ PASS${NC}: Long filename deleted successfully"
-        ((PASS++))
-    else
-        echo -e "${RED}✗ FAIL${NC}: Long filename not found in the recycle bin"
-        ((FAIL++))
-        return 1
-    fi
-
-    # Attempt to restore the file with the long filename
-    $SCRIPT restore "$LONG_FILENAME"
-    
-    # The file should be restored to its original path or a default location.
-    # Let's assume it is restored back to the TEST_DIR, as that's where the original file was.
-    restored_file="$TEST_DIR/$LONG_FILENAME"
-
-    # Verify if the file was restored (check TEST_DIR for restored file)
-    if [[ -f "$restored_file" ]]; then
-        echo -e "${GREEN}✓ PASS${NC}: Long filename restored successfully as $restored_file"
-        assert_success "Restore file with long filename"
-    else
-        echo -e "${RED}✗ FAIL${NC}: File with long filename was not restored"
-        assert_fail "Restore file with long filename"
-    fi
-}
-
-
-
-
- 
-# Run all tests 
-echo "=========================================" 
-echo "  Recycle Bin Test Suite" 
-echo "=========================================" 
-
-#Basic Funtionality Tests (13)
-
-test_initialization
-test_delete_file 
-test_delete_multiple_files
-test_delete_empty_directory
-test_delete_directory_with_contents
-test_list_empty 
-test_list_with_items
-test_restore_file 
-test_restore_non_existent
-test_empty_recycle
-test_search_exist_file
-test_search_non_exist_file
-test_display_help
-
-
-#Edge Cases
-test_delete_non-existent_file
-test_delete_file_without_permissions
-test_restore_when_original_location_has_same_filename
-test_restore_with_unexistent_id
-test_handle_filenames_wSpaces
-test_handle_filenames_wSpecialChars
-test_handle_long_filenames 
-
-# Clean the RecycleBin files after all the tests
-bash "$SCRIPT" empty --force > /dev/null 2>&1
-
-# Add more test functions here 
- 
-teardown 
-
-echo "=========================================" 
-echo "Results: $PASS passed, $FAIL failed"
-echo "========================================="
-
-[ $FAIL -eq 0 ] && exit 0 || exit 1 
+    [ $FAIL -eq 0 ] && exit 0 || exit 1 
