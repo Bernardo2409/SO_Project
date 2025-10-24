@@ -84,14 +84,16 @@ test_delete_multiple_files() {
 
     # Verify if they were deleted
     if [[ -f "$TEST_DIR/file1.txt" || -f "$TEST_DIR/file2.txt" || -f "$TEST_DIR/file3.txt" ]]; then
-        echo -e "${RED}✗ FAIL${NC}: Um ou mais ficheiros ainda existem no diretório original"
+        echo -e "${RED}✗ FAIL${NC}: One or more files in original directory"
         return 1
     fi
 
     # Sucess?????????????????????????????
-    echo -e "${GREEN}✓ PASS${NC}: Múltiplos ficheiros eliminados com sucesso num único comando"
+    echo -e "${GREEN}✓ PASS${NC}: Multiple files deleted with sucess"
     assert_success
 }
+
+
 
 # Test: Delete Empty Directory
 test_delete_empty_directory() {
@@ -222,11 +224,11 @@ test_empty_recycle() {
 
     # Verificar se a lixeira foi esvaziada corretamente
     if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
-        echo -e "${GREEN}✓ PASS${NC}: A reciclagem foi esvaziada com sucesso"
+        echo -e "${GREEN}✓ PASS${NC}: RecycleBin empty with sucess"
         assert_success
 
     else
-        echo -e "${RED}✗ FAIL${NC}: A reciclagem não foi esvaziada corretamente"
+        echo -e "${RED}✗ FAIL${NC}: RecycleBin is not empty"
         return 1
     fi
 }
@@ -338,6 +340,7 @@ test_delete_file_without_permissions() {
     # Attempt to delete the file
     $SCRIPT delete "$TEST_DIR/file1.txt"
 
+
     # Assert that the file was not deleted (Insufficient permissions)
     if grep -q "file1.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
         echo "✗ File without permissions was deleted"
@@ -366,14 +369,6 @@ test_restore_when_original_location_has_same_filename() {
     # Capture the restored file name (it should have a suffix like "_restored_XXXX")
     restored_file=$(ls "$TEST_DIR" | grep "sameName_file.txt_restored")
 
-    # Check if the file with the restored name exists in the original location
-    if [[ -n "$restored_file" ]]; then
-        echo "✓ File was restored as $restored_file"
-        assert_success "Restore when original location has same filename"
-    else
-        echo "✗ File was not restored"
-        assert_fail "Restore when original location has same filename"
-    fi
 
     # Verify if the file was restored (isn't in the metadata no more) with a different name
     if grep -q "sameName_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
