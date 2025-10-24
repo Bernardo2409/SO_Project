@@ -197,15 +197,32 @@ test_restore_non_existent() {
     # Assert that the restore didn't happen (file should not be restored to non-existent path)
     if [ ! -f "$NON_EXISTENT_PATH" ]; then
         echo "✓ File not restored to non-existent path"
-        assert_success
+        assert_success "Restore to non-existent original path"
     else
         echo "✗ Test failed: File was restored to a non-existent path"
-        assert_fail
+        assert_fail "Restore to non-existent original path"
     fi
 
 }
 
+## Edge Cases
 
+test_delete_non-existent_file() {
+    echo -e "\n=== Test: Delete non_existent file ==="
+    setup
+
+    # Attempt to delete non-existent_file.txt
+    $SCRIPT delete non-existent_file.txt
+
+    # Assert that there is no file named non-existent_file.txt in metadata
+    if grep -q "non-existent_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
+        echo "✓ Non-existent file deleted"
+        assert_fail "Delete non-existent file"
+    else
+        echo "✓ Non-existent file not deleted"
+        assert_success "Delete non-existent file"
+    fi
+}
 
 
  
@@ -214,6 +231,7 @@ echo "========================================="
 echo "  Recycle Bin Test Suite" 
 echo "=========================================" 
 
+#Basic Funtionality Tests
 reset_metadata
 test_initialization
 test_delete_file 
@@ -224,6 +242,9 @@ test_list_empty
 test_list_with_items
 test_restore_file 
 test_restore_non_existent
+
+#Edge Cases
+test_delete_non-existent_file
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
