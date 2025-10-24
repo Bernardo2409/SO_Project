@@ -439,32 +439,44 @@ test_handle_filenames_wSpecialChars() {
     teardown
     setup
 
-    # Create filename with spaces in TEST_DIR
-    echo "file name with spaces" > "$TEST_DIR/!@#$%^&*().txt"
+    # Create filename with special characters in TEST_DIR
+    FILE_NAME="!@#$%^&*().txt"
+    echo "test content" > "$TEST_DIR/$FILE_NAME"
 
     # Try to delete the file with special characters in the filename
-    $SCRIPT delete "$TEST_DIR/!@#$%^&*().txt"
+    $SCRIPT delete "$TEST_DIR/$FILE_NAME"
 
     # List the files in the recycle bin to confirm deletion
     deleted_files=$($SCRIPT list)
 
-    
+    # Escape special characters for grep to handle them correctly
+    ESCAPED_FILE_NAME=$(echo "$FILE_NAME" | sed 's/[]\/$*.^[]/\\&/g')
+
+    # Ensure the file is in the recycle bin by checking the list of deleted files
+    if echo "$deleted_files" | grep -q "$ESCAPED_FILE_NAME"; then
+        echo -e "${GREEN}✓ PASS${NC}: File with special characters deleted successfully"
+    else
+        echo -e "${RED}✗ FAIL${NC}: File with special characters not found in the recycle bin"
+    fi
 
     # Attempt to restore the file with special characters in the filename
-    $SCRIPT restore "!@#$%^&*().txt"
+    $SCRIPT restore "$FILE_NAME"
     
-    # Capture the restored file name
-    restored_file=$(ls "$TEST_DIR" | grep "!@#$%^&*().txt")
+    # The file should be restored to its original path or a default location.
+    # Let's assume it is restored back to the TEST_DIR, as that's where the original file was.
+    restored_file="$TEST_DIR/$FILE_NAME"
 
     # Verify if the file was restored (check TEST_DIR for restored file)
-    if [[ -n "$restored_file" ]]; then
-        echo "✓ File with special characters was restored successfully as $restored_file"
+    if [[ -f "$restored_file" ]]; then
+        echo -e "${GREEN}✓ PASS${NC}: File with special characters was restored successfully as $restored_file"
         assert_success "Restore file with special characters"
     else
-        echo "✗ File was not restored"
+        echo -e "${RED}✗ FAIL${NC}: File was not restored"
         assert_fail "Restore file with special characters"
     fi
 }
+
+
 
 
  
@@ -473,8 +485,8 @@ echo "========================================="
 echo "  Recycle Bin Test Suite" 
 echo "=========================================" 
 
-#Basic Funtionality Tests
-reset_metadata
+#Basic Funtionality Tests (13)
+
 test_initialization
 test_delete_file 
 test_delete_multiple_files
@@ -489,13 +501,14 @@ test_search_exist_file
 test_search_non_exist_file
 test_display_help
 
+
 #Edge Cases
 test_delete_non-existent_file
 test_delete_file_without_permissions
 test_restore_when_original_location_has_same_filename
 test_restore_with_unexistent_id
 test_handle_filenames_wSpaces
-test_handle_filenames_wSpecialChars # Está a dar erro
+test_handle_filenames_wSpecialChars 
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
