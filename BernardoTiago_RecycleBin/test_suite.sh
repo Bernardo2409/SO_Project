@@ -250,11 +250,11 @@ test_delete_file_without_permissions() {
     echo -e "\n=== Test: Delete file without permissions ==="
     setup
 
-    #Create file, and then remove permissions
+    # Create file, and then remove permissions
     echo "file1" > "$TEST_DIR/file1.txt"
     chmod -rwx "$TEST_DIR/file1.txt"
 
-    #Attempt to delete the file
+    # Attempt to delete the file
     $SCRIPT delete "$TEST_DIR/file1.txt"
 
     # Assert that the file was not deleted (Insufficient permissions)
@@ -264,6 +264,42 @@ test_delete_file_without_permissions() {
     else
         echo "✓ File without permissions wasn't deleted"
         assert_success "Delete file without permissions"
+    fi
+}
+
+test_restore_when_original_location_has_same_filename() {
+    echo -e "\n=== Test: Restore when original location has same filename ==="
+    setup
+
+    # Create test file to delete named sameName_file.txt
+    echo "file1" > "$TEST_DIR/sameName_file.txt"
+    # Delete it
+    $SCRIPT delete "$TEST_DIR/sameName_file.txt"
+    # Create another file with the same name in the same original location
+    echo "file1" > "$TEST_DIR/sameName_file.txt"
+
+    # Attempt to restore deleted file
+    $SCRIPT restore sameName_file.txt
+
+    # Capture the restored file name (it should have a suffix like "_restored_XXXX")
+    restored_file=$(ls "$TEST_DIR" | grep "sameName_file.txt_restored")
+
+    # Check if the file with the restored name exists in the original location
+    if [[ -n "$restored_file" ]]; then
+        echo "✓ File was restored as $restored_file"
+        assert_success "Restore when original location has same filename"
+    else
+        echo "✗ File was not restored"
+        assert_fail "Restore when original location has same filename"
+    fi
+
+    # Verify if the file was restored (isn't in the metadata no more) with a different name
+    if grep -q "sameName_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
+        echo "✗ File was not restored"
+        assert_fail "Restore when original location has same filename"
+    else
+        echo "✓ File was restored"
+        assert_success "Restore when original location has same filename"
     fi
 }
 
@@ -289,6 +325,7 @@ test_empty_recycle
 #Edge Cases
 test_delete_non-existent_file
 test_delete_file_without_permissions
+test_restore_when_original_location_has_same_filename
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
