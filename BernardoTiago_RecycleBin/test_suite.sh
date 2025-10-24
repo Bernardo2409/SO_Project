@@ -231,6 +231,7 @@ test_empty_recycle() {
 
 test_delete_non-existent_file() {
     echo -e "\n=== Test: Delete non_existent file ==="
+    teardown
     setup
 
     # Attempt to delete non-existent_file.txt
@@ -248,6 +249,7 @@ test_delete_non-existent_file() {
 
 test_delete_file_without_permissions() {
     echo -e "\n=== Test: Delete file without permissions ==="
+    teardown
     setup
 
     # Create file, and then remove permissions
@@ -269,6 +271,7 @@ test_delete_file_without_permissions() {
 
 test_restore_when_original_location_has_same_filename() {
     echo -e "\n=== Test: Restore when original location has same filename ==="
+    teardown
     setup
 
     # Create test file to delete named sameName_file.txt
@@ -303,6 +306,26 @@ test_restore_when_original_location_has_same_filename() {
     fi
 }
 
+test_restore_with_unexistent_id() {
+    echo -e "\n=== Test: Restore with ID that doesn't exist ==="
+    teardown
+    setup
+
+    # Metadata file is empty now, so there are no file IDs
+    # Attempt to restore a non-existent ID
+    $SCRIPT restore 0123456789_nreal
+
+    # Check if no file was restored
+    restored_file=$(ls "$TEST_DIR")
+
+    if [[ -z "$restored_file" ]]; then
+        echo "✓ File was not restored"
+        assert_success "Restore with ID that doesn't exist"
+    else
+        echo "✗ Some file was restored"
+        assert_fail "Restore with ID that doesn't exist"
+    fi
+}
  
 # Run all tests 
 echo "=========================================" 
@@ -326,6 +349,7 @@ test_empty_recycle
 test_delete_non-existent_file
 test_delete_file_without_permissions
 test_restore_when_original_location_has_same_filename
+test_restore_with_unexistent_id
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
