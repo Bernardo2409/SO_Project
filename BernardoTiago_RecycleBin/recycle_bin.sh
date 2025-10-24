@@ -27,7 +27,7 @@ NC='\033[0m' # No Color
 
 main() {
    
-    echo -e " Hello $(whoami)! \n"
+    # echo -e " Hello $(whoami)! \n"
 
     # Optional auto-init if not already created
     if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
@@ -243,15 +243,31 @@ list_recycled() {
 
     # Show details
     if [[ "$1" == "--detailed" ]]; then
+
+        echo -e "$(printf '%0.s-' {1..224})"
+        # Cabeçalho formatado corretamente
+        printf "%-26s | %-23s | %-80s | %-20s | %-10s | %-12s | %-13s | %-10s\n" \
+            "UniqueID" "Original filename" "Path" "Deletion date" "File size" "File type" "Permissions" "Owner"
+
+        # Exibição dos dados
         grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | while IFS=',' read -r id name path date size type perms owner; do
-            printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
+            printf "%-26s | %-23s | %-80s | %-20s | %-10s | %-12s | %-13s | %-10s\n" \
                 "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
         done
+
+
     else
         # Simple format
+        echo -e "---------------------------------------------------------------------------------------------"
+        printf "%-26s | %-23s | %-25s | %-10s\n" "UniqueID" "Original filename" "Deletion date" "File size"
+
         grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | while IFS=',' read -r id name path date size _; do
-            printf "%s %s %s %s\n" "${id}" "${name}" "${date}" "${size}"
+            printf "%-26s | %-23s | %-25s | %-10s\n" "${id}" "${name}" "${date}" "${size}"
+        
         done
+    echo -e "---------------------------------------------------------------------------------------------"
+    
+
     fi
 }
 

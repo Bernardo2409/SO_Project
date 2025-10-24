@@ -80,7 +80,7 @@ test_delete_multiple_files() {
 
 
     # Delete all the files on the same time
-    $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" > /dev/null 2>&1
+    $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
 
     # Verify if they were deleted
     if [[ -f "$TEST_DIR/file1.txt" || -f "$TEST_DIR/file2.txt" || -f "$TEST_DIR/file3.txt" ]]; then
@@ -94,27 +94,6 @@ test_delete_multiple_files() {
     ((PASS++))
 }
 
-
-test_list_empty() { 
-    echo -e "\n=== Test: List Empty Bin ===" 
-    setup 
-    $SCRIPT list | grep -q "empty" 
-    assert_success "List empty recycle bin" 
-} 
- 
-test_restore_file() { 
-    echo -e "\n=== Test: Restore File ===" 
-    setup 
-    echo "test" > "$TEST_DIR/restore_test.txt" 
-    $SCRIPT delete "$TEST_DIR/restore_test.txt" 
-     
-    # Get file ID from list 
-    ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
-    $SCRIPT restore "$ID" 
-    assert_success "Restore file" 
-    [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
-
-}
 # Test: Delete Empty Directory
 test_delete_empty_directory() {
     echo -e "\n=== Test: Delete Empty Directory ==="
@@ -125,7 +104,7 @@ test_delete_empty_directory() {
 
 
     # Delete the empty directory
-    $SCRIPT delete "$TEST_DIR/empty_dir" > /dev/null 2>&1
+    $SCRIPT delete "$TEST_DIR/empty_dir" 
     exit_code=$?
 
     # Verify: directory removed from original location
@@ -166,6 +145,59 @@ test_delete_directory_with_contents() {
     fi
 }
 
+
+test_list_empty() { 
+    echo -e "\n=== Test: List Empty Bin ===" 
+    setup 
+    $SCRIPT list | grep -q "empty"  # found the word 'empty' on the function
+    assert_success "List empty recycle bin" 
+} 
+
+test_list_with_items() {
+    echo -e "\n=== Test: List Bin With Items ===" 
+    setup
+
+    echo "file1" > "$TEST_DIR/file1.txt"
+    echo "file2" > "$TEST_DIR/file2.txt"
+    echo "file3" > "$TEST_DIR/file3.txt"
+
+    $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt"  
+
+    $SCRIPT list | grep -q "file(s)" # found the word 'file(s)' on the function
+
+    assert_success "List recycle bin with items" 
+
+}
+ 
+test_restore_file() { 
+    echo -e "\n=== Test: Restore File ===" 
+    setup 
+    echo "test" > "$TEST_DIR/restore_test.txt" 
+    $SCRIPT delete "$TEST_DIR/restore_test.txt" 
+     
+    # Get file ID from list 
+    ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
+    $SCRIPT restore "$ID" 
+    assert_success "Restore file" 
+    [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
+
+}
+
+test_restore_non_existent() { 
+    echo -e "\n=== Test: Restore to non-existent original path ===" 
+    setup 
+    echo "test" > "$TEST_DIR/restore_test.txt" 
+    $SCRIPT delete "$TEST_DIR/restore_test.txt" 
+     
+    # Get file ID from list 
+    ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
+    $SCRIPT restore "$ID" 
+    assert_success "Restore file" 
+    [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
+
+}
+
+
  
 # Run all tests 
 echo "=========================================" 
@@ -179,7 +211,7 @@ test_delete_multiple_files
 test_delete_empty_directory
 test_delete_directory_with_contents
 test_list_empty 
-
+test_list_with_items
 test_restore_file 
 
 # Clean the RecycleBin files after all the tests
