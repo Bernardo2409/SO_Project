@@ -234,11 +234,11 @@ test_delete_non-existent_file() {
     setup
 
     # Attempt to delete non-existent_file.txt
-    $SCRIPT delete non-existent_file.txt
+    $SCRIPT "$TEST_DIR/delete non-existent_file.txt"
 
     # Assert that there is no file named non-existent_file.txt in metadata
     if grep -q "non-existent_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
-        echo "✓ Non-existent file deleted"
+        echo "✗ Non-existent file deleted"
         assert_fail "Delete non-existent file"
     else
         echo "✓ Non-existent file not deleted"
@@ -246,6 +246,26 @@ test_delete_non-existent_file() {
     fi
 }
 
+test_delete_file_without_permissions() {
+    echo -e "\n=== Test: Delete file without permissions ==="
+    setup
+
+    #Create file, and then remove permissions
+    echo "file1" > "$TEST_DIR/file1.txt"
+    chmod -rwx "$TEST_DIR/file1.txt"
+
+    #Attempt to delete the file
+    $SCRIPT delete "$TEST_DIR/file1.txt"
+
+    # Assert that the file was not deleted (Insufficient permissions)
+    if grep -q "file1.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
+        echo "✗ File without permissions was deleted"
+        assert_fail "Delete file without permissions"
+    else
+        echo "✓ File without permissions wasn't deleted"
+        assert_success "Delete file without permissions"
+    fi
+}
 
  
 # Run all tests 
@@ -268,6 +288,7 @@ test_empty_recycle
 
 #Edge Cases
 test_delete_non-existent_file
+test_delete_file_without_permissions
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
