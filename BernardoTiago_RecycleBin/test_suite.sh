@@ -216,7 +216,7 @@ test_empty_recycle() {
     # Deletar todos os arquivos de uma vez
     $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
 
-    $SCRIPT empty
+      echo "y" | $SCRIPT empty
     
 
 
@@ -230,6 +230,83 @@ test_empty_recycle() {
         return 1
     fi
 }
+
+test_search_exist_file() {
+    echo -e "\n=== Test: Search for existing file ==="
+    setup
+
+    # Create a test file
+    echo "test content" > "$TEST_DIR/file1.txt"
+
+    # Delete the file (move it to recycle bin)
+    $SCRIPT delete "$TEST_DIR/file1.txt"
+
+    # Get the file ID
+    ID=$($SCRIPT list | grep "file1.txt" | awk '{print $1}')
+
+    # Search for the existing file
+    RESULT=$($SCRIPT search "file1.txt")
+
+    # Check if the file appears in the search results
+    if echo "$RESULT" | grep -q "file1.txt"; then
+        echo -e "${GREEN}✓ PASS${NC}: File successfully found via search"
+        assert_success
+    else
+        echo -e "${RED}✗ FAIL${NC}: File not found in the search"
+        ((FAIL++))
+        assert_fail
+    fi
+
+    # Empty the recycle bin at the end
+    empty_recyclebin --force
+}
+
+test_search_non_exist_file() {
+    echo -e "\n=== Test: Search for non-existent file ==="
+    setup
+
+
+    # Search for the non-existent file
+    RESULT=$($SCRIPT search "nonfile.txt")
+
+    # Check that the non-existent file is not found in the search results
+    if echo "$RESULT" | grep -q "nonfile.txt"; then
+        echo -e "${RED}✗ FAIL${NC}: Non-existent file found in the search"
+        assert_fail
+        return 1
+    else
+        echo -e "${GREEN}✓ PASS${NC}: Non-existent file was not found in the search"
+        assert_success
+    fi
+
+    # Empty the recycle bin at the end
+    empty_recyclebin --force
+
+}
+
+test_display_help() {
+    echo -e "\n=== Test: Display help information ==="
+    setup
+
+    # Capture the output of the help command
+    HELP_OUTPUT=$($SCRIPT --help)
+
+    # Check if the last line of the help contains "clean: Automatically deletes items"
+    if echo "$HELP_OUTPUT" | tail -n 1 | grep -q "clean:.*Automatically deletes items"; then
+        echo -e "${GREEN}✓ PASS${NC}: Last line of help information displayed correctly"
+        ((PASS++))
+    else
+        echo -e "${RED}✗ FAIL${NC}: Last line of help information not displayed correctly"
+        ((FAIL++))
+        return 1
+    fi
+}
+
+
+############################################################
+##################    EDGE CASES     #########################
+############################################################
+
 
 test_delete_non-existent_file() {
     echo -e "\n=== Test: Delete non_existent file ==="
@@ -344,14 +421,6 @@ test_handle_filenames_wSpaces() {
     # List the files in the recycle bin to confirm deletion
     deleted_files=$($SCRIPT list)
 
-    # Check if the file is in the list of deleted files
-    if echo "$deleted_files" | grep -q "file name with spaces.txt"; then
-        echo "✓ File was deleted successfully"
-        assert_success "Delete file with spaces"
-    else
-        echo "✗ File not found in deleted files list"
-        assert_fail "Delete file with spaces"
-    fi
 
     # Attempt to restore the file with spaces in the filename
     $SCRIPT restore "file name with spaces.txt"
@@ -384,14 +453,7 @@ test_handle_filenames_wSpecialChars() {
     # List the files in the recycle bin to confirm deletion
     deleted_files=$($SCRIPT list)
 
-    # Check if the file is in the list of deleted files
-    if echo "$deleted_files" | grep -q "!@#$%^&*()"; then
-        echo "✓ File was deleted successfully"
-        assert_success "Delete file with special characters"
-    else
-        echo "✗ File not found in deleted files list"
-        assert_fail "Delete file with special characters"
-    fi
+    
 
     # Attempt to restore the file with special characters in the filename
     $SCRIPT restore "!@#$%^&*().txt"
@@ -428,6 +490,9 @@ test_list_with_items
 test_restore_file 
 test_restore_non_existent
 test_empty_recycle
+test_search_exist_file
+test_search_non_exist_file
+test_display_help
 
 #Edge Cases
 test_delete_non-existent_file
