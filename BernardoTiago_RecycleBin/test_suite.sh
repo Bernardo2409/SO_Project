@@ -85,13 +85,12 @@ test_delete_multiple_files() {
     # Verify if they were deleted
     if [[ -f "$TEST_DIR/file1.txt" || -f "$TEST_DIR/file2.txt" || -f "$TEST_DIR/file3.txt" ]]; then
         echo -e "${RED}✗ FAIL${NC}: Um ou mais ficheiros ainda existem no diretório original"
-        ((FAIL++))
         return 1
     fi
 
     # Sucess?????????????????????????????
     echo -e "${GREEN}✓ PASS${NC}: Múltiplos ficheiros eliminados com sucesso num único comando"
-    ((PASS++))
+    assert_success
 }
 
 # Test: Delete Empty Directory
@@ -205,6 +204,31 @@ test_restore_non_existent() {
 
 }
 
+test_empty_recycle() {
+    echo -e "\n=== Test: Empty entire recycle bin ==="
+    setup
+
+    # Criar arquivos de teste
+    echo "file1" > "$TEST_DIR/file1.txt"
+    echo "file2" > "$TEST_DIR/file2.txt"
+    echo "file3" > "$TEST_DIR/file3.txt"
+
+    # Deletar todos os arquivos de uma vez
+    $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
+
+    empty_recyclebin
+
+    # Verificar se a lixeira foi esvaziada corretamente
+    if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
+        echo -e "${GREEN}✓ PASS${NC}: A reciclagem foi esvaziada com sucesso"
+        assert_success
+
+    else
+        echo -e "${RED}✗ FAIL${NC}: A reciclagem não foi esvaziada corretamente"
+        return 1
+    fi
+}
+
 
 
 
@@ -224,6 +248,7 @@ test_list_empty
 test_list_with_items
 test_restore_file 
 test_restore_non_existent
+test_empty_recycle
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
