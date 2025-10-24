@@ -185,17 +185,27 @@ test_restore_file() {
 
 test_restore_non_existent() { 
     echo -e "\n=== Test: Restore to non-existent original path ===" 
+    
     setup 
-    echo "test" > "$TEST_DIR/restore_test.txt" 
-    $SCRIPT delete "$TEST_DIR/restore_test.txt" 
-     
-    # Get file ID from list 
-    ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
-    $SCRIPT restore "$ID" 
-    assert_success "Restore file" 
-    [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
+
+    # Simulate a non-existent original path for restoration
+    NON_EXISTENT_PATH="$TEST_DIR/non_existent_directory/restore_test.txt"
+    
+    # Attempt to restore the file to the non-existent path
+    $SCRIPT restore "$ID" "$NON_EXISTENT_PATH"
+    
+    # Assert that the restore didn't happen (file should not be restored to non-existent path)
+    if [ ! -f "$NON_EXISTENT_PATH" ]; then
+        echo "✓ File not restored to non-existent path"
+        assert_success
+    else
+        echo "✗ Test failed: File was restored to a non-existent path"
+        assert_fail
+    fi
 
 }
+
+
 
 
  
@@ -213,6 +223,7 @@ test_delete_directory_with_contents
 test_list_empty 
 test_list_with_items
 test_restore_file 
+test_restore_non_existent
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
