@@ -326,6 +326,88 @@ test_restore_with_unexistent_id() {
         assert_fail "Restore with ID that doesn't exist"
     fi
 }
+
+test_handle_filenames_wSpaces() {
+    echo -e "\n=== Test: Handle filenames with spaces ==="
+
+    teardown
+    setup
+
+    # Create filename with special characters in TEST_DIR
+    echo "file name with spaces" > "$TEST_DIR/file name with spaces.txt"
+
+    # Try to delete the file with spaces in the filename
+    $SCRIPT delete "$TEST_DIR/file name with spaces.txt"
+
+    # List the files in the recycle bin to confirm deletion
+    deleted_files=$($SCRIPT list)
+
+    # Check if the file is in the list of deleted files
+    if echo "$deleted_files" | grep -q "file name with spaces.txt"; then
+        echo "✓ File was deleted successfully"
+        assert_success "Delete file with spaces"
+    else
+        echo "✗ File not found in deleted files list"
+        assert_fail "Delete file with spaces"
+    fi
+
+    # Attempt to restore the file with spaces in the filename
+    $SCRIPT restore "file name with spaces.txt"
+
+    # Capture the restored file name
+    restored_file=$(ls "$TEST_DIR" | grep "file name with spaces.txt")
+
+    # Verify if the file was restored (check TEST_DIR for restored file)
+    if [[ -n "$restored_file" ]]; then
+        echo "✓ File with spaces was restored successfully as $restored_file"
+        assert_success "Restore file with spaces"
+    else
+        echo "✗ File was not restored"
+        assert_fail "Restore file with spaces"
+    fi
+}
+
+test_handle_filenames_wSpecialChars() {
+    echo -e "\n=== Test: Handle filenames with special characters ==="
+
+    teardown
+    setup
+
+    # Create filename with spaces in TEST_DIR
+    echo "file name with spaces" > "$TEST_DIR/!@#$%^&*().txt"
+
+    # Try to delete the file with special characters in the filename
+    $SCRIPT delete "$TEST_DIR/!@#$%^&*().txt"
+
+    # List the files in the recycle bin to confirm deletion
+    deleted_files=$($SCRIPT list)
+
+    # Check if the file is in the list of deleted files
+    if echo "$deleted_files" | grep -q "!@#$%^&*()"; then
+        echo "✓ File was deleted successfully"
+        assert_success "Delete file with special characters"
+    else
+        echo "✗ File not found in deleted files list"
+        assert_fail "Delete file with special characters"
+    fi
+
+    # Attempt to restore the file with special characters in the filename
+    $SCRIPT restore "!@#$%^&*().txt"
+    
+    # Capture the restored file name
+    restored_file=$(ls "$TEST_DIR" | grep "!@#$%^&*().txt")
+
+    # Verify if the file was restored (check TEST_DIR for restored file)
+    if [[ -n "$restored_file" ]]; then
+        echo "✓ File with special characters was restored successfully as $restored_file"
+        assert_success "Restore file with special characters"
+    else
+        echo "✗ File was not restored"
+        assert_fail "Restore file with special characters"
+    fi
+}
+
+
  
 # Run all tests 
 echo "=========================================" 
@@ -350,6 +432,8 @@ test_delete_non-existent_file
 test_delete_file_without_permissions
 test_restore_when_original_location_has_same_filename
 test_restore_with_unexistent_id
+test_handle_filenames_wSpaces
+test_handle_filenames_wSpecialChars # Está a dar erro
 
 # Clean the RecycleBin files after all the tests
 bash "$SCRIPT" empty --force > /dev/null 2>&1
