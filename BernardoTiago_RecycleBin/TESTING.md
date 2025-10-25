@@ -19,7 +19,9 @@
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase1](/BernardoTiago_RecycleBin/screenshots/TestCase1.png)
+**Screenshots:** 
+
+![TestCase1](/BernardoTiago_RecycleBin/screenshots/TestCase1.png)
 
 ### Test Case 2: Delete Multiple Files
 1. Create multiple test files: `echo "test1" > test1.txt' 'echo "test2" > test2.txt' 'echo "test3" > test3.txt`
@@ -40,7 +42,9 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase2](/BernardoTiago_RecycleBin/screenshots/TestCase2.png)
+**Screenshots:** 
+
+![TestCase2](/BernardoTiago_RecycleBin/screenshots/TestCase2.png)
 
 ### Test Case 3: List Empty
 1. Make sure you have no files in the recycle_bin
@@ -53,7 +57,9 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase3](/BernardoTiago_RecycleBin/screenshots/TestCase3.png)
+**Screenshots:** 
+
+![TestCase3](/BernardoTiago_RecycleBin/screenshots/TestCase3.png)
 
 ### Test Case 4: List Content
 1. Make sure you have already deleted files
@@ -66,7 +72,9 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase4](/BernardoTiago_RecycleBin/screenshots/TestCase4.png)
+**Screenshots:** 
+
+![TestCase4](/BernardoTiago_RecycleBin/screenshots/TestCase4.png)
 
 ### Test Case 5: Restore file
 1. Make sure you have deleted atleast 1 file
@@ -82,7 +90,9 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase5](/BernardoTiago_RecycleBin/screenshots/TestCase5.png)
+**Screenshots:** 
+
+![TestCase5](/BernardoTiago_RecycleBin/screenshots/TestCase5.png)
 
 ### Test Case 6: Restore non-existent file
 1. Make sure you have an empty recycle bin or you invent a fake file name to test
@@ -97,7 +107,9 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase6](/BernardoTiago_RecycleBin/screenshots/TestCase6.png)
+**Screenshots:** 
+
+![TestCase6](/BernardoTiago_RecycleBin/screenshots/TestCase6.png)
 
 ### Test Case 7: Empty entire recycle bin
 1. You have 1 or more files in recycle bin
@@ -115,7 +127,9 @@ Recycle Bin is empty..]
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase7](/BernardoTiago_RecycleBin/screenshots/TestCase7.png)
+**Screenshots:** 
+
+![TestCase7](/BernardoTiago_RecycleBin/screenshots/TestCase7.png)
 ![TestCase7_force](/BernardoTiago_RecycleBin/screenshots/TestCase7_force.png)
 
 ### Test Case 8: Search file
@@ -131,7 +145,9 @@ Recycle Bin is empty..]
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase7](/BernardoTiago_RecycleBin/screenshots/TestCase8.png)
+**Screenshots:** 
+
+![TestCase8](/BernardoTiago_RecycleBin/screenshots/TestCase8.png)
 
 ### Test Case 9: Empty Specific File
 1. You have a file in recycle bin
@@ -151,7 +167,9 @@ Deleting 1761393711552957952_0h3ves
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase9](/BernardoTiago_RecycleBin/screenshots/TestCase9.png)
+**Screenshots:** 
+
+![TestCase9](/BernardoTiago_RecycleBin/screenshots/TestCase9.png)
 ![TestCase9_force](/BernardoTiago_RecycleBin/screenshots/TestCase9_force.png)
 
 ### Test Case 10: Display help menu
@@ -172,8 +190,57 @@ Deleting 1761393711552957952_0h3ves
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase10](/BernardoTiago_RecycleBin/screenshots/TestCase10.png)
+**Screenshots:** 
+
+![TestCase10](/BernardoTiago_RecycleBin/screenshots/TestCase10.png)
 
 ### Test Case 11: Display statistics
+1. You want to see the statistics of the recycle bin2
+2. Run `./recycle_bin show`
+
+**Expected Result:**
+- Return Display Total Items, Total Storage Used, Files, Directories, Oldest Item, Newest Item and Avarage file Size
+
+**ActualResult**  [=== Recycle Bin Statistics ===
+
+Total items:           6
+Total storage used:    845B (0.00% of quota)
+Files:                 0
+Directories:           0
+Oldest item:           test4.txt (2025-10-25 13:07:14)
+Newest item:           file5.txt (2025-10-25 14:28:30)
+Average file size:     141B
+]
+
+**Status:** x Pass ☐ Fail
+
+**Screenshots:** 
+
+![TestCase11](/BernardoTiago_RecycleBin/screenshots/TestCase11.png)
 
 ### Test Case 12: Preview File
+1. You want to know whats the content of a specific file
+2. You'll need to know the file ID, run `./recycle_bin search <fileName>` to acknowledge the file unique ID
+3. Run `./recycle_bin preview <fileUniqueID>`
+
+**Expected Result:**
+- Return the first 10 lines present in the file
+
+**ActualResult**  [---------------------------------------------
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Cras vel diam lorem.
+Praesent sodales, enim non bibendum pharetra, orci ligula fermentum nisl,
+nec egestas lectus est eget eros.
+Cras sodales elit turpis, vitae dictum mi finibus quis.
+Cras commodo sollicitudin nulla, in sagittis dolor condimentum a.
+Cras vitae fringilla orci.
+Vestibulum eget efficitur massa.
+Nam quis ullamcorper arcu.
+Maecenas faucibus nisi fermentum sapien ornare, id pretium nisi porta --------------------------------------------
+]
+
+**Status:** x Pass ☐ Fail
+
+**Screenshots:** 
+
+![TestCase12](/BernardoTiago_RecycleBin/screenshots/TestCase12.png)
