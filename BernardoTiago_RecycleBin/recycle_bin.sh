@@ -369,18 +369,20 @@ search_recycled() {
         return 1
     fi
 
-    echo "=== Results ==="
+    echo -e "${GREEN}=== Search Results ===${NC}"
+    printf "${CYAN}%-20s | %-15s | %-30s | %-12s | %-8s | %-10s | %-6s | %s${NC}\n" \
+        "ID" "Name" "Path" "Date" "Size" "Type" "Perms" "Owner"
 
     if [[ "$caseInsensitive" -eq 1 ]]; then
         # caseIsensitive = true
         grep -iE "${pattern}" "${METADATA_FILE}" | grep -vE '^\s*#|^\s*$' | while IFS=',' read -r id name path date size type perms owner; do
-            printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
+            printf "%-20s | %-15s | %-30s | %-12s | %-8s | %-10s | %-6s | %s\n" \
                 "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
         done
     else
         # no -i
         grep -F --no-ignore-case -- "${pattern}" "${METADATA_FILE}" | grep -vE '^\s*#|^\s*$' | while IFS=',' read -r id name path date size type perms owner; do
-            printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
+            printf "%-20s | %-15s | %-30s | %-12s | %-8s | %-10s | %-6s | %s\n" \
                 "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
         done
     fi
@@ -390,7 +392,7 @@ search_recycled() {
 #################################################
 # Function: empty_recyclebin
 # Description: Permanently deletes all items in recycle bin
-# Parameters: $1 - search patterns
+# Parameters: $1 -> --foce (optional) $2 -> fileID (optional)
 # Returns: 0 on success, 1 on failure
 #################################################
 

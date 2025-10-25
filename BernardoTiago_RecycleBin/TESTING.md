@@ -131,7 +131,7 @@ Recycle Bin is empty..]
 
 **Status:** x Pass ☐ Fail
 
-**Screenshots:** ![TestCase7](/BernardoTiago_RecycleBin/screenshots/TestCase8.png)
+**Screenshots:** ![TestCase8](/BernardoTiago_RecycleBin/screenshots/TestCase8.png)
 
 ### Test Case 9: Empty Specific File
 1. You have a file in recycle bin
@@ -175,5 +175,48 @@ Deleting 1761393711552957952_0h3ves
 **Screenshots:** ![TestCase10](/BernardoTiago_RecycleBin/screenshots/TestCase10.png)
 
 ### Test Case 11: Display statistics
+1. You want to see the statistics of the recycle bin2
+2. Run `./recycle_bin show`
+
+**Expected Result:**
+- Return Display Total Items, Total Storage Used, Files, Directories, Oldest Item, Newest Item and Avarage file Size
+
+**ActualResult**  [=== Recycle Bin Statistics ===
+
+Total items:           6
+Total storage used:    845B (0.00% of quota)
+Files:                 0
+Directories:           0
+Oldest item:           test4.txt (2025-10-25 13:07:14)
+Newest item:           file5.txt (2025-10-25 14:28:30)
+Average file size:     141B
+]
+
+**Status:** x Pass ☐ Fail
+
+**Screenshots:** ![TestCase11](/BernardoTiago_RecycleBin/screenshots/TestCase11.png)
 
 ### Test Case 12: Preview File
+1. You want to know whats the content of a specific file
+2. You'll need to know the file ID, run `./recycle_bin search <fileName>` to acknowledge the file unique ID
+3. Run `./recycle_bin preview <fileUniqueID>`
+
+**Expected Result:**
+- Return the first 10 lines present in the file
+
+**ActualResult**  [---------------------------------------------
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Cras vel diam lorem.
+Praesent sodales, enim non bibendum pharetra, orci ligula fermentum nisl,
+nec egestas lectus est eget eros.
+Cras sodales elit turpis, vitae dictum mi finibus quis.
+Cras commodo sollicitudin nulla, in sagittis dolor condimentum a.
+Cras vitae fringilla orci.
+Vestibulum eget efficitur massa.
+Nam quis ullamcorper arcu.
+Maecenas faucibus nisi fermentum sapien ornare, id pretium nisi porta --------------------------------------------
+]
+
+**Status:** x Pass ☐ Fail
+
+**Screenshots:** ![TestCase12](/BernardoTiago_RecycleBin/screenshots/TestCase12.png)
