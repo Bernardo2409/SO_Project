@@ -95,7 +95,7 @@
         # Verify if they were deleted
         if [[ -f "$TEST_DIR/file1.txt" || -f "$TEST_DIR/file2.txt" || -f "$TEST_DIR/file3.txt" ]]; then
             echo -e "${RED}✗ FAIL${NC}: One or more files in original directory"
-            return 1
+            
         fi
 
         assert_success "Multiple files deleted with sucess"
@@ -119,13 +119,12 @@
         # Verify: directory removed from original location
         if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/empty_dir" ]]; then
             
-            echo -e "${GREEN}✓ PASS${NC}: Empty directory deleted and correctly registered in Recycle Bin"
-            ((PASS++))
+            assert_success "Empty directory deleted and correctly registered in Recycle Bin"
         
         else
-            echo -e "${RED}✗ FAIL${NC}: Failed to delete empty directory"
+
+            assert_fail "Failed to delete empty directory"
             echo "  Exit code: $exit_code"
-            ((FAIL++))
         fi
     }
 
@@ -145,10 +144,10 @@
 
         # Verify: directory removed from original location
         if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/dir_with_contents" ]]; then
-            echo -e "${GREEN}✓ PASS${NC}: Directory with contents deleted recursively and registered in Recycle Bin"
-            ((PASS++))
+            
+            assert_success "Directory with contents deleted recursively and registered in Recycle Bin"
         else
-            echo -e "${RED}✗ FAIL${NC}: Failed to delete directory with contents"
+            assert_fail "Failed to delete directory with contents"
             echo "  Exit code: $exit_code"
             ((FAIL++))
         fi
@@ -158,7 +157,7 @@
     test_list_empty() { 
         echo -e "\n=== Test: List Empty Bin ===" 
         setup 
-        $SCRIPT list | grep -q "empty"  # found the word 'empty' on the function
+        $SCRIPT list | grep -q "Recycle Bin is empty"  # found the word 'empty' on the function
         assert_success "List empty recycle bin" 
     } 
 
@@ -166,13 +165,17 @@
         echo -e "\n=== Test: List Bin With Items ===" 
         setup
 
+        # Create files
         echo "file1" > "$TEST_DIR/file1.txt"
         echo "file2" > "$TEST_DIR/file2.txt"
         echo "file3" > "$TEST_DIR/file3.txt"
 
+
+        # Delete files
         $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt"  
 
-        $SCRIPT list | grep -q "file(s)" # found the word 'file(s)' on the function
+        # Calling list and check the message
+        $SCRIPT list | grep -q "file(s) found in Recycle Bin:" 
 
         assert_success "List recycle bin with items" 
 
@@ -181,7 +184,9 @@
     test_restore_file() { 
         echo -e "\n=== Test: Restore File ===" 
         setup 
+        # Create file
         echo "test" > "$TEST_DIR/restore_test.txt" 
+        # Delete file
         $SCRIPT delete "$TEST_DIR/restore_test.txt" 
         
         # Get file ID from list 
@@ -205,11 +210,9 @@
         
         # Assert that the restore didn't happen (file should not be restored to non-existent path)
         if [ ! -f "$NON_EXISTENT_PATH" ]; then
-            echo "✓ File not restored to non-existent path"
-            assert_success "Restore to non-existent original path"
+            assert_success "File not restored to non-existent path"
         else
-            echo "✗ Test failed: File was restored to a non-existent path"
-            assert_fail "Restore to non-existent original path"
+            assert_fail "File was restored to a non-existent path"
         fi
 
     }
@@ -218,26 +221,23 @@
         echo -e "\n=== Test: Empty entire recycle bin ==="
         setup
 
-        # Criar arquivos de teste
+        # Create files
         echo "file1" > "$TEST_DIR/file1.txt"
         echo "file2" > "$TEST_DIR/file2.txt"
         echo "file3" > "$TEST_DIR/file3.txt"
 
-        # Deletar todos os arquivos de uma vez
+        # Delete all the files 
         $SCRIPT delete "$TEST_DIR/file1.txt" "$TEST_DIR/file2.txt" "$TEST_DIR/file3.txt" 
 
+        # Confirm automatically
         echo "y" | $SCRIPT empty
         
-
-
-        # Verificar se a lixeira foi esvaziada corretamente
+        # Verify if recyclebin is empty
         if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
-            echo -e "${GREEN}✓ PASS${NC}: RecycleBin empty with sucess"
-            assert_success
+            assert_success "RecycleBin empty with sucess"
 
         else
-            echo -e "${RED}✗ FAIL${NC}: RecycleBin is not empty"
-            return 1
+            assert_fail "RecycleBin is not empty"
         fi
     }
 
@@ -259,12 +259,9 @@
 
         # Check if the file appears in the search results
         if echo "$RESULT" | grep -q "file1.txt"; then
-            echo -e "${GREEN}✓ PASS${NC}: File successfully found via search"
-            assert_success
+            assert_success File successfully found via search
         else
-            echo -e "${RED}✗ FAIL${NC}: File not found in the search"
-            ((FAIL++))
-            assert_fail
+            assert_fail File not found in the search
         fi
 
         # Empty the recycle bin at the end
@@ -281,12 +278,10 @@
 
         # Check that the non-existent file is not found in the search results
         if echo "$RESULT" | grep -q "nonfile.txt"; then
-            echo -e "${RED}✗ FAIL${NC}: Non-existent file found in the search"
-            assert_fail
-            return 1
+            assert_fail "Non-existent file found in the search"
         else
             echo -e "${GREEN}✓ PASS${NC}: Non-existent file was not found in the search"
-            assert_success
+            assert_success "Non-existent file was NOT found in the search"
         fi
 
         # Empty the recycle bin at the end

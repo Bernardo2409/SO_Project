@@ -31,7 +31,7 @@ main() {
 
     # Optional auto-init if not already created
     if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
-        echo -e "${YELLOW}Recycle Bin not found. Initializing automatically...${NC}"
+        echo -e "\n ${YELLOW}Recycle Bin not found. Initializing automatically...\n ${NC}"
         initialize_recyclebin
     fi
     
