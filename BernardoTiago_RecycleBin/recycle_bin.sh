@@ -293,7 +293,8 @@ restore_file() {
 
     # Search for the ID and Original name
     local entry
-    entry=$(grep -E "^${query}," "$METADATA_FILE" 2>/dev/null || grep -E ",${query}," "$METADATA_FILE" 2>/dev/null | head -n1)
+    entry=$(grep -F -- "${query}," "$METADATA_FILE" 2>/dev/null || grep -F -- ",${query}," "$METADATA_FILE" 2>/dev/null | head -n1)
+
 
     if [[ -z "$entry" ]]; then
         echo -e "${RED}Error:${NC} No file found with ID or name '${query}'."
@@ -378,7 +379,7 @@ search_recycled() {
         done
     else
         # no -i
-        grep -E --no-ignore-case "${pattern}" "${METADATA_FILE}" | grep -vE '^\s*#|^\s*$' | while IFS=',' read -r id name path date size type perms owner; do
+        grep -F --no-ignore-case -- "${pattern}" "${METADATA_FILE}" | grep -vE '^\s*#|^\s*$' | while IFS=',' read -r id name path date size type perms owner; do
             printf "%s | %s | %s | %s | %s | %s | %s | %s\n" \
                 "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
         done
