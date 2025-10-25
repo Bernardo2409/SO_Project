@@ -265,7 +265,8 @@
         fi
 
         # Empty the recycle bin at the end
-        empty_recyclebin --force
+        $SCRIPT empty --force
+
     }
 
     test_search_non_exist_file() {
@@ -277,16 +278,19 @@
         RESULT=$($SCRIPT search "nonfile.txt")
 
         # Check that the non-existent file is not found in the search results
+
+        # Because the exit code commands the assert(fail/success) it's necessary to add false/true to force the exit code.
+        # false = exit code 1     true = exit code 0
         if echo "$RESULT" | grep -q "nonfile.txt"; then
+            false
             assert_fail "Non-existent file found in the search"
         else
-            echo -e "${GREEN}✓ PASS${NC}: Non-existent file was not found in the search"
+            true
             assert_success "Non-existent file was NOT found in the search"
         fi
 
         # Empty the recycle bin at the end
-        empty_recyclebin --force
-
+        $SCRIPT empty --force
     }
 
     test_display_help() {
