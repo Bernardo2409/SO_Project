@@ -415,7 +415,8 @@ empty_recyclebin() {
             echo -e "${GREEN}RecycleBin successfully emptied.${NC}"
         # no --force
         else
-            read -e -p "${YELLOW}Are you sure you want to delete all files? (y/n) ${NC}" res
+            echo -e "${YELLOW}Are you sure you want to delete all files? (y/n) ${NC}"
+            read res
             if [[ "${res}" =~ ^[Yy]$ ]]; then
                 rm -rf "${FILES_DIR:?}"/*
                 head -n 2 "${METADATA_FILE}" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "${METADATA_FILE}"
@@ -429,25 +430,39 @@ empty_recyclebin() {
         # --force
         if [[ "$force" -eq 1 ]]; then
             echo -e "${RED}Deleting ${file}${NC}"
-            rm -rf "$FILES_DIR/$file"
-            grep -v "^$file," "$METADATA_FILE" > "$METADATA_FILE.tmp" && mv "$METADATA_FILE.tmp" "$METADATA_FILE"
-            echo -e "${GREEN}${file} successfully deleted.${NC}"
-            return 0
-        # no --force
-        else
-            read -e -p "${YELLOW}Are you sure you want to permanently delete '${file}'? (y/n) ${NC}" res
-            if [[ "$res" =~ ^[Yy]$ ]]; then
-                echo -e "${RED}Deleting ${file}${NC}"
-                rm -rf "$FILES_DIR/$file"
-                grep -v "^$file," "$METADATA_FILE" > "$METADATA_FILE.tmp" && mv "$METADATA_FILE.tmp" "$METADATA_FILE"
+            target=$(find "$FILES_DIR" -type f -name "${file}*" -print -quit)
+            if [[ -n "$target" ]]; then
+                rm -f "$target"
+                awk -F',' -v id="$file" '$1 != id' "$METADATA_FILE" > "$METADATA_FILE.tmp" && mv "$METADATA_FILE.tmp" "$METADATA_FILE"
                 echo -e "${GREEN}${file} successfully deleted.${NC}"
                 return 0
+            else
+                echo -e "${RED}File ${file} not found in ${FILES_DIR}.${NC}"
+                return 1
+            fi
+        # no --force
+        else
+            echo -e "${YELLOW}Are you sure you want to delete ${file}? (y/n) ${NC}"
+            read res
+            if [[ "$res" =~ ^[Yy]$ ]]; then
+                echo -e "${RED}Deleting ${file}${NC}"
+                target=$(find "$FILES_DIR" -type f -name "${file}*" -print -quit)
+                if [[ -n "$target" ]]; then
+                    rm -f "$target"
+                    awk -F',' -v id="$file" '$1 != id' "$METADATA_FILE" > "$METADATA_FILE.tmp" && mv "$METADATA_FILE.tmp" "$METADATA_FILE"
+                    echo -e "${GREEN}${file} successfully deleted.${NC}"
+                    return 0
+                else
+                    echo -e "${RED}File ${file} not found in ${FILES_DIR}.${NC}"
+                    return 1
+                fi
             else
                 echo -e "${YELLOW}Operation cancelled.${NC}"
                 return 1
             fi
         fi
     fi
+
 }
 
 #################################################
