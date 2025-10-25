@@ -153,3 +153,27 @@ Deleting 1761393711552957952_0h3ves
 
 **Screenshots:** ![TestCase9](/BernardoTiago_RecycleBin/screenshots/TestCase9.png)
 ![TestCase9_force](/BernardoTiago_RecycleBin/screenshots/TestCase9_force.png)
+
+### Test Case 10: Display help menu
+1. You are not sure how to use the functions of the program
+2. Run `./recycle_bin help` or `./recycle_bin --help` or `./recycle_bin -h`
+
+**Expected Result:**
+- Expected to pop up a menu of the functionalities of the program
+
+**ActualResult**  [./recycle_bin.sh help
+  delete:    Move files to RecycleBin
+  list:      List deleted files (--detailed for details)
+  restore:   Restore the file by its original name or ID
+  search:    Search for deleted files
+  empty:     Empty the RecycleBin (--force to don't ask for comfirmation)
+  show:      Displays overall statistics of the recycle bin
+  clean:     Automatically deletes items older than the configured retention period]
+
+**Status:** x Pass ☐ Fail
+
+**Screenshots:** ![TestCase10](/BernardoTiago_RecycleBin/screenshots/TestCase10.png)
+
+### Test Case 11: Display statistics
+
+### Test Case 12: Preview File

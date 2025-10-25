@@ -496,6 +496,7 @@ display_help() {
     echo "  empty:     Empty the RecycleBin (--force to don't ask for comfirmation)"
     echo "  show:      Displays overall statistics of the recycle bin"
     echo "  clean:     Automatically deletes items older than the configured retention period"
+    echo "  preview:   display first 10 lines of a file existent in the recycle bin"
     echo
 }
 
