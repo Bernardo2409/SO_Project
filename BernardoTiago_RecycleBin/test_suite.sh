@@ -514,6 +514,154 @@
 }
 
 
+    test_handle_large_files() {
+    echo -e "\n=== Test: Handle very large files ==="
+
+    teardown
+    setup
+
+    local LARGE_FILE="$TEST_DIR/large_test_file.bin"
+    local FILE_SIZE_MB=100  # Adjust as needed
+    local BLOCK_SIZE=1M
+
+    echo "Creating a ${FILE_SIZE_MB}MB test file..."
+    dd if=/dev/zero of="$LARGE_FILE" bs=$BLOCK_SIZE count=$FILE_SIZE_MB status=none
+    local create_exit=$?
+
+    # If creation failed, mark as fail immediately
+    if [[ $create_exit -ne 0 || ! -f "$LARGE_FILE" ]]; then
+        assert_fail "Failed to create large test file"
+        return 1
+    fi
+
+    # Delete the large file (move to Recycle Bin)
+    echo "Deleting large file..."
+    $SCRIPT delete "$LARGE_FILE" > /dev/null 2>&1
+    local delete_exit=$?
+
+    # Restore the large file
+    echo "Restoring large file..."
+    $SCRIPT restore "large_test_file.bin" > /dev/null 2>&1
+    local restore_exit=$?
+
+    # Verify that the restored file exists and has the expected size
+    local restored_size=$(stat -c%s "$LARGE_FILE" 2>/dev/null)
+    local expected_size=$((FILE_SIZE_MB * 1024 * 1024))
+
+    if [[ $delete_exit -eq 0 && $restore_exit -eq 0 && $restored_size -eq $expected_size ]]; then
+        assert_success "Large file successfully deleted, restored, and verified"
+    else
+        assert_fail "Large file handling failed (delete/restore/size mismatch)"
+    fi
+}
+
+
+
+    test_handle_symb_links() {
+    echo -e "\n=== Test: Handle symbolic links ==="
+
+    teardown
+    setup
+
+    # Create a real file and a symbolic link to it
+    local TARGET_FILE="$TEST_DIR/real_file.txt"
+    local SYMLINK_FILE="$TEST_DIR/symlink_to_real.txt"
+
+    echo "original content" > "$TARGET_FILE"
+    ln -s "$TARGET_FILE" "$SYMLINK_FILE"
+
+    # Try to delete the symbolic link (should be refused by delete_file)
+    $SCRIPT delete "$SYMLINK_FILE" > delete_output.log 2>&1
+    local delete_exit=$?
+
+    # Check if the script correctly refused to delete the symlink
+    if grep -q "Symbolic" delete_output.log || grep -q "Error" delete_output.log; then
+        assert_success "Symbolic links correctly rejected from deletion"
+    else
+        assert_fail "Symbolic link was not properly handled"
+    fi
+}
+
+test_handle_hidden_files() {
+    echo -e "\n=== Test: Handle hidden files (starting with .) ==="
+
+    teardown
+    setup
+
+    # Create a hidden file
+    local HIDDEN_FILE="$TEST_DIR/.hidden_test_file.txt"
+    echo "secret content" > "$HIDDEN_FILE"
+
+    # Delete the hidden file
+    $SCRIPT delete "$HIDDEN_FILE" > delete_output.log 2>&1
+    local delete_exit=$?
+
+    # Restore the hidden file
+    $SCRIPT restore ".hidden_test_file.txt" > restore_output.log 2>&1
+    local restore_exit=$?
+
+    # Check if the hidden file was restored correctly
+    if [[ $delete_exit -eq 0 && $restore_exit -eq 0 && -f "$HIDDEN_FILE" ]]; then
+        assert_success "Hidden file successfully deleted and restored"
+    else
+        assert_fail "Failed to handle hidden file (delete/restore issue)"
+    fi
+}
+
+test_delete_files_from_different_directories() {
+    echo -e "\n=== Test: Delete files from different directories ==="
+
+    teardown
+    setup
+
+    # Create multiple directories and files
+    mkdir -p "$TEST_DIR/dirA" "$TEST_DIR/dirB" "$TEST_DIR/dirC"
+    echo "File A content" > "$TEST_DIR/dirA/fileA.txt"
+    echo "File B content" > "$TEST_DIR/dirB/fileB.txt"
+    echo "File C content" > "$TEST_DIR/dirC/fileC.txt"
+
+    # Delete files from different directories in one command
+    $SCRIPT delete "$TEST_DIR/dirA/fileA.txt" "$TEST_DIR/dirB/fileB.txt" "$TEST_DIR/dirC/fileC.txt" > delete_output.log 2>&1
+    local delete_exit=$?
+
+    # Check if all were deleted from original directories
+    if [[ $delete_exit -eq 0 && ! -f "$TEST_DIR/dirA/fileA.txt" && ! -f "$TEST_DIR/dirB/fileB.txt" && ! -f "$TEST_DIR/dirC/fileC.txt" ]]; then
+        assert_success "Files from different directories deleted successfully in a single command"
+    else
+        assert_fail "Failed to delete files from multiple directories"
+    fi
+}
+
+test_restore_to_readonly_directory() {
+    echo -e "\n=== Test: Restore files to read-only directories ==="
+
+    teardown
+    setup
+
+    # Create a read-only directory and a file inside it
+    mkdir -p "$TEST_DIR/readonly_dir"
+    echo "protected content" > "$TEST_DIR/readonly_dir/protected.txt"
+
+    # Delete the file (move to recycle bin)
+    $SCRIPT delete "$TEST_DIR/readonly_dir/protected.txt" > delete_output.log 2>&1
+
+    # Make the directory read-only (no write permission)
+    chmod 555 "$TEST_DIR/readonly_dir"
+
+    # Try to restore the deleted file (should fail)
+    $SCRIPT restore "protected.txt" > restore_output.log 2>&1
+    local restore_exit=$?
+
+    # Revert permissions for cleanup
+    chmod 755 "$TEST_DIR/readonly_dir"
+
+    # Check if restore was prevented (expected behavior)
+    if [[ $restore_exit -ne 0 && ! -f "$TEST_DIR/readonly_dir/protected.txt" ]]; then
+        assert_success "Restore correctly prevented in read-only directory"
+    else
+        assert_fail "Restore succeeded unexpectedly in read-only directory"
+    fi
+}
 
 
 
@@ -549,7 +697,12 @@
     test_handle_filenames_wSpaces
     test_handle_filenames_wSpecialChars
     test_handle_long_filenames 
-
+    test_handle_large_files
+    test_handle_symb_links
+    test_handle_hidden_files
+    test_delete_files_from_different_directories
+    test_restore_to_readonly_directory
+    
     # Clean the RecycleBin files after all the tests
     bash "$SCRIPT" empty --force > /dev/null 2>&1
 
