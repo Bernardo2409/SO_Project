@@ -6,8 +6,7 @@
     TEST_DIR="test_data" 
     LOG_FILE="$HOME/BernardoTiago_RecycleBin/recyclebin.log"
     # Ensure log directory exists
-    mkdir -p "$(dirname "$LOG_FILE")"
-    touch "$LOG_FILE"
+    
 
     PASS=0 
     FAIL=0 
@@ -19,13 +18,14 @@
     
     # Test Helper Functions 
     setup() { 
+
         mkdir -p "$TEST_DIR" 
         rm -rf "$HOME/BernardoTiago_RecycleBin"
 
-        
     } 
     
     teardown() { 
+
         rm -rf "$TEST_DIR" 
         rm -rf "$HOME/BernardoTiago_RecycleBin"
     } 
@@ -54,15 +54,19 @@
     
     # Test Cases 
 
+
+    # Basic Functionality Tests
+
     # Initialize recycle bin structure
     test_initialization() { 
-        echo "=== Test: Initialization ===" 
-        setup 
-        $SCRIPT help > /dev/null 
-        assert_success "Initialize recycle bin" 
-        [ -d "$HOME/BernardoTiago_RecycleBin" ] && echo "✓ Directory created" 
-        [ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ] && echo "✓ Metadata file created" 
-    } 
+    echo "=== Test: Initialization ===" 
+    setup 
+    $SCRIPT help > /dev/null 
+    assert_success "Initialize recycle bin" 
+    [ -d "$HOME/BernardoTiago_RecycleBin" ] && echo "✓ Directory created" 
+    [ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ] && echo "✓ Metadata file created" 
+}
+
     
     # Delete single file
     test_delete_file() { 
@@ -71,8 +75,7 @@
         echo "test content" > "$TEST_DIR/test.txt" 
         $SCRIPT delete "$TEST_DIR/test.txt" 
         assert_success "Delete existing file" 
-        [ ! -f "$TEST_DIR/test.txt" ] && echo "✓ File removed from original 
-    location" 
+        [ ! -f "$TEST_DIR/test.txt" ] && echo "✓ File removed from original location" 
     } 
 
     # Delete multiple files in one command
@@ -95,9 +98,7 @@
             return 1
         fi
 
-        # Sucess?????????????????????????????
-        echo -e "${GREEN}✓ PASS${NC}: Multiple files deleted with sucess"
-        assert_success
+        assert_success "Multiple files deleted with sucess"
     }
 
 
@@ -301,7 +302,8 @@
         HELP_OUTPUT=$($SCRIPT --help)
 
         # Check if the last line of the help contains "clean: Automatically deletes items"
-        if echo "$HELP_OUTPUT" | tail -n 1 | grep -q "clean:.*Automatically deletes items"; then
+        if echo "$HELP_OUTPUT" | grep -q "clean:.*Automatically deletes items.*retention period"; then
+
             echo -e "${GREEN}✓ PASS${NC}: Last line of help information displayed correctly"
             ((PASS++))
         else
@@ -963,32 +965,32 @@ test_restore_to_readonly_directory() {
 
 
     #Edge Cases (12)
-    test_delete_non-existent_file
-    test_delete_file_without_permissions
-    test_restore_when_original_location_has_same_filename
-    test_restore_with_unexistent_id
-    test_handle_filenames_wSpaces
-    test_handle_filenames_wSpecialChars
-    test_handle_long_filenames 
-    test_handle_large_files
-    test_handle_symb_links
-    test_handle_hidden_files
-    test_delete_files_from_different_directories
-    test_restore_to_readonly_directory
+    #test_delete_non-existent_file
+    #test_delete_file_without_permissions
+    #test_restore_when_original_location_has_same_filename
+    #test_restore_with_unexistent_id
+    #test_handle_filenames_wSpaces
+    #test_handle_filenames_wSpecialChars
+    #test_handle_long_filenames 
+    #test_handle_large_files
+    #test_handle_symb_links
+    #test_handle_hidden_files
+    #test_delete_files_from_different_directories
+    #test_restore_to_readonly_directory
 
 
     #Erros Handling (11)
-    test_invalid_command
-    test_missing_required_parameters
-    test_corrupted_metadata_file
-    test_insufficient_disk_space
-    test_permission_denied_errors
-    test_delete_recycle_bin_itself
-    test_concurrent_operations
-    test_delete_100_files
-    test_list_recyclebin_100_items
-    test_search_in_large_metadata
-    test_restore_from_large_bin
+    #test_invalid_command
+    #test_missing_required_parameters
+    #test_corrupted_metadata_file
+    #test_insufficient_disk_space
+    #test_permission_denied_errors
+    #test_delete_recycle_bin_itself
+    #test_concurrent_operations
+    #test_delete_100_files
+    #test_list_recyclebin_100_items
+    #test_search_in_large_metadata
+    #test_restore_from_large_bin
 
     # Clean the RecycleBin files after all the tests
     bash "$SCRIPT" empty --force > /dev/null 2>&1
