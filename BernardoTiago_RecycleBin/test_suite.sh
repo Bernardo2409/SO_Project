@@ -663,6 +663,259 @@ test_restore_to_readonly_directory() {
     fi
 }
 
+    #ERROR HANDLING
+    test_invalid_command() {
+    echo -e "\n=== Test: Invalid command line arguments ==="
+
+    teardown
+    setup
+
+    # Run the script with an invalid command
+    $SCRIPT invalid_command > error_output.log 2>&1
+    local exit_code=$?
+
+    # Expect non-zero exit and an error message
+    if [[ $exit_code -ne 0 && $(grep -ci "use" error_output.log) -gt 0 ]]; then
+        assert_success "Invalid command handled gracefully with an error message"
+    else
+        assert_fail "Script did not handle invalid command correctly"
+    fi
+}
+
+    test_missing_required_parameters() {
+    echo -e "\n=== Test: Missing required parameters ==="
+
+    teardown
+    setup
+
+    # Call delete without arguments (should fail and print usage)
+    $SCRIPT delete > error_output.log 2>&1
+    local exit_code=$?
+
+    if [[ $exit_code -ne 0 && $(grep -ci "usage" error_output.log) -gt 0 ]]; then
+        assert_success "Handled missing parameters correctly (usage message displayed)"
+    else
+        assert_fail "Did not handle missing parameters as expected"
+    fi
+}
+
+    test_corrupted_metadata_file() {
+    echo -e "\n=== Test: Corrupted metadata file ==="
+
+    teardown
+    setup
+
+    # Create a corrupted metadata file
+    mkdir -p "$HOME/BernardoTiago_RecycleBin"
+    echo "corrupted content without headers or commas" > "$HOME/BernardoTiago_RecycleBin/metadata.db"
+
+    # Attempt to list recycle bin contents
+    $SCRIPT list > error_output.log 2>&1
+    local exit_code=$?
+
+    # Expect graceful failure, not a crash
+    if [[ $exit_code -ne 0 && $(grep -ci "error" error_output.log) -gt 0 ]]; then
+        assert_success "Corrupted metadata file handled gracefully"
+    else
+        assert_fail "Script did not handle corrupted metadata file correctly"
+    fi
+}
+
+    test_insufficient_disk_space() {
+    echo -e "\n=== Test: Insufficient disk space ==="
+
+    teardown
+    setup
+
+    # Create a test file
+    echo "some data" > "$TEST_DIR/full_disk.txt"
+
+    # Mock mv to simulate 'No space left on device'
+    mv_original=$(which mv)
+    mv() { echo "mv: cannot move file: No space left on device" >&2; return 1; }
+
+    # Try to delete (should fail gracefully)
+    $SCRIPT delete "$TEST_DIR/full_disk.txt" > delete_output.log 2>&1
+    local exit_code=$?
+
+    # Restore mv
+    unset -f mv
+
+    if [[ $exit_code -ne 0 && $(grep -ci "no space left" delete_output.log) -gt 0 ]]; then
+        assert_success "Handled insufficient disk space gracefully"
+    else
+        assert_fail "Failed to handle insufficient disk space correctly"
+    fi
+}
+
+    test_permission_denied_errors() {
+    echo -e "\n=== Test: Permission denied errors ==="
+
+    teardown
+    setup
+
+    # Create file and remove permissions
+    echo "secret data" > "$TEST_DIR/locked.txt"
+    chmod 000 "$TEST_DIR/locked.txt"
+
+    # Try to delete it (should fail)
+    $SCRIPT delete "$TEST_DIR/locked.txt" > delete_output.log 2>&1
+    local exit_code=$?
+
+    chmod 755 "$TEST_DIR/locked.txt"  # reset for cleanup
+
+    if [[ $exit_code -ne 0 && $(grep -ci "insufficient permissions" delete_output.log) -gt 0 ]]; then
+        assert_success "Permission denied handled correctly"
+    else
+        assert_fail "Permission denied not handled as expected"
+    fi
+}
+
+    test_delete_recycle_bin_itself() {
+    echo -e "\n=== Test: Attempting to delete recycle bin itself ==="
+
+    teardown
+    setup
+
+    # Initialize recycle bin
+    $SCRIPT help > /dev/null
+    local bin_path="$HOME/BernardoTiago_RecycleBin"
+
+    # Try to delete the recycle bin folder itself
+    $SCRIPT delete "$bin_path" > delete_output.log 2>&1
+    local exit_code=$?
+
+    if [[ $exit_code -ne 0 && $(grep -ci "cannot delete the recycle bin" delete_output.log) -gt 0 ]]; then
+        assert_success "Attempt to delete recycle bin handled correctly"
+    else
+        assert_fail "Recycle bin deletion not properly blocked"
+    fi
+}
+
+    test_concurrent_operations() {
+    echo -e "\n=== Test: Concurrent operations (two instances) ==="
+
+    teardown
+    setup
+
+    # Create two files
+    echo "file one" > "$TEST_DIR/file1.txt"
+    echo "file two" > "$TEST_DIR/file2.txt"
+
+    # Run two delete operations in background
+    ($SCRIPT delete "$TEST_DIR/file1.txt" > /dev/null 2>&1) &
+    ($SCRIPT delete "$TEST_DIR/file2.txt" > /dev/null 2>&1) &
+    wait
+
+    # Verify that both were deleted safely
+    if [[ ! -f "$TEST_DIR/file1.txt" && ! -f "$TEST_DIR/file2.txt" ]]; then
+        assert_success "Concurrent delete operations handled safely"
+    else
+        assert_fail "Concurrent operations caused conflict or data loss"
+    fi
+}
+
+    test_delete_100_files() {
+    echo -e "\n=== Test: Delete 100+ files ==="
+
+    teardown
+    setup
+
+    # Create 100 test files
+    echo -e "${GREEN}Creating 101 files... ${NC}"
+    for i in $(seq 1 101); do
+        echo "data $i" > "$TEST_DIR/file_$i.txt"
+    done
+
+    # Delete all files in one go
+    $SCRIPT delete "$TEST_DIR"/*.txt > delete_output.log 2>&1
+    local exit_code=$?
+
+    # Check if all were deleted
+    local remaining=$(ls "$TEST_DIR" | wc -l)
+    if [[ $exit_code -eq 0 && $remaining -eq 0 ]]; then
+        assert_success "Successfully deleted 100+ files"
+    else
+        assert_fail "Failed to delete 100+ files correctly"
+    fi
+}
+
+    test_list_recyclebin_100_items() {
+    echo -e "\n=== Test: List recycle bin with 100+ items ==="
+
+    teardown
+    setup
+
+    # Create and delete 100+ files
+    echo -e "${GREEN}Creating 101 files...${NC}"
+    for i in $(seq 1 101); do
+        echo "item $i" > "$TEST_DIR/item_$i.txt"
+    done
+    $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
+
+    # List the recycle bin
+    LIST_OUTPUT=$($SCRIPT list --detailed | grep -c "item_")
+
+    # Expect 100+ entries in the list
+    if (( LIST_OUTPUT >= 100 )); then
+        assert_success "Recycle bin listed 100+ items successfully"
+    else
+        assert_fail "Recycle bin did not show all 100+ items"
+    fi
+}
+
+    test_search_in_large_metadata() {
+    echo -e "\n=== Test: Search in large metadata file ==="
+
+    teardown
+    setup
+
+    # Populate recycle bin with 100+ entries
+    for i in $(seq 1 120); do
+        echo "searchable file $i" > "$TEST_DIR/search_file_$i.txt"
+    done
+    $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
+
+    # Pick a random file to search for
+    target="search_file_57.txt"
+
+    # Perform the search
+    SEARCH_OUTPUT=$($SCRIPT search "$target")
+
+    if echo "$SEARCH_OUTPUT" | grep -q "$target"; then
+        assert_success "Search works correctly with large metadata (100+ entries)"
+    else
+        assert_fail "Search failed in large metadata file"
+    fi
+}
+
+    test_restore_from_large_bin() {
+    echo -e "\n=== Test: Restore from bin with many items ==="
+
+    teardown
+    setup
+
+    # Create and delete 101 files
+    echo -e "${GREEN}Creating 101 files...${NC}"
+    for i in $(seq 1 101); do
+        echo "restore data $i" > "$TEST_DIR/restore_file_$i.txt"
+    done
+    $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
+
+    # Pick one random file to restore
+    target="restore_file_42.txt"
+
+    # Restore by filename
+    $SCRIPT restore "$target" > restore_output.log 2>&1
+    local exit_code=$?
+
+    # Check if the file is restored back
+    if [[ $exit_code -eq 0 && -f "$TEST_DIR/$target" ]]; then
+        assert_success "Restored file correctly from large bin (100+ items)"
+    else
+        assert_fail "Failed to restore file from large bin"
+    fi
+}
 
 
 
@@ -689,7 +942,7 @@ test_restore_to_readonly_directory() {
     test_display_help
 
 
-    #Edge Cases
+    #Edge Cases (12)
     test_delete_non-existent_file
     test_delete_file_without_permissions
     test_restore_when_original_location_has_same_filename
@@ -702,7 +955,21 @@ test_restore_to_readonly_directory() {
     test_handle_hidden_files
     test_delete_files_from_different_directories
     test_restore_to_readonly_directory
-    
+
+
+    #Erros Handling (11)
+    test_invalid_command
+    test_missing_required_parameters
+    test_corrupted_metadata_file
+    test_insufficient_disk_space
+    test_permission_denied_errors
+    test_delete_recycle_bin_itself
+    test_concurrent_operations
+    test_delete_100_files
+    test_list_recyclebin_100_items
+    test_search_in_large_metadata
+    test_restore_from_large_bin
+
     # Clean the RecycleBin files after all the tests
     bash "$SCRIPT" empty --force > /dev/null 2>&1
 
