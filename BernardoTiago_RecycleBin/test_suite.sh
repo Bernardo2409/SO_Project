@@ -147,9 +147,9 @@
             
             assert_success "Directory with contents deleted recursively and registered in Recycle Bin"
         else
+
             assert_fail "Failed to delete directory with contents"
-            echo "  Exit code: $exit_code"
-            ((FAIL++))
+            
         fi
     }
 
@@ -157,7 +157,7 @@
     test_list_empty() { 
         echo -e "\n=== Test: List Empty Bin ===" 
         setup 
-        $SCRIPT list | grep -q "Recycle Bin is empty"  # found the word 'empty' on the function
+        $SCRIPT list | grep -q "Recycle Bin is empty"  
         assert_success "List empty recycle bin" 
     } 
 
@@ -192,8 +192,8 @@
         # Get file ID from list 
         ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
         $SCRIPT restore "$ID" 
-        assert_success "Restore file" 
-        [ -f "$TEST_DIR/restore_test.txt" ] && echo "✓ File restored" 
+
+        assert_success "File was restored" 
 
     }
 
@@ -234,6 +234,7 @@
         
         # Verify if recyclebin is empty
         if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
+        
             assert_success "RecycleBin empty with sucess"
 
         else
@@ -303,12 +304,11 @@
         # Check if the last line of the help contains "clean: Automatically deletes items"
         if echo "$HELP_OUTPUT" | grep -q "clean:.*Automatically deletes items.*retention period"; then
 
-            echo -e "${GREEN}✓ PASS${NC}: Last line of help information displayed correctly"
-            ((PASS++))
+            assert_success "Last line of help information displayed correctly"
+
         else
-            echo -e "${RED}✗ FAIL${NC}: Last line of help information not displayed correctly"
-            ((FAIL++))
-            return 1
+
+            assert_fail "Last line of help information not displayed correctly"
         fi
     }
 
