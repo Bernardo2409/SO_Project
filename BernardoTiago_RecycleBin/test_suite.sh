@@ -234,7 +234,7 @@
         
         # Verify if recyclebin is empty
         if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
-        
+
             assert_success "RecycleBin empty with sucess"
 
         else
@@ -314,7 +314,7 @@
 
 
     ############################################################
-    ##################    EDGE CASES     #########################
+    ##################    EDGE CASES     #######################
     ############################################################
 
 
@@ -328,11 +328,12 @@
 
         # Assert that there is no file named non-existent_file.txt in metadata
         if grep -q "non-existent_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
-            echo "✗ Non-existent file deleted"
-            assert_fail "Delete non-existent file"
+
+            false
+            assert_fail "Non-existent file deleted"
         else
-            echo "✓ Non-existent file not deleted"
-            assert_success "Delete non-existent file"
+            true
+            assert_success "Non-existent file not deleted"
         fi
     }
 
@@ -351,11 +352,11 @@
 
         # Assert that the file was not deleted (Insufficient permissions)
         if grep -q "file1.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
-            echo "✗ File without permissions was deleted"
-            assert_fail "Delete file without permissions"
+            false
+            assert_fail "File without permissions was deleted"
         else
-            echo "✓ File without permissions wasn't deleted"
-            assert_success "Delete file without permissions"
+            true
+            assert_success "File without permissions wasn't deleted"
         fi
     }
 
@@ -380,11 +381,12 @@
 
         # Verify if the file was restored (isn't in the metadata no more) with a different name
         if grep -q "sameName_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
-            echo "✗ File was not restored"
-            assert_fail "Restore when original location has same filename"
+
+            false
+            assert_fail "File was not restored"
         else
-            echo "✓ File was restored"
-            assert_success "Restore when original location has same filename"
+            true
+            assert_success "File was restored"
         fi
     }
 
@@ -401,11 +403,9 @@
         restored_file=$(ls "$TEST_DIR")
 
         if [[ -z "$restored_file" ]]; then
-            echo "✓ File was not restored"
-            assert_success "Restore with ID that doesn't exist"
+            assert_success "File was not restored"
         else
-            echo "✗ Some file was restored"
-            assert_fail "Restore with ID that doesn't exist"
+            assert_fail "Some file was restored"
         fi
     }
 
@@ -433,11 +433,9 @@
 
         # Verify if the file was restored (check TEST_DIR for restored file)
         if [[ -n "$restored_file" ]]; then
-            echo "✓ File with spaces was restored successfully as $restored_file"
-            assert_success "Restore file with spaces"
+            assert_success "File with spaces was restored successfully as $restored_file"
         else
-            echo "✗ File was not restored"
-            assert_fail "Restore file with spaces"
+            assert_fail "File was not restored"
         fi
     }
 
@@ -462,146 +460,133 @@
 
         # Ensure the file is in the recycle bin by checking the list of deleted files
         if echo "$deleted_files" | grep -q "$ESCAPED_FILE_NAME"; then
-            echo -e "${GREEN}✓ PASS${NC}: File with special characters deleted successfully"
+
+            assert_success "File with special characters deleted successfully"
         else
-            echo -e "${RED}✗ FAIL${NC}: File with special characters not found in the recycle bin"
+            assert_fail "File with special characters not found in the recycle bin"
         fi
 
-        # Attempt to restore the file with special characters in the filename
-        $SCRIPT restore "$FILE_NAME"
-        
-        # The file should be restored to its original path or a default location.
-        # Let's assume it is restored back to the TEST_DIR, as that's where the original file was.
-        restored_file="$TEST_DIR/$FILE_NAME"
-
-        # Verify if the file was restored (check TEST_DIR for restored file)
-        if [[ -f "$restored_file" ]]; then
-            echo -e "${GREEN}✓ PASS${NC}: File with special characters was restored successfully as $restored_file"
-            assert_success "Restore file with special characters"
-        else
-            echo -e "${RED}✗ FAIL${NC}: File was not restored"
-            assert_fail "Restore file with special characters"
-        fi
+    
     }
 
 
-    test_handle_long_filenames() {
-    echo -e "\n=== Test: Handle very long filenames (255+ characters) ==="
+    test_handle_long_filenames() { 
+        echo -e "\n=== Test: Handle very long filenames (255+ characters) ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Garante diretório e log global existem (mas não os usamos para a verificação)
-    mkdir -p "$(dirname "$LOG_FILE")"
-    touch "$LOG_FILE"
+        # Ensure global log directory exists (not used for verification in this test)
+        mkdir -p "$(dirname "$LOG_FILE")"
+        touch "$LOG_FILE"
 
-    # Nome >255
-    local base_name
-    base_name=$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 260)
-    local LONG_FILENAME="${base_name}.txt"
-    local full_path="$TEST_DIR/$LONG_FILENAME"
+        # Generate filename >255 chars
+        local base_name
+        base_name=$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 260)
+        local LONG_FILENAME="${base_name}.txt"
+        local full_path="$TEST_DIR/$LONG_FILENAME"
 
-    # Log temporário apenas para este teste
-    local TMP_LOG
-    TMP_LOG="$(mktemp)"
+        # Temporary log file for this test only
+        local TMP_LOG
+        TMP_LOG="$(mktemp)"
 
-    echo "Attempting to create long filename..." | tee -a "$TMP_LOG" >> "$LOG_FILE"
+        echo "Attempting to create long filename..." | tee -a "$TMP_LOG" >> "$LOG_FILE"
 
-    # Captura **apenas** o erro desta tentativa
-    create_err="$({ echo 'test content for long file' > "$full_path"; } 2>&1)"
-    # escreve no log temporário e no global (se quiseres manter histórico)
-    { echo "$create_err" | tee -a "$TMP_LOG" >> "$LOG_FILE"; } >/dev/null
+        # Capture only the error from the file creation attempt
+        create_err=$( { echo 'test content for long file' > "$full_path"; } 2>&1 )
 
-    # Mensagens possíveis consoante locale/kernel
-    if echo "$create_err" | grep -Eq 'Nome de ficheiro muito grande|File name too long|ENAMETOOLONG'; then
-        assert_success "System correctly refused to create filename >255 chars"
+        # Write output to both temporary and global logs
+        echo "$create_err" | tee -a "$TMP_LOG" >> "$LOG_FILE" >/dev/null
+
+        # Possible error messages depending on locale/kernel
+        if echo "$create_err" | grep -Eq 'File name too long|Nome de ficheiro muito grande|ENAMETOOLONG'; then
+            assert_success "System correctly refused to create filename >255 chars"
+            rm -f "$TMP_LOG"
+            return 0
+        fi
+
+        # If file was not created and there was no ENAMETOOLONG error
+        if [[ ! -f "$full_path" ]]; then
+            assert_fail "File creation failed for an unknown reason"
+            rm -f "$TMP_LOG"
+            return 1
+        fi
+
+        # Environment allowed the creation (rare case)
+        echo "Warning: system allowed a filename >255 chars; continuing extended checks..." | tee -a "$TMP_LOG" >> "$LOG_FILE"
+        assert_success "Environment tolerated long filename (acceptable for this test)"
         rm -f "$TMP_LOG"
-        return 0
-    fi
-
-    # Se não criou e não houve ENAMETOOLONG
-    if [[ ! -f "$full_path" ]]; then
-        assert_fail "File creation failed for an unknown reason"
-        rm -f "$TMP_LOG"
-        return 1
-    fi
-
-    # Ambiente permitiu criar (raro), segue como “tolerado”
-    echo "Warning: system allowed a filename >255 chars; continuing extended checks..." | tee -a "$TMP_LOG" >> "$LOG_FILE"
-    assert_success "Environment tolerated long filename (acceptable for this test)"
-    rm -f "$TMP_LOG"
-}
-
+    }
 
 
 
     test_handle_large_files() {
-    echo -e "\n=== Test: Handle very large files ==="
+        echo -e "\n=== Test: Handle very large files ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    local LARGE_FILE="$TEST_DIR/large_test_file.bin"
-    local FILE_SIZE_MB=100  # Adjust as needed
-    local BLOCK_SIZE=1M
+        local LARGE_FILE="$TEST_DIR/large_test_file.bin"
+        local FILE_SIZE_MB=100  # Adjust as needed
+        local BLOCK_SIZE=1M
 
-    echo "Creating a ${FILE_SIZE_MB}MB test file..."
-    dd if=/dev/zero of="$LARGE_FILE" bs=$BLOCK_SIZE count=$FILE_SIZE_MB status=none
-    local create_exit=$?
+        echo "Creating a ${FILE_SIZE_MB}MB test file..."
+        dd if=/dev/zero of="$LARGE_FILE" bs=$BLOCK_SIZE count=$FILE_SIZE_MB status=none
+        local create_exit=$?
 
-    # If creation failed, mark as fail immediately
-    if [[ $create_exit -ne 0 || ! -f "$LARGE_FILE" ]]; then
-        assert_fail "Failed to create large test file"
-        return 1
-    fi
+        # If creation failed, mark as fail immediately
+        if [[ $create_exit -ne 0 || ! -f "$LARGE_FILE" ]]; then
+            assert_fail "Failed to create large test file"
+            return 1
+        fi
 
-    # Delete the large file (move to Recycle Bin)
-    echo "Deleting large file..."
-    $SCRIPT delete "$LARGE_FILE" > /dev/null 2>&1
-    local delete_exit=$?
+        # Delete the large file (move to Recycle Bin)
+        echo "Deleting large file..."
+        $SCRIPT delete "$LARGE_FILE" > /dev/null 2>&1
+        local delete_exit=$?
 
-    # Restore the large file
-    echo "Restoring large file..."
-    $SCRIPT restore "large_test_file.bin" > /dev/null 2>&1
-    local restore_exit=$?
+        # Restore the large file
+        echo "Restoring large file..."
+        $SCRIPT restore "large_test_file.bin" > /dev/null 2>&1
+        local restore_exit=$?
 
-    # Verify that the restored file exists and has the expected size
-    local restored_size=$(stat -c%s "$LARGE_FILE" 2>/dev/null)
-    local expected_size=$((FILE_SIZE_MB * 1024 * 1024))
+        # Verify that the restored file exists and has the expected size
+        local restored_size=$(stat -c%s "$LARGE_FILE" 2>/dev/null)
+        local expected_size=$((FILE_SIZE_MB * 1024 * 1024))
 
-    if [[ $delete_exit -eq 0 && $restore_exit -eq 0 && $restored_size -eq $expected_size ]]; then
-        assert_success "Large file successfully deleted, restored, and verified"
-    else
-        assert_fail "Large file handling failed (delete/restore/size mismatch)"
-    fi
-}
+        if [[ $delete_exit -eq 0 && $restore_exit -eq 0 && $restored_size -eq $expected_size ]]; then
+            assert_success "Large file successfully deleted, restored, and verified"
+        else
+            assert_fail "Large file handling failed (delete/restore/size mismatch)"
+        fi
+    }
 
 
 
     test_handle_symb_links() {
-    echo -e "\n=== Test: Handle symbolic links ==="
+        echo -e "\n=== Test: Handle symbolic links ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Create a real file and a symbolic link to it
-    local TARGET_FILE="$TEST_DIR/real_file.txt"
-    local SYMLINK_FILE="$TEST_DIR/symlink_to_real.txt"
+        # Create a real file and a symbolic link to it
+        local TARGET_FILE="$TEST_DIR/real_file.txt"
+        local SYMLINK_FILE="$TEST_DIR/symlink_to_real.txt"
 
-    echo "original content" > "$TARGET_FILE"
-    ln -s "$TARGET_FILE" "$SYMLINK_FILE"
+        echo "original content" > "$TARGET_FILE"
+        ln -s "$TARGET_FILE" "$SYMLINK_FILE"
 
-    # Try to delete the symbolic link (should be refused by delete_file)
-    $SCRIPT delete "$SYMLINK_FILE" > "$LOG_FILE" 2>&1
-    local delete_exit=$?
+        # Try to delete the symbolic link (should be refused by delete_file)
+        $SCRIPT delete "$SYMLINK_FILE" > "$LOG_FILE" 2>&1
+        local delete_exit=$?
 
-    # Check if the script correctly refused to delete the symlink
-    if grep -q "Symbolic" "$LOG_FILE" || grep -q "Error" "$LOG_FILE"; then
-        assert_success "Symbolic links correctly rejected from deletion"
-    else
-        assert_fail "Symbolic link was not properly handled"
-    fi
-}
+        # Check if the script correctly refused to delete the symlink
+        if grep -q "Insecure or symbolic path" "$LOG_FILE" || grep -q "Error" "$LOG_FILE"; then
+            assert_success "Symbolic links correctly rejected from deletion"
+        else
+            assert_fail "Symbolic link was not properly handled"
+        fi
+    }
 
 test_handle_hidden_files() {
     echo -e "\n=== Test: Handle hidden files (starting with .) ==="
@@ -686,257 +671,259 @@ test_restore_to_readonly_directory() {
 
     #ERROR HANDLING
     test_invalid_command() {
-    echo -e "\n=== Test: Invalid command line arguments ==="
+        echo -e "\n=== Test: Invalid command line arguments ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Run the script with an invalid command
-    $SCRIPT invalid_command > "$LOG_FILE" 2>&1
-    local exit_code=$?
+        # Run the script with an invalid command
+        $SCRIPT invalid_command > "$LOG_FILE" 2>&1
+        local exit_code=$?
 
-    # Expect non-zero exit and an error message
-    if [[ $exit_code -ne 0 && $(grep -ci "use" "$LOG_FILE") -gt 0 ]]; then
-        assert_success "Invalid command handled gracefully with an error message"
-    else
-        assert_fail "Script did not handle invalid command correctly"
-    fi
-}
+        # Expect non-zero exit and an error message
+        if [[ $exit_code -ne 0 && $(grep -ci "use" "$LOG_FILE") -gt 0 ]]; then
+            assert_success "Invalid command handled gracefully with an error message"
+        else
+            assert_fail "Script did not handle invalid command correctly"
+        fi
+    }
 
     test_missing_required_parameters() {
-    echo -e "\n=== Test: Missing required parameters ==="
+        echo -e "\n=== Test: Missing required parameters ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Call delete without arguments (should fail and print usage)
-    $SCRIPT delete > "$LOG_FILE" 2>&1
-    local exit_code=$?
+        # Call delete without arguments (should fail and print usage)
+        $SCRIPT delete > "$LOG_FILE" 2>&1
+        local exit_code=$?
 
-    if [[ $exit_code -ne 0 && $(grep -ci "usage" "$LOG_FILE") -gt 0 ]]; then
-        assert_success "Handled missing parameters correctly (usage message displayed)"
-    else
-        assert_fail "Did not handle missing parameters as expected"
-    fi
-}
+        if [[ $exit_code -ne 0 && $(grep -ci "usage" "$LOG_FILE") -gt 0 ]]; then
+            assert_success "Handled missing parameters correctly (usage message displayed)"
+        else
+            assert_fail "Did not handle missing parameters as expected"
+        fi
+    }
 
     test_corrupted_metadata_file() {
-    echo -e "\n=== Test: Corrupted metadata file ==="
+        echo -e "\n=== Test: Corrupted metadata file ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Create a corrupted metadata file
-    mkdir -p "$HOME/BernardoTiago_RecycleBin"
-    echo "corrupted content without headers or commas" > "$HOME/BernardoTiago_RecycleBin/metadata.db"
+        # Create a corrupted metadata file
+        mkdir -p "$HOME/BernardoTiago_RecycleBin"
+        echo "corrupted content without headers or commas" > "$HOME/BernardoTiago_RecycleBin/metadata.db"
 
-    # Attempt to list recycle bin contents
-    $SCRIPT list > "$LOG_FILE" 2>&1
-    local exit_code=$?
+        # Attempt to list recycle bin contents
+        $SCRIPT list > "$LOG_FILE" 2>&1
+        local exit_code=$?
 
-    # Expect graceful failure, not a crash
-    if [[ $exit_code -ne 0 && $(grep -ci "error" "$LOG_FILE") -gt 0 ]]; then
-        assert_success "Corrupted metadata file handled gracefully"
-    else
-        assert_fail "Script did not handle corrupted metadata file correctly"
-    fi
-}
+        # Expect graceful failure, not a crash
+        if [[ $exit_code -ne 0 && $(grep -ci "error" "$LOG_FILE") -gt 0 ]]; then
+            assert_success "Corrupted metadata file handled gracefully"
+        else
+            assert_fail "Script did not handle corrupted metadata file correctly"
+        fi
+    }
 
     test_insufficient_disk_space() {
-    echo -e "\n=== Test: Insufficient disk space ==="
+        echo -e "\n=== Test: Insufficient disk space ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Create a test file
-    echo "some data" > "$TEST_DIR/full_disk.txt"
+        # Create a test file
+        echo "some data" > "$TEST_DIR/full_disk.txt"
 
-    # Mock mv to simulate 'No space left on device'
-    mv_original=$(which mv)
-    mv() { echo "mv: cannot move file: No space left on device" >&2; return 1; }
+        # Mock mv to simulate 'No space left on device'
+        mv_original=$(which mv)
+        mv() { echo "mv: cannot move file: No space left on device" >&2; return 1; }
 
-    # Try to delete (should fail gracefully)
-    $SCRIPT delete "$TEST_DIR/full_disk.txt" > "$LOG_FILE" 2>&1
-    local exit_code=$?
+        # Try to delete (should fail gracefully)
+        $SCRIPT delete "$TEST_DIR/full_disk.txt" > "$LOG_FILE" 2>&1
+        local exit_code=$?
 
-    # Restore mv
-    unset -f mv
+        # Restore mv
+        unset -f mv
 
-    if [[ $exit_code -ne 0 && $(grep -ci "no space left" "$LOG_FILE") -gt 0 ]]; then
-        assert_success "Handled insufficient disk space gracefully"
-    else
-        assert_fail "Failed to handle insufficient disk space correctly"
-    fi
-}
+        if [[ $exit_code -ne 0 && $(grep -ci "no space left" "$LOG_FILE") -gt 0 ]]; then
+            assert_success "Handled insufficient disk space gracefully"
+        else
+            assert_fail "Failed to handle insufficient disk space correctly"
+        fi
+    }
 
     test_permission_denied_errors() {
-    echo -e "\n=== Test: Permission denied errors ==="
+        echo -e "\n=== Test: Permission denied errors ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Create file and remove permissions
-    echo "secret data" > "$TEST_DIR/locked.txt"
-    chmod 000 "$TEST_DIR/locked.txt"
+        # Create file and remove permissions
+        echo "secret data" > "$TEST_DIR/locked.txt"
+        chmod 000 "$TEST_DIR/locked.txt"
 
-    # Try to delete it (should fail)
-    $SCRIPT delete "$TEST_DIR/locked.txt" > "$LOG_FILE" 2>&1
-    local exit_code=$?
+        # Try to delete it (should fail)
+        $SCRIPT delete "$TEST_DIR/locked.txt" > "$LOG_FILE" 2>&1
+        local exit_code=$?
 
-    chmod 755 "$TEST_DIR/locked.txt"  # reset for cleanup
+        chmod 755 "$TEST_DIR/locked.txt"  # reset for cleanup
 
-    if [[ $exit_code -ne 0 && $(grep -ci "insufficient permissions" "$LOG_FILE") -gt 0 ]]; then
-        assert_success "Permission denied handled correctly"
-    else
-        assert_fail "Permission denied not handled as expected"
-    fi
-}
+        if [[ $exit_code -ne 0 && $(grep -ci "insufficient permissions" "$LOG_FILE") -gt 0 ]]; then
+            assert_success "Permission denied handled correctly"
+        else
+            assert_fail "Permission denied not handled as expected"
+        fi
+    }
 
     test_delete_recycle_bin_itself() {
-    echo -e "\n=== Test: Attempting to delete recycle bin itself ==="
+        echo -e "\n=== Test: Attempting to delete recycle bin itself ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Initialize recycle bin
-    $SCRIPT help > /dev/null
-    local bin_path="$HOME/BernardoTiago_RecycleBin"
+        # Initialize recycle bin
+        $SCRIPT help > /dev/null
+        local bin_path="$HOME/BernardoTiago_RecycleBin"
 
-    # Try to delete the recycle bin folder itself
-    $SCRIPT delete "$bin_path" > "$LOG_FILE" 2>&1
-    local exit_code=$?
+        # Try to delete the recycle bin folder itself
+        $SCRIPT delete "$bin_path" > "$LOG_FILE" 2>&1
+        local exit_code=$?
 
-    if [[ $exit_code -ne 0 && $(grep -ci "cannot delete the recycle bin" "$LOG_FILE") -gt 0 ]]; then
-        assert_success "Attempt to delete recycle bin handled correctly"
-    else
-        assert_fail "Recycle bin deletion not properly blocked"
-    fi
-}
+        if [[ $exit_code -ne 0 && $(grep -ci "cannot delete the recycle bin" "$LOG_FILE") -gt 0 ]]; then
+            assert_success "Attempt to delete recycle bin handled correctly"
+        else
+            assert_fail "Recycle bin deletion not properly blocked"
+        fi
+    }
 
     test_concurrent_operations() {
-    echo -e "\n=== Test: Concurrent operations (two instances) ==="
+        echo -e "\n=== Test: Concurrent operations (two instances) ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Create two files
-    echo "file one" > "$TEST_DIR/file1.txt"
-    echo "file two" > "$TEST_DIR/file2.txt"
+        # Create two files
+        echo "file one" > "$TEST_DIR/file1.txt"
+        echo "file two" > "$TEST_DIR/file2.txt"
 
-    # Run two delete operations in background
-    ($SCRIPT delete "$TEST_DIR/file1.txt" > /dev/null 2>&1) &
-    ($SCRIPT delete "$TEST_DIR/file2.txt" > /dev/null 2>&1) &
-    wait
+        # Run two delete operations in background
+        ($SCRIPT delete "$TEST_DIR/file1.txt" > /dev/null 2>&1) &
+        ($SCRIPT delete "$TEST_DIR/file2.txt" > /dev/null 2>&1) &
+        wait
 
-    # Verify that both were deleted safely
-    if [[ ! -f "$TEST_DIR/file1.txt" && ! -f "$TEST_DIR/file2.txt" ]]; then
-        assert_success "Concurrent delete operations handled safely"
-    else
-        assert_fail "Concurrent operations caused conflict or data loss"
-    fi
-}
+        # Verify that both were deleted safely
+        if [[ ! -f "$TEST_DIR/file1.txt" && ! -f "$TEST_DIR/file2.txt" ]]; then
+            assert_success "Concurrent delete operations handled safely"
+        else
+            assert_fail "Concurrent operations caused conflict or data loss"
+        fi
+    }
 
     test_delete_100_files() {
-    echo -e "\n=== Test: Delete 100+ files ==="
+        echo -e "\n=== Test: Deleting 100+ files ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Create 100 test files
-    echo -e "${GREEN}Creating 101 files... ${NC}"
-    for i in $(seq 1 101); do
-        echo "data $i" > "$TEST_DIR/file_$i.txt"
-    done
+        # Create 100 test files
+        echo -e "${GREEN}Creating 101 files... ${NC}"
+        for i in $(seq 1 101); do
+            echo "data $i" > "$TEST_DIR/file_$i.txt"
+        done
 
-    # Delete all files in one go
-    $SCRIPT delete "$TEST_DIR"/*.txt > "$LOG_FILE" 2>&1
-    local exit_code=$?
+        # Delete all files in one go
+        $SCRIPT delete "$TEST_DIR"/*.txt > "$LOG_FILE" 2>&1
+        local exit_code=$?
 
-    # Check if all were deleted
-    local remaining=$(ls "$TEST_DIR" | wc -l)
-    if [[ $exit_code -eq 0 && $remaining -eq 0 ]]; then
-        assert_success "Successfully deleted 100+ files"
-    else
-        assert_fail "Failed to delete 100+ files correctly"
-    fi
-}
+        # Check if all were deleted
+        local remaining=$(ls "$TEST_DIR" | wc -l)
+        if [[ $exit_code -eq 0 && $remaining -eq 0 ]]; then
+            assert_success "Successfully deleted 100+ files"
+        else
+            assert_fail "Failed to delete 100+ files correctly"
+        fi
+    }
 
     test_list_recyclebin_100_items() {
-    echo -e "\n=== Test: List recycle bin with 100+ items ==="
+        echo -e "\n=== Test: List recycle bin with 100+ items ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Create and delete 100+ files
-    echo -e "${GREEN}Creating 101 files...${NC}"
-    for i in $(seq 1 101); do
-        echo "item $i" > "$TEST_DIR/item_$i.txt"
-    done
-    $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
+        # Create and delete 100+ files
+        echo -e "${GREEN}Listing 101 files...${NC}"
+        for i in $(seq 1 101); do
+            echo "item $i" > "$TEST_DIR/item_$i.txt"
+        done
+        $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
 
-    # List the recycle bin
-    LIST_OUTPUT=$($SCRIPT list --detailed | grep -c "item_")
+        # List the recycle bin
+        LIST_OUTPUT=$($SCRIPT list --detailed | grep -c "item_")
 
-    # Expect 100+ entries in the list
-    if (( LIST_OUTPUT >= 100 )); then
-        assert_success "Recycle bin listed 100+ items successfully"
-    else
-        assert_fail "Recycle bin did not show all 100+ items"
-    fi
-}
+        # Expect 100+ entries in the list
+        if (( LIST_OUTPUT >= 100 )); then
+            assert_success "Recycle bin listed 100+ items successfully"
+        else
+            assert_fail "Recycle bin did not show all 100+ items"
+        fi
+    }
 
     test_search_in_large_metadata() {
-    echo -e "\n=== Test: Search in large metadata file ==="
+        echo -e "\n=== Test: Search in large metadata file ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Populate recycle bin with 100+ entries
-    for i in $(seq 1 120); do
-        echo "searchable file $i" > "$TEST_DIR/search_file_$i.txt"
-    done
-    $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
+        # Populate recycle bin with 100+ entries
+        echo -e "${GREEN}Searching 101 files... ${NC}"
 
-    # Pick a random file to search for
-    target="search_file_57.txt"
+        for i in $(seq 1 101); do
+            echo "searchable file $i" > "$TEST_DIR/search_file_$i.txt"
+        done
+        $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
 
-    # Perform the search
-    SEARCH_OUTPUT=$($SCRIPT search "$target")
+        # Pick a random file to search for
+        target="search_file_57.txt"
 
-    if echo "$SEARCH_OUTPUT" | grep -q "$target"; then
-        assert_success "Search works correctly with large metadata (100+ entries)"
-    else
-        assert_fail "Search failed in large metadata file"
-    fi
-}
+        # Perform the search
+        SEARCH_OUTPUT=$($SCRIPT search "$target")
+
+        if echo "$SEARCH_OUTPUT" | grep -q "$target"; then
+            assert_success "Search works correctly with large metadata (100+ entries)"
+        else
+            assert_fail "Search failed in large metadata file"
+        fi
+    }
 
     test_restore_from_large_bin() {
-    echo -e "\n=== Test: Restore from bin with many items ==="
+        echo -e "\n=== Test: Restore from bin with many items ==="
 
-    teardown
-    setup
+        teardown
+        setup
 
-    # Create and delete 101 files
-    echo -e "${GREEN}Creating 101 files...${NC}"
-    for i in $(seq 1 101); do
-        echo "restore data $i" > "$TEST_DIR/restore_file_$i.txt"
-    done
-    $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
+        # Create and delete 101 files
+        echo -e "${GREEN}Restoring 101 files...${NC}"
+        for i in $(seq 1 101); do
+            echo "restore data $i" > "$TEST_DIR/restore_file_$i.txt"
+        done
+        $SCRIPT delete "$TEST_DIR"/*.txt > /dev/null 2>&1
 
-    # Pick one random file to restore
-    target="restore_file_42.txt"
+        # Pick one random file to restore
+        target="restore_file_42.txt"
 
-    # Restore by filename
-    $SCRIPT restore "$target" > "$LOG_FILE" 2>&1
-    local exit_code=$?
+        # Restore by filename
+        $SCRIPT restore "$target" > "$LOG_FILE" 2>&1
+        local exit_code=$?
 
-    # Check if the file is restored back
-    if [[ $exit_code -eq 0 && -f "$TEST_DIR/$target" ]]; then
-        assert_success "Restored file correctly from large bin (100+ items)"
-    else
-        assert_fail "Failed to restore file from large bin"
-    fi
-}
+        # Check if the file is restored back
+        if [[ $exit_code -eq 0 && -f "$TEST_DIR/$target" ]]; then
+            assert_success "Restored file correctly from large bin (100+ items)"
+        else
+            assert_fail "Failed to restore file from large bin"
+        fi
+    }
 
 
 
@@ -964,32 +951,32 @@ test_restore_to_readonly_directory() {
 
 
     #Edge Cases (12)
-    #test_delete_non-existent_file
-    #test_delete_file_without_permissions
-    #test_restore_when_original_location_has_same_filename
-    #test_restore_with_unexistent_id
-    #test_handle_filenames_wSpaces
-    #test_handle_filenames_wSpecialChars
-    #test_handle_long_filenames 
-    #test_handle_large_files
-    #test_handle_symb_links
-    #test_handle_hidden_files
-    #test_delete_files_from_different_directories
-    #test_restore_to_readonly_directory
+    test_delete_non-existent_file
+    test_delete_file_without_permissions
+    test_restore_when_original_location_has_same_filename
+    test_restore_with_unexistent_id
+    test_handle_filenames_wSpaces
+    test_handle_filenames_wSpecialChars
+    test_handle_long_filenames 
+    test_handle_large_files
+    test_handle_symb_links
+    test_handle_hidden_files
+    test_delete_files_from_different_directories
+    test_restore_to_readonly_directory
 
 
     #Erros Handling (11)
-    #test_invalid_command
-    #test_missing_required_parameters
-    #test_corrupted_metadata_file
-    #test_insufficient_disk_space
-    #test_permission_denied_errors
-    #test_delete_recycle_bin_itself
-    #test_concurrent_operations
-    #test_delete_100_files
-    #test_list_recyclebin_100_items
-    #test_search_in_large_metadata
-    #test_restore_from_large_bin
+    test_invalid_command
+    test_missing_required_parameters
+    test_corrupted_metadata_file
+    test_insufficient_disk_space
+    test_permission_denied_errors
+    test_delete_recycle_bin_itself
+    test_concurrent_operations
+    test_delete_100_files
+    test_list_recyclebin_100_items
+    test_search_in_large_metadata
+    test_restore_from_large_bin
 
     # Clean the RecycleBin files after all the tests
     bash "$SCRIPT" empty --force > /dev/null 2>&1
