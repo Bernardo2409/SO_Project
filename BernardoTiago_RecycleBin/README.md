@@ -79,7 +79,9 @@ Retention days: 30
  
 ## Examples 
 [Detailed usage examples with screenshots] 
- 
+
+![Example1](/BernardoTiago_RecycleBin/screenshots/Example1.png)
+
 ## Known Issues 
  
 ## References 
@@ -90,7 +92,6 @@ https://linuxize.com/
 
 
 TECHNICAL_DOC.md
-
 
 Must include: 
 • System architecture diagram (ASCII art or image) 
