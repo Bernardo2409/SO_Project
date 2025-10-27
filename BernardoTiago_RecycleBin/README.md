@@ -34,11 +34,11 @@ chmod +x recycle_bin.sh
 ./recycle_bin.sh <comand> <options>
 
 Examples:
-    - ./recycle_bin.sh init
-    - echo "content" > file1.txt"
-    - ./recycle_bin.sh delete file1.txt
-    - ./recyle_bin.sh list
-    - ./recycle_bin.sh restore file1.txt
+    -- ./recycle_bin.sh init
+    -- echo "content" > file1.txt"
+    -- ./recycle_bin.sh delete file1.txt
+    -- ./recyle_bin.sh list
+    -- ./recycle_bin.sh restore file1.txt
 
  
  
@@ -52,7 +52,7 @@ Examples:
 
 - Simple and detailed list views (list and list --detailed).
 
-- Search function for locating deleted files quickly.
+- Search function for locating deleted files quickly (flag -i to search with ignore case).
 
 - Option to permanently empty the bin (empty / empty --force).
 
