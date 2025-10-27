@@ -696,6 +696,9 @@ check_quota() {
 # Returns: 0 on success, 1 on failure
 #################################################
 preview_file() {
+
+    verif_rbin
+
     local fileID="$1"
     local file_path="$FILES_DIR/$fileID"
 
