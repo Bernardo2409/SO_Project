@@ -86,7 +86,7 @@ The Recycle Bin system uses a configuration file located at $HOME/BernardoTiago_
  
 ## References 
 [Resources used] 
-TECHNICAL_DOC.md
+![TECHNICAL_DOC](TECHNICAL_DOC.md)
 
 
 
