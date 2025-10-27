@@ -37,6 +37,9 @@ main() {
     
 
     case "$1" in
+        init)
+            initialize_recyclebin
+            ;;
         delete)
             check_quota
             quota_status=$?

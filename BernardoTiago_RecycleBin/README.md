@@ -1,8 +1,6 @@
 # Linux Recycle Bin System 
  
 ## Author 
-[Your Name] 
-[Your Student ID] 
 
 Bernardo Mota Coelho 
 125059
@@ -12,37 +10,39 @@ Tiago Francisco Crespo do Vale
  
 ## Description 
 Our project consists in a Linux Recycle Bin Simulation. It aims to replicate the tradition Recycle Bin, but in a command-line environment using the terminal. 
-The system allows the user to delete files, list them and recover to his original location
+The system allows the user to delete files, list them and recover to his original location.
+
  
 ## Installation 
-[How to install/setup] 
  
 If repository is online and public: 
 
-type on terminal: git clone https://github.com/Bernardo2409/SO_Project 
+- type on terminal: git clone https://github.com/Bernardo2409/SO_Project 
 
-next type: cd BernardoTiago_RecycleBin
+- type on terminal: cd BernardoTiago_RecycleBin
 
-If repository is in .rar or .zip
+If repository is in .rar or .zip:
 
-download the files, unzip and type on terminal: cd BernardoTiago_RecycleBin
-
+- download the files, unzip and type on terminal: cd BernardoTiago_RecycleBin
 
 
 ## Usage 
-[How to use with examples] 
+
 
 chmod +x recycle_bin.sh
 
 ./recycle_bin.sh <comand> <options>
 
-FALTAM OS EXEMPLOS
+Examples:
+    -- ./recycle_bin.sh init
+    -- echo "content" > file1.txt"
+    -- ./recycle_bin.sh delete file1.txt
+    -- ./recyle_bin.sh list
+    -- ./recycle_bin.sh restore file1.txt
+
  
  
 ## Features 
-- [List of implemented features] 
-- [Mark optional features] 
-
 
 - Safe deletion of files — prevents permanent data loss.
 
@@ -52,7 +52,7 @@ FALTAM OS EXEMPLOS
 
 - Simple and detailed list views (list and list --detailed).
 
-- Search function for locating deleted files quickly.
+- Search function for locating deleted files quickly (flag -i to search with ignore case).
 
 - Option to permanently empty the bin (empty / empty --force).
 
@@ -63,32 +63,35 @@ FALTAM OS EXEMPLOS
 - Lightweight, written purely in Bash — no external dependencies.
 
 
-
 Optional or advanced features:
-
 
 - Colour output for better readability.
 
 - Custom storage directory via configuration file.
 
-- Test suite with automated validation functions (assert_success, assert_fail).
- 
-## Configuration 
-[How to configure settings] 
 
-The Recycle Bin system uses a configuration file located at $HOME/BernardoTiago_RecycleBin config that is automatically created during initialization with default values.
+## Configuration 
+
+The Recycle Bin system uses a configuration file located at $HOME/BernardoTiago_RecycleBin config that is automatically created during initialization with default values. 
+
+Maximium size of a file: 1024 MB
+Retention days: 30
  
 ## Examples 
 [Detailed usage examples with screenshots] 
- 
+
+![Example1](/BernardoTiago_RecycleBin/screenshots/Example1.png)
+
 ## Known Issues 
-[Any limitations or bugs] 
  
 ## References 
-[Resources used] 
-![TECHNICAL_DOC](TECHNICAL_DOC.md)
+
+https://www.w3schools.com/
+https://stackoverflow.com/questions
+https://linuxize.com/
 
 
+TECHNICAL_DOC.md
 
 Must include: 
 • System architecture diagram (ASCII art or image) 
