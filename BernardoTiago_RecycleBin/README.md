@@ -88,15 +88,3 @@ Retention days: 30
 https://www.w3schools.com/
 https://stackoverflow.com/questions
 https://linuxize.com/
-
-
-TECHNICAL_DOC.md
-
-Must include: 
-• System architecture diagram (ASCII art or image) 
-• Data flow diagrams 
-• Metadata schema explanation 
-• Function descriptions 
-• Design decisions and rationale 
-• Algorithm explanations 
-• Flowcharts for complex operations
