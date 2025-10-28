@@ -242,5 +242,3 @@ Maecenas faucibus nisi fermentum sapien ornare, id pretium nisi porta ----------
 **Status:** x Pass ☐ Fail
 
 **Screenshots:** 
-
-![TestCase12](/BernardoTiago_RecycleBin/screenshots/TestCase12.png)
