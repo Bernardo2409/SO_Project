@@ -12,35 +12,35 @@
 
 ### File Restauration Flow:
 
-- ![File Restauration Flow](diagrams/FileRestorationFlow.jpg)
+- ![File Restauration Flow](diagrams/FileRestorationDFD.jpg)
 
 ### File List Flow
 
-- ![File List Flow](diagrams/FileListFlow1.jpg)
+- ![File List Flow](diagrams/FileListDFD.jpg)
 
 ### File Search Flow
 
-- ![File Search Flow](diagrams/FileSearchFlow.jpg)
+- ![File Search Flow](diagrams/FileSearchDFD.jpg)
 
 ### Empty Recycle Bin Flow
 
-- ![Empty Recycle Bin Flow](diagrams/EmptyRecycleBinFlow.jpg)
+- ![Empty Recycle Bin Flow](diagrams/EmptyRecycleBinDFD.jpg)
 
 ### Display Help Flow
 
-- ![Display Help Flow](diagrams/DisplayHelpFlow.jpg)
+- ![Display Help Flow](diagrams/DisplayHelpDFD.jpg)
 
 ### Show statistics Flow
 
-- ![Display Help Flow](diagrams/ShowStatisticsFlow.jpg)
+- ![Display Help Flow](diagrams/ShowStatisticsDFD.jpg)
 
 ### Cleanup Flow
 
-- ![Cleanup Flow](diagrams/CleanupFlow.jpg)
+- ![Cleanup Flow](diagrams/CleanupDFD.jpg)
 
 ### Preview File Flow
 
-- ![Preview File Flow](diagrams/PreviewFileFlow.jpg)
+- ![Preview File Flow](diagrams/PreviewFileDFD.jpg)
 
 
 ## ============ Metadata schema explanation ===========
