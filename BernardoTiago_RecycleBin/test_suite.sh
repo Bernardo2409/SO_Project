@@ -811,9 +811,13 @@ test_restore_to_readonly_directory() {
         local exit_code=$?
 
         if [[ $exit_code -ne 0 && $(grep -ci "usage" "$LOG_FILE") -gt 0 ]]; then
-            assert_success "Handled missing parameters correctly (usage message displayed)"
+            true  
+            assert_success "Handle missing parameters correctly"
+            ((PASS_ERROR++))
         else
+            false   
             assert_fail "Did not handle missing parameters as expected"
+            ((FAIL_ERROR++))
         fi
     }
 
@@ -836,41 +840,64 @@ test_restore_to_readonly_directory() {
 
         # Expect graceful failure, not a crash
         if [[ $exit_code -ne 0 && $(grep -ci "error" "$LOG_FILE") -gt 0 ]]; then
+            true
             assert_success "Corrupted metadata file handled gracefully"
+            ((PASS_ERROR++))
+
         else
+            false
             assert_fail "Script did not handle corrupted metadata file correctly"
+            ((FAIL_ERROR++))
+
         fi
     }
 
-    test_insufficient_disk_space() {
-        echo -e "\n=== Test: Insufficient disk space ==="
+    # Em vez de tentar mockar mv (que não funciona), 
+# vamos simular disk space full de outra forma
+test_insufficient_disk_space() {
+    echo -e "\n=== Test: Insufficient disk space ==="
 
-        teardown
-        setup
+    teardown
+    setup
 
-        # Initialize RecycleBin to create log file
-        $SCRIPT help > /dev/null
+    # Initialize RecycleBin to create log file
+    $SCRIPT help > /dev/null
 
-        # Create a test file
-        echo "some data" > "$TEST_DIR/full_disk.txt"
+    # Create a test file
+    echo "some data" > "$TEST_DIR/full_disk.txt"
 
-        # Mock mv to simulate 'No space left on device'
-        mv_original=$(which mv)
-        mv() { echo "mv: cannot move file: No space left on device" >&2; return 1; }
+    # Create a temporary fake mv script
+    cat > /tmp/test_mv << 'EOF'
+#!/bin/bash
+echo "mv: cannot move file: No space left on device" >&2
+exit 1
+EOF
+    chmod +x /tmp/test_mv
 
-        # Try to delete (should fail gracefully)
-        $SCRIPT delete "$TEST_DIR/full_disk.txt" > "$LOG_FILE" 2>&1
-        local exit_code=$?
+    # Temporarily hijack mv by putting fake mv first in PATH
+    mkdir -p /tmp/testbin
+    cp /tmp/test_mv /tmp/testbin/mv
+    OLD_PATH="$PATH"
+    export PATH="/tmp/testbin:$PATH"
 
-        # Restore mv
-        unset -f mv
+    # Try to delete (should fail gracefully)
+    $SCRIPT delete "$TEST_DIR/full_disk.txt" > /dev/null 2>&1
+    local exit_code=$?
 
-        if [[ $exit_code -ne 0 && $(grep -ci "no space left" "$LOG_FILE") -gt 0 ]]; then
-            assert_success "Handled insufficient disk space gracefully"
-        else
-            assert_fail "Failed to handle insufficient disk space correctly"
-        fi
-    }
+    # Restore PATH and cleanup
+    export PATH="$OLD_PATH"
+    rm -rf /tmp/testbin /tmp/test_mv
+
+    if [[ $exit_code -ne 0 && $(grep -ci "no space left" "$LOG_FILE") -gt 0 ]]; then
+        true
+        assert_success "Handled insufficient disk space gracefully"
+        ((PASS_ERROR++))
+    else
+        false
+        assert_fail "Failed to handle insufficient disk space correctly"
+        ((FAIL_ERROR++))
+    fi
+}
 
     test_permission_denied_errors() {
         echo -e "\n=== Test: Permission denied errors ==="
@@ -893,8 +920,11 @@ test_restore_to_readonly_directory() {
 
         if [[ $exit_code -ne 0 && $(grep -ci "insufficient permissions" "$LOG_FILE") -gt 0 ]]; then
             assert_success "Permission denied handled correctly"
+            ((PASS_ERROR++))
         else
             assert_fail "Permission denied not handled as expected"
+            ((FAIL_ERROR++))
+
         fi
     }
 
@@ -917,8 +947,10 @@ test_restore_to_readonly_directory() {
 
         if [[ $exit_code -ne 0 && $(grep -ci "cannot delete the recycle bin" "$LOG_FILE") -gt 0 ]]; then
             assert_success "Attempt to delete recycle bin handled correctly"
+            ((PASS_ERROR++))
         else
             assert_fail "Recycle bin deletion not properly blocked"
+            ((FAIL_ERROR++))
         fi
     }
 
@@ -943,11 +975,16 @@ test_restore_to_readonly_directory() {
         # Verify that both were deleted safely
         if [[ ! -f "$TEST_DIR/file1.txt" && ! -f "$TEST_DIR/file2.txt" ]]; then
             assert_success "Concurrent delete operations handled safely"
+            ((PASS_ERROR++))
         else
             assert_fail "Concurrent operations caused conflict or data loss"
+            ((FAIL_ERROR++))
         fi
     }
 
+    #############################
+    # PERFORMANCE TESTS #
+    ##############################
     test_delete_100_files() {
         echo -e "\n=== Test: Deleting 100+ files ==="
 
@@ -971,8 +1008,12 @@ test_restore_to_readonly_directory() {
         local remaining=$(ls "$TEST_DIR" | wc -l)
         if [[ $exit_code -eq 0 && $remaining -eq 0 ]]; then
             assert_success "Successfully deleted 100+ files"
+            ((PASS_PERF++))
+
         else
             assert_fail "Failed to delete 100+ files correctly"
+            ((FAIL_PERF++))
+
         fi
     }
 
@@ -998,8 +1039,12 @@ test_restore_to_readonly_directory() {
         # Expect 100+ entries in the list
         if (( LIST_OUTPUT >= 100 )); then
             assert_success "Recycle bin listed 100+ items successfully"
+            ((PASS_PERF++))
+
         else
             assert_fail "Recycle bin did not show all 100+ items"
+            ((FAIL_PERF++))
+
         fi
     }
 
@@ -1028,8 +1073,10 @@ test_restore_to_readonly_directory() {
 
         if echo "$SEARCH_OUTPUT" | grep -q "$target"; then
             assert_success "Search works correctly with large metadata (100+ entries)"
+            ((PASS_PERF++))
         else
             assert_fail "Search failed in large metadata file"
+            ((FAIL_PERF++))
         fi
     }
 
@@ -1059,8 +1106,10 @@ test_restore_to_readonly_directory() {
         # Check if the file is restored back
         if [[ $exit_code -eq 0 && -f "$TEST_DIR/$target" ]]; then
             assert_success "Restored file correctly from large bin (100+ items)"
+            ((PASS_PERF++))
         else
             assert_fail "Failed to restore file from large bin"
+            ((FAIL_PERF++))
         fi
     }
 
@@ -1114,10 +1163,10 @@ test_restore_to_readonly_directory() {
     test_concurrent_operations
     
      #Performance (4)
-   # test_delete_100_files
-   # test_list_recyclebin_100_items
-   # test_search_in_large_metadata
-   # test_restore_from_large_bin
+    test_delete_100_files
+    test_list_recyclebin_100_items
+    test_search_in_large_metadata
+    test_restore_from_large_bin
 
     # Clean the RecycleBin files after all the tests
     bash "$SCRIPT" empty --force > /dev/null 2>&1
@@ -1132,12 +1181,12 @@ test_restore_to_readonly_directory() {
     echo "========================================="
 
        # Print the table of test results
-    echo "| Category              | Total Tests | Passed | Failed | Pass Rate |"
-    echo "|-----------------------|-------------|--------|--------|-----------|"
-    echo "| Basic Functionality   | 13          | $PASS_BASIC     | $FAIL_BASIC      |  $(echo "scale=2; ($PASS_BASIC / 13) * 100" | bc)%  |"
-    echo "| Edge Cases            | 12          | $PASS_EDGE      | $FAIL_EDGE      | $(echo "scale=2; ($PASS_EDGE / 12) * 100" | bc)%    |"
+    echo "| Category              | Total Tests | Passed | Failed | Pass Rate  |"
+    echo "|-----------------------|-------------|--------|--------|----------- |"
+    echo "| Basic Functionality   | 13          | $PASS_BASIC     | $FAIL_BASIC      |  $(echo "scale=2; ($PASS_BASIC / 13) * 100" | bc)%   |"
+    echo "| Edge Cases            | 12          | $PASS_EDGE     | $FAIL_EDGE      | $(echo "scale=2; ($PASS_EDGE / 12) * 100" | bc)%    |"
     echo "| Error Handling        | 7           | $PASS_ERROR      | $FAIL_ERROR      | $(echo "scale=2; ($PASS_ERROR / 7) * 100" | bc)%    |"
-    echo "| Performance           | 4           | $PASS_PERF      | $FAIL_PERF      | $(echo "scale=2; ($PASS_PERF / 4) * 100" | bc)%        |"
+    echo "| Performance           | 4           | $PASS_PERF      | $FAIL_PERF      | $(echo "scale=2; ($PASS_PERF / 4) * 100" | bc)%    |"
     echo "| **TOTAL**             | **36**      | **$PASS** | **$FAIL**  | **$(echo "scale=2; ($PASS / 36) * 100" | bc)%**|"
 
     [ $FAIL -eq 0 ] && exit 0 || exit 1 

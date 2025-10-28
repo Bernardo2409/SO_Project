@@ -137,6 +137,13 @@ delete_file() {
         initialize_recyclebin
     fi
 
+    # Check if parameters were provided
+    if [[ $# -eq 0 ]]; then
+        echo -e "${RED}Error:${NC} No files specified for deletion."
+        echo -e "${YELLOW}Usage:${NC} $0 delete <file1> [file2] [file3] ..."
+        return 1
+    fi
+
     if [[ ! -d "$FILES_DIR" ]]; then
         mkdir -p "$FILES_DIR" || {
             echo -e "${RED}Error:${NC} Failed to create files directory: $FILES_DIR" | tee -a "$LOG_FILE"
@@ -228,6 +235,17 @@ list_recycled() {
     verif_rbin
 
     echo -e "${YELLOW}=== Files on Recycle Bin ===${NC}"
+
+    # Validate metadata file structure
+    if ! head -n 1 "${METADATA_FILE}" | grep -q "^# Recycle Bin Metadata$"; then
+        echo -e "${RED}Error:${NC} Corrupted metadata file - invalid header" | tee -a "$LOG_FILE"
+        return 1
+    fi
+
+    if ! head -n 2 "${METADATA_FILE}" | tail -n 1 | grep -q "ID,ORIGINAL_NAME,ORIGINAL_PATH"; then
+        echo -e "${RED}Error:${NC} Corrupted metadata file - invalid structure" | tee -a "$LOG_FILE"
+        return 1
+    fi
 
     local total_items
     total_items=$(grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | wc -l)
