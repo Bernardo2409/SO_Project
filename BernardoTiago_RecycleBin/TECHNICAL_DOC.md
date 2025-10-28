@@ -6,41 +6,41 @@
 
 ## ============ Data flow diagrams ================
 
-### File deletion Flow: 
+### File deletion Data flow: 
 
-- ![File Deletion Flow](diagrams/FileDeletionFlow.jpg)
+- ![File Deletion Data flow](DFDs/DeleteFileDFD.jpg)
 
-### File Restauration Flow:
+### File Restauration Data flow:
 
-- ![File Restauration Flow](diagrams/FileRestorationFlow.jpg)
+- ![File Restauration Data flow](DFDs/FileRestorationDFD.jpg)
 
-### File List Flow
+### File List Data flow
 
-- ![File List Flow](diagrams/FileListFlow1.jpg)
+- ![File List Data flow](DFDs/SearchFileDFD.jpg)
 
-### File Search Flow
+### File Search Data flow
 
-- ![File Search Flow](diagrams/FileSearchFlow.jpg)
+- ![File Search Data flow](DFDs/FileSearchDFD.jpg)
 
-### Empty Recycle Bin Flow
+### Empty Recycle Bin Data flow
 
-- ![Empty Recycle Bin Flow](diagrams/EmptyRecycleBinFlow.jpg)
+- ![Empty Recycle Bin Data flow](DFDs/EmptyRecycleBinDFD.jpg)
 
-### Display Help Flow
+### Display Help Data flow
 
-- ![Display Help Flow](diagrams/DisplayHelpFlow.jpg)
+- ![Display Help Data flowlow](DFDs/DisplayHelpDFD.jpg)
 
-### Show statistics Flow
+### Show statistics Data flow
 
-- ![Display Help Flow](diagrams/ShowStatisticsFlow.jpg)
+- ![Display Help Data flow](DFDs/ShowStatisticsDFD.jpg)
 
-### Cleanup Flow
+### Cleanup Data flow
 
-- ![Cleanup Flow](diagrams/CleanupFlow.jpg)
+- ![Cleanup Data flow](DFDs/CleanupDFD.jpg)
 
-### Preview File Flow
+### Preview File Data flow
 
-- ![Preview File Flow](diagrams/PreviewFileFlow.jpg)
+- ![Preview File Data flow](DFDs/PreviewFileDFD.jpg)
 
 
 ## ============ Metadata schema explanation ===========
@@ -251,36 +251,36 @@ These algorithms ensure that the recycle bin system efficiently manages deleted 
 
 ### File deletion Flow: 
 
-- ![File Deletion Flow](diagrams/FileDeletionFlow.jpg)
+- ![File Deletion Flow](Flowcharts/FileDeletionFlow.jpg)
 
 ### File Restauration Flow:
 
-- ![File Restauration Flow](diagrams/FileRestorationFlow.jpg)
+- ![File Restauration Flow](Flowcharts/FileRestorationFlow.jpg)
 
 ### File List Flow
 
-- ![File List Flow](diagrams/FileListFlow1.jpg)
+- ![File List Flow](Flowcharts/FileListFlow1.jpg)
 
 ### File Search Flow
 
-- ![File Search Flow](diagrams/FileSearchFlow.jpg)
+- ![File Search Flow](Flowcharts/FileSearchFlow.jpg)
 
 ### Empty Recycle Bin Flow
 
-- ![Empty Recycle Bin Flow](diagrams/EmptyRecycleBinFlow.jpg)
+- ![Empty Recycle Bin Flow](Flowcharts/EmptyRecycleBinFlow.jpg)
 
 ### Display Help Flow
 
-- ![Display Help Flow](diagrams/DisplayHelpFlow.jpg)
+- ![Display Help Flow](Flowcharts/DisplayHelpFlow.jpg)
 
 ### Show statistics Flow
 
-- ![Display Help Flow](diagrams/ShowStatisticsFlow.jpg)
+- ![Display Help Flow](Flowcharts/ShowStatisticsFlow.jpg)
 
 ### Cleanup Flow
 
-- ![Cleanup Flow](diagrams/CleanupFlow.jpg)
+- ![Cleanup Flow](Flowcharts/CleanupFlow.jpg)
 
 ### Preview File Flow
 
-- ![Preview File Flow](diagrams/PreviewFileFlow.jpg)
+- ![Preview File Flow](Flowcharts/PreviewFileFlow.jpg)
