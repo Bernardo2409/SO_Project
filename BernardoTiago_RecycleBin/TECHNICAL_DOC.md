@@ -46,29 +46,25 @@
 
 The system (Recycle Bin) have informations about the files that were deleted in a secure way and could me recovered after(posteriori). Metadata.db has a data base that storage the inforation of the files.
 
-1. Arquitetura de Metadados:
+Metadata table:
 
-A estrutura de metadados do sistema é composta por arquivos de configuração, logs e o banco de dados de metadados. Para o banco de dados, o arquivo metadata.db é central e contém informações cruciais sobre cada arquivo removido.
+The metadata table stores information about deleted files. It has the following attributes:
 
-2. Tabela de Metadados:
+ID: A unique identifier for each file in the recycle bin.
 
-A tabela de metadados armazena informações sobre os arquivos excluídos. Ela possui os seguintes campos (atributos):
+ORIGINAL_NAME: The original name of the file before it was moved to the recycle bin.
 
-ID: Identificador único para cada arquivo na lixeira (gerado aleatoriamente ou baseado em uma combinação de timestamp e string aleatória).
+ORIGINAL_PATH: The full path of the original file.
 
-ORIGINAL_NAME: Nome original do arquivo antes de ser movido para a lixeira.
+DELETION_DATE: The date and time when the file was moved to the recycle bin.
 
-ORIGINAL_PATH: Caminho completo do arquivo original, para garantir que ele possa ser restaurado para o local correto.
+FILE_SIZE: The size of the file in bytes.
 
-DELETION_DATE: Data e hora em que o arquivo foi movido para a lixeira.
+FILE_TYPE: The type of the file.
 
-FILE_SIZE: Tamanho do arquivo em bytes.
+PERMISSIONS: The permissions of the file.
 
-FILE_TYPE: Tipo do arquivo (por exemplo, .txt, .jpg, .pdf, etc.). Isso pode ser útil para organizar ou filtrar arquivos na lixeira, caso o usuário deseje restaurar apenas certos tipos de arquivos.
-
-PERMISSIONS: Permissões do arquivo (como leitura, gravação, execução). Isso pode ser necessário se o arquivo for restaurado, para garantir que as permissões originais sejam mantidas.
-
-OWNER: Proprietário do arquivo. Esse campo indica quem é o usuário ou grupo proprietário do arquivo, o que é útil para garantir que os direitos de acesso sejam restaurados corretamente.
+OWNER: The owner of the file.
 
 ## ======== Function descriptions =============
 

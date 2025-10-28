@@ -27,8 +27,6 @@ NC='\033[0m' # No Color
 
 main() {
    
-    # echo -e " Hello $(whoami)! \n"
-
     # Optional auto-init if not already created
     if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
         echo -e "\n ${YELLOW}Recycle Bin not found. Initializing automatically...\n ${NC}"
@@ -37,9 +35,6 @@ main() {
     
 
     case "$1" in
-        init)
-            initialize_recyclebin
-            ;;
         delete)
             check_quota
             quota_status=$?
@@ -95,6 +90,7 @@ main() {
 #################################################
 
 initialize_recyclebin() {
+    
     # Check if recycle bin already exists
     if [[ -d "$RECYCLE_BIN_DIR" ]]; then
         echo -e "${YELLOW}Recycle bin already exists at:${NC} $RECYCLE_BIN_DIR"

@@ -5,13 +5,13 @@
 **Steps:**
 1. Create test file: `echo "test" > test.txt`
 2. Run: `./recycle_bin.sh delete test.txt`
-3. Verify file is removed from current directory
+3. Verify file was removed from current directory
 4. Run: `./recycle_bin.sh list`
-5. Verify file appears in recycle bin
+5. Verify if file appears in recycle bin
 
 **Expected Result:**
-- File is moved to ~/.recycle_bin/files/
-- Metadata entry is created
+- File was moved to ~/.recycle_bin/files/
+- Metadata entry was created
 - Success message is displayed
 - File appears in list output
 
