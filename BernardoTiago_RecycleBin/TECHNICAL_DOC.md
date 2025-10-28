@@ -1,46 +1,42 @@
 ## ========= System architecture diagram =======
 
 
-![System architecture diagram](/BernardoTiago_RecycleBin/diagrams/Systemdiagram.png)
+![System architecture diagram](/BernardoTiago_RecycleBin/Flowcharts/Systemdiagram.png)
 
 
 ## ============ Data flow diagrams ================
 
 ### File deletion Data flow: 
 
-- ![File Deletion Data flow](DFDs/DeleteFileDFD.jpg)
+- ![File Deletion Data flow](DFDs/DeleteFileDFD.png)
 
 ### File Restauration Data flow:
 
-- ![File Restauration Data flow](DFDs/FileRestorationDFD.jpg)
+- ![File Restauration Data flow](DFDs/RestoreFileDFD.png)
 
 ### File List Data flow
 
-- ![File List Data flow](DFDs/SearchFileDFD.jpg)
+- ![File List Data flow](DFDs/ListRecycledDFD.png)
 
 ### File Search Data flow
 
-- ![File Search Data flow](DFDs/FileSearchDFD.jpg)
+- ![File Search Data flow](DFDs/SearchFileDFD.png)
 
 ### Empty Recycle Bin Data flow
 
-- ![Empty Recycle Bin Data flow](DFDs/EmptyRecycleBinDFD.jpg)
-
-### Display Help Data flow
-
-- ![Display Help Data flowlow](DFDs/DisplayHelpDFD.jpg)
+- ![Empty Recycle Bin Data flow](DFDs/EmptyRecycleBinDFD.png)
 
 ### Show statistics Data flow
 
-- ![Display Help Data flow](DFDs/ShowStatisticsDFD.jpg)
+- ![Display Help Data flow](DFDs/DisplayStatisticsDFD.png)
 
 ### Cleanup Data flow
 
-- ![Cleanup Data flow](DFDs/CleanupDFD.jpg)
+- ![Cleanup Data flow](DFDs/CleanupDFD.png)
 
 ### Preview File Data flow
 
-- ![Preview File Data flow](DFDs/PreviewFileDFD.jpg)
+- ![Preview File Data flow](DFDs/PreviewFileDFD.png)
 
 
 ## ============ Metadata schema explanation ===========
