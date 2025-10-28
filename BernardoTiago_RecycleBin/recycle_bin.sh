@@ -1,7 +1,7 @@
 #################################################
 # Linux Recycle Bin Simulation
 # Author: Bernardo Coelho n125059; Tiago Vale n125913 
-# Date: 
+# Date: 28-10-2025
 # Description: Shell-based recycle bin system
 #################################################
 
@@ -90,7 +90,7 @@ main() {
 #################################################
 
 initialize_recyclebin() {
-    
+
     # Check if recycle bin already exists
     if [[ -d "$RECYCLE_BIN_DIR" ]]; then
         echo -e "${YELLOW}Recycle bin already exists at:${NC} $RECYCLE_BIN_DIR"
