@@ -248,4 +248,4 @@ These design decisions ensure that the recycle bin system is efficient, secure, 
 
 These algorithms ensure that the recycle bin system efficiently manages deleted files, restores files, and controls storage usage, while also providing options for automatic cleanup and quota management.
 
-============ Flowcharts for complex operations ================
+## ============ Flowcharts for complex operations ================
