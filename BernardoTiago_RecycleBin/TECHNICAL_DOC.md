@@ -41,9 +41,10 @@
 ### Preview File Flow
 
 ![Preview File Flow](diagrams/PreviewFileFlow.jpg)
+
 ## ============ Metadata schema explanation ===========
 
-O sistema de Lixeira (Recycle Bin) mantém informações sobre os arquivos que são "deletados" de maneira segura e podem ser recuperados posteriormente. Para isso, utilizamos um banco de dados (ou estrutura semelhante) para armazenar os metadados desses arquivos.
+The system (Recycle Bin) have informations about the files that were deleted in a secure way and could me recovered after(posteriori). Metadata.db has a data base that storage the inforation of the files.
 
 1. Arquitetura de Metadados:
 
