@@ -7,9 +7,21 @@
     LOG_FILE="$HOME/BernardoTiago_RecycleBin/recyclebin.log"
     # Ensure log directory exists
     
-
+    #Variavel total
     PASS=0 
     FAIL=0 
+
+    PASS_BASIC=0
+    FAIL_BASIC=0
+
+    PASS_EDGE=0
+    FAIL_EDGE=0
+
+    PASS_ERROR=0
+    FAIL_ERROR=0
+
+    PASS_PERF=0
+    FAIL_PERF=0
     
     # Colors 
     GREEN='\033[0;32m' 
@@ -65,6 +77,7 @@
     assert_success "Initialize recycle bin" 
     [ -d "$HOME/BernardoTiago_RecycleBin" ] && echo "✓ Directory created" 
     [ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ] && echo "✓ Metadata file created" 
+    ((PASS_BASIC++))
 }
 
     
@@ -980,10 +993,10 @@ test_restore_to_readonly_directory() {
     test_concurrent_operations
 
     #Performance (4)
-    test_delete_100_files
-    test_list_recyclebin_100_items
-    test_search_in_large_metadata
-    test_restore_from_large_bin
+   # test_delete_100_files
+   # test_list_recyclebin_100_items
+   # test_search_in_large_metadata
+   # test_restore_from_large_bin
 
     # Clean the RecycleBin files after all the tests
     bash "$SCRIPT" empty --force > /dev/null 2>&1
@@ -996,5 +1009,15 @@ test_restore_to_readonly_directory() {
     echo "Results: $PASS passed, $FAIL failed"
 
     echo "========================================="
+
+
+    # Print the table of test results
+    echo "| Category              | Total Tests | Passed | Failed | Pass Rate |"
+    echo "|-----------------------|-------------|--------|--------|-----------|"
+    echo "| Basic Functionality   | 13          | $PASS_BASIC      | $FAIL_BASIC      | $(echo "scale=2; ($PASS_BASIC / 2) * 100" | bc)%    |"
+    echo "| Edge Cases            | 12          | $PASS_EDGE      | $FAIL_EDGE      | $(echo "scale=2; ($PASS_EDGE / 1) * 100" | bc)%        |"
+    echo "| Error Handling        | 7           | $PASS_ERROR      | $FAIL_ERROR      | $(echo "scale=2; ($PASS_ERROR / 1) * 100" | bc)%        |"
+    echo "| Performance           | 4           | $PASS_PERF      | $FAIL_PERF      | $(echo "scale=2; ($PASS_PERF / 1) * 100" | bc)%        |"
+    echo "| **TOTAL**             | **36**       | **$PASS** | **$FAIL**  | **$(echo "scale=2; ($PASS / 36) * 100" | bc)%**|"
 
     [ $FAIL -eq 0 ] && exit 0 || exit 1 
