@@ -1,42 +1,49 @@
-## ========= System architecture diagram =======
+## ========= System Architecture Diagram =======
 
+![System Architecture Diagram](/BernardoTiago_RecycleBin/Flowcharts/Systemdiagram.png)
 
-![System architecture diagram](/BernardoTiago_RecycleBin/Flowcharts/Systemdiagram.png)
+---
 
+## ============ Data Flow Diagrams ================
 
-## ============ Data flow diagrams ================
+### **File Deletion Data Flow**  
+![File Deletion Data Flow](DFDs/DeleteFileDFD.png)
 
-### File deletion Data flow: 
+---
 
-- ![File Deletion Data flow](DFDs/DeleteFileDFD.png)
+### **File Restoration Data Flow**  
+![File Restoration Data Flow](DFDs/RestoreFileDFD.png)
 
-### File Restauration Data flow:
+---
 
-- ![File Restauration Data flow](DFDs/RestoreFileDFD.png)
+### **File List Data Flow**  
+![File List Data Flow](DFDs/ListRecycledDFD.png)
 
-### File List Data flow
+---
 
-- ![File List Data flow](DFDs/ListRecycledDFD.png)
+### **File Search Data Flow**  
+![File Search Data Flow](DFDs/SearchFileDFD.png)
 
-### File Search Data flow
+---
 
-- ![File Search Data flow](DFDs/SearchFileDFD.png)
+### **Empty Recycle Bin Data Flow**  
+![Empty Recycle Bin Data Flow](DFDs/EmptyRecycleBinDFD.png)
 
-### Empty Recycle Bin Data flow
+---
 
-- ![Empty Recycle Bin Data flow](DFDs/EmptyRecycleBinDFD.png)
+### **Show Statistics Data Flow**  
+![Show Statistics Data Flow](DFDs/DisplayStatisticsDFD.png)
 
-### Show statistics Data flow
+---
 
-- ![Display Help Data flow](DFDs/DisplayStatisticsDFD.png)
+### **Cleanup Data Flow**  
+![Cleanup Data Flow](DFDs/CleanupDFD.png)
 
-### Cleanup Data flow
+---
 
-- ![Cleanup Data flow](DFDs/CleanupDFD.png)
+### **Preview File Data Flow**  
+![Preview File Data Flow](DFDs/PreviewFileDFD.png)
 
-### Preview File Data flow
-
-- ![Preview File Data flow](DFDs/PreviewFileDFD.png)
 
 
 ## ============ Metadata schema explanation ===========
@@ -254,38 +261,45 @@ These algorithms ensure that the recycle bin system efficiently manages deleted 
 
 ## ========= Flowcharts for complex operations ===========
 
-### File deletion Flow: 
+### **File Deletion Flow**  
+![File Deletion Flow](Flowcharts/FileDeletionFlow.jpg)
 
-- ![File Deletion Flow](Flowcharts/FileDeletionFlow.jpg)
+---
 
-### File Restauration Flow:
+### **File Restoration Flow**  
+![File Restoration Flow](Flowcharts/FileRestorationFlow.jpg)
 
-- ![File Restauration Flow](Flowcharts/FileRestorationFlow.jpg)
+---
 
-### File List Flow
+### **File List Flow**  
+![File List Flow](Flowcharts/FileListFlow1.jpg)
 
-- ![File List Flow](Flowcharts/FileListFlow1.jpg)
+---
 
-### File Search Flow
+### **File Search Flow**  
+![File Search Flow](Flowcharts/FileSearchFlow.jpg)
 
-- ![File Search Flow](Flowcharts/FileSearchFlow.jpg)
+---
 
-### Empty Recycle Bin Flow
+### **Empty Recycle Bin Flow**  
+![Empty Recycle Bin Flow](Flowcharts/EmptyRecycleBinFlow.jpg)
 
-- ![Empty Recycle Bin Flow](Flowcharts/EmptyRecycleBinFlow.jpg)
+---
 
-### Display Help Flow
+### **Display Help Flow**  
+![Display Help Flow](Flowcharts/DisplayHelpFlow.jpg)
 
-- ![Display Help Flow](Flowcharts/DisplayHelpFlow.jpg)
+---
 
-### Show statistics Flow
+### **Show Statistics Flow**  
+![Show Statistics Flow](Flowcharts/ShowStatisticsFlow.jpg)
 
-- ![Display Help Flow](Flowcharts/ShowStatisticsFlow.jpg)
+---
 
-### Cleanup Flow
+### **Cleanup Flow**  
+![Cleanup Flow](Flowcharts/CleanupFlow.jpg)
 
-- ![Cleanup Flow](Flowcharts/CleanupFlow.jpg)
+---
 
-### Preview File Flow
-
-- ![Preview File Flow](Flowcharts/PreviewFileFlow.jpg)
+### **Preview File Flow**  
+![Preview File Flow](Flowcharts/PreviewFileFlow.jpg)
