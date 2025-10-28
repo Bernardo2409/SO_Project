@@ -75,9 +75,10 @@
     setup 
     $SCRIPT help > /dev/null 
     assert_success "Initialize recycle bin" 
+    ((PASS_BASIC++))
+
     [ -d "$HOME/BernardoTiago_RecycleBin" ] && echo "✓ Directory created" 
     [ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ] && echo "✓ Metadata file created" 
-    ((PASS_BASIC++))
 }
 
     
