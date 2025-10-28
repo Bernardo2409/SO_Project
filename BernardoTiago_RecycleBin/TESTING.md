@@ -15,7 +15,8 @@
 - Success message is displayed
 - File appears in list output
 
-**Actual Result:** [Success: 'test.txt' moved to RecycleBin (ID: 1761263107167913373_ku9gjp).]
+**Actual Result:** 
+- Success: 'test.txt' moved to RecycleBin (ID: 1761263107167913373_ku9gjp).
 
 **Status:** x Pass ☐ Fail
 
@@ -36,9 +37,10 @@
 - Success message is displayed
 - File appears in list output
 
-**Actual Result:** [Success: 'test1.txt' moved to RecycleBin (ID: 1761263749196082664_kpzqph).
-Success: 'test2.txt' moved to RecycleBin (ID: 1761263749221991032_jvmsjq).
-Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
+**Actual Result:** 
+- Success: 'test1.txt' moved to RecycleBin (ID: 1761263749196082664_kpzqph).
+- Success: 'test2.txt' moved to RecycleBin (ID: 1761263749221991032_jvmsjq).
+- Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).
 
 **Status:** x Pass ☐ Fail
 
@@ -53,7 +55,8 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 **Expected Result:**
 - List empty Recycle Bin
 
-**Actual Result:** [Recycle Bin is empty.]
+**Actual Result:** 
+- Recycle Bin is empty.
 
 **Status:** x Pass ☐ Fail
 
@@ -68,7 +71,8 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 **Expected Result:**
 - List of deleted files
 
-**Actual Result** [n file(s) found in Recycle Bin:]
+**Actual Result** 
+- n file(s) found in Recycle Bin:
 
 **Status:** x Pass ☐ Fail
 
@@ -86,7 +90,8 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 - File moved to last location
 - File was restored successfully
 
-**ActualResult**  [Success: '<fileName>' restored to '<previous location>'.]
+**ActualResult**  
+- Success: '<fileName>' restored to '<previous location>'.
 
 **Status:** x Pass ☐ Fail
 
@@ -103,7 +108,8 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 - File not found
 - Unnable to restore
 
-**ActualResult**  [Error: No file found with ID or name 'nonexistentfile.txt'.]
+**ActualResult** 
+- Error: No file found with ID or name 'nonexistentfile.txt'.
 
 **Status:** x Pass ☐ Fail
 
@@ -121,9 +127,10 @@ Success: 'test3.txt' moved to RecycleBin (ID: 1761263749246817961_3ujq7y).]
 - Verification if you want to empty recycle bin (y/s)
 - If --force is used, immediatly skip to delete files
 
-**ActualResult**  [Are you sure you want to delete all files? (y/n) 
-y
-Recycle Bin is empty..]
+**ActualResult** 
+- Are you sure you want to delete all files? (y/n) 
+- y
+- Recycle Bin is empty..
 
 **Status:** x Pass ☐ Fail
 
@@ -140,8 +147,9 @@ Recycle Bin is empty..]
 **Expected Result:**
 - Return a list of files with the name containing <partName>
 
-**ActualResult**  [=== Results ===
-1761394034675754155_eh7i84 | test4.txt | /home/tiago/Documents/UA/2ano/1Sem/SistemasOperativos/SO_Project/BernardoTiago_RecycleBin/test4.txt | 2025-10-25 13:07:14 | 6 | ASCII text | 664 | tiago:tiago]
+**ActualResult** 
+- === Results ===
+- 1761394034675754155_eh7i84 | test4.txt | /home/tiago/Documents/UA/2ano/1Sem/SistemasOperativos/SO_Project/BernardoTiago_RecycleBin/test4.txt | 2025-10-25 - 13:07:14 | 6 | ASCII text | 664 | tiago:tiago
 
 **Status:** x Pass ☐ Fail
 
@@ -160,10 +168,11 @@ Recycle Bin is empty..]
 - Verification if you want to empty recycle bin (y/s)
 - If --force is used, immediatly skip to delete the file
 
-**ActualResult**  [Are you sure you want to delete 1761393711552957952_0h3ves? (y/n) 
-y
-Deleting 1761393711552957952_0h3ves
-1761393711552957952_0h3ves successfully deleted.]
+**ActualResult**  
+- Are you sure you want to delete 1761393711552957952_0h3ves? (y/n) 
+- y
+- Deleting 1761393711552957952_0h3ves
+- 1761393711552957952_0h3ves successfully deleted.
 
 **Status:** x Pass ☐ Fail
 
@@ -179,14 +188,15 @@ Deleting 1761393711552957952_0h3ves
 **Expected Result:**
 - Expected to pop up a menu of the functionalities of the program
 
-**ActualResult**  [./recycle_bin.sh help
-  delete:    Move files to RecycleBin
-  list:      List deleted files (--detailed for details)
-  restore:   Restore the file by its original name or ID
-  search:    Search for deleted files
-  empty:     Empty the RecycleBin (--force to don't ask for comfirmation)
-  show:      Displays overall statistics of the recycle bin
-  clean:     Automatically deletes items older than the configured retention period]
+**ActualResult**  
+- ./recycle_bin.sh help
+-  delete:    Move files to RecycleBin
+-  list:      List deleted files (--detailed for details)
+-  restore:   Restore the file by its original name or ID
+-  search:    Search for deleted files
+-  empty:     Empty the RecycleBin (--force to don't ask for comfirmation)
+-  show:      Displays overall statistics of the recycle bin
+-  clean:     Automatically deletes items older than the configured retention period
 
 **Status:** x Pass ☐ Fail
 
@@ -201,16 +211,17 @@ Deleting 1761393711552957952_0h3ves
 **Expected Result:**
 - Return Display Total Items, Total Storage Used, Files, Directories, Oldest Item, Newest Item and Avarage file Size
 
-**ActualResult**  [=== Recycle Bin Statistics ===
+**ActualResult**  
+- === Recycle Bin Statistics ===
 
-Total items:           6
-Total storage used:    845B (0.00% of quota)
-Files:                 0
-Directories:           0
-Oldest item:           test4.txt (2025-10-25 13:07:14)
-Newest item:           file5.txt (2025-10-25 14:28:30)
-Average file size:     141B
-]
+- Total items:           6
+- Total storage used:    845B (0.00% of quota)
+- Files:                 0
+- Directories:           0
+- Oldest item:           test4.txt (2025-10-25 13:07:14)
+- Newest item:           file5.txt (2025-10-25 14:28:30)
+- Average file size:     141B
+
 
 **Status:** x Pass ☐ Fail 
 
@@ -225,18 +236,19 @@ Average file size:     141B
 **Expected Result:**
 - Return the first 10 lines present in the file
 
-**ActualResult**  [---------------------------------------------
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Cras vel diam lorem.
-Praesent sodales, enim non bibendum pharetra, orci ligula fermentum nisl,
-nec egestas lectus est eget eros.
-Cras sodales elit turpis, vitae dictum mi finibus quis.
-Cras commodo sollicitudin nulla, in sagittis dolor condimentum a.
-Cras vitae fringilla orci.
-Vestibulum eget efficitur massa.
-Nam quis ullamcorper arcu.
-Maecenas faucibus nisi fermentum sapien ornare, id pretium nisi porta --------------------------------------------
-]
+**ActualResult**  
+- ---------------------------------------------
+- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- Cras vel diam lorem.
+- Praesent sodales, enim non bibendum pharetra, orci ligula fermentum nisl,
+- nec egestas lectus est eget eros.
+- Cras sodales elit turpis, vitae dictum mi finibus quis.
+- Cras commodo sollicitudin nulla, in sagittis dolor condimentum a.
+- Cras vitae fringilla orci.
+- Vestibulum eget efficitur massa.
+- Nam quis ullamcorper arcu.
+- Maecenas faucibus nisi fermentum sapien ornare, id pretium nisi porta --------------------------------------------
+
 
 **Status:** x Pass ☐ Fail
 
@@ -246,13 +258,13 @@ Maecenas faucibus nisi fermentum sapien ornare, id pretium nisi porta ----------
 
 ### Test Case 13: Delete a non-existent file
 1. You want to delete a file that does not exist.
-2. Run ./recycle_bin delete <fileName> to attempt deleting the non-existent file.
+2. Run `./recycle_bin delete <fileName> `to attempt deleting the non-existent file.
 
 **Expected Result:**
 - An error message is displayed, indicating that the file does not exist and cannot be deleted.
 
 **ActualResult**  
-Error: 'nonexistentfile.txt' doesn't exist.
+- Error: 'nonexistentfile.txt' doesn't exist.
 
 
 **Status:** x Pass ☐ Fail
@@ -263,13 +275,13 @@ Error: 'nonexistentfile.txt' doesn't exist.
 
 ### Test Case 14: Delete file without permissions
 1. You want to delete a file that you don't have sufficient permissions to delete.
-2. Run ./recycle_bin delete <fileName> to attempt deleting the file without the required permissions.
+2. Run `./recycle_bin delete <fileName>` to attempt deleting the file without the required permissions.
 
 **Expected Result:**
 - An error message is displayed, indicating that the user does not have sufficient permissions to delete the file.
 
 **ActualResult**  
-Error: Insufficient permissions for 'restrictedfile.txt'.
+- Error: Insufficient permissions for 'restrictedfile.txt'.
 
 
 **Status:** x Pass ☐ Fail
@@ -281,14 +293,14 @@ Error: Insufficient permissions for 'restrictedfile.txt'.
 ### Test Case 15: Restore when original location has same filename
 1. You want to restore a file from the recycle bin to its original location.
 2. Ensure that there is already a file with the same name in the original location.
-3. Run ./recycle_bin restore <fileID or originalName> to restore the file from the recycle bin.
+3. Run `./recycle_bin restore <fileID or originalName> ` to restore the file from the recycle bin.
 
 **Expected Result:**
 - The file should be restored successfully to the original location, but if a file with the same name already exists, the restored file should be renamed.
 
 **ActualResult**  
-Warning: File already exists. Restoring as 'myfile.txt_restored_1633045393'.
-Success: 'myfile.txt' restored to '/home/user/Documents/myfile.txt_restored_1633045393'.
+- Warning: File already exists. Restoring as 'myfile.txt_restored_1633045393'.
+- Success: 'myfile.txt' restored to '/home/user/Documents/myfile.txt_restored_1633045393'.
 
 
 **Status:** x Pass ☐ Fail
