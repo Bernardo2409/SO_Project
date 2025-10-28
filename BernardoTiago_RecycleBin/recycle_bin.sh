@@ -1,7 +1,7 @@
 #################################################
 # Linux Recycle Bin Simulation
 # Author: Bernardo Coelho n125059; Tiago Vale n125913 
-# Date: 
+# Date: 28-10-2025
 # Description: Shell-based recycle bin system
 #################################################
 
@@ -90,7 +90,7 @@ main() {
 #################################################
 
 initialize_recyclebin() {
-    
+
     # Check if recycle bin already exists
     if [[ -d "$RECYCLE_BIN_DIR" ]]; then
         echo -e "${YELLOW}Recycle bin already exists at:${NC} $RECYCLE_BIN_DIR"
@@ -189,7 +189,7 @@ delete_file() {
         original_name="$(basename "${item}")"
         original_path="$(realpath "${item}")"
         deletion_date="$(date '+%Y-%m-%d %H:%M:%S')"
-        file_size=$(stat -c%s "${item}" 2>/dev/null) # tamanho em bytes (sem vírgulas nem letras)
+        file_size=$(stat -c%s "${item}" 2>/dev/null)
         file_type=$(file -b "${item}")
         permissions=$(stat -c %a "${item}" 2>/dev/null)
         owner=$(stat -c %U:%G "${item}" 2>/dev/null)
@@ -226,7 +226,6 @@ list_recycled() {
 
     echo -e "${YELLOW}=== Files on Recycle Bin ===${NC}"
 
-    # Valid lines??
     local total_items
     total_items=$(grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | wc -l)
 
@@ -244,11 +243,11 @@ list_recycled() {
     if [[ "$1" == "--detailed" ]]; then
 
         echo -e "$(printf '%0.s-' {1..224})"
-        # Cabeçalho formatado corretamente
+        # Format
         printf "%-26s | %-23s | %-80s | %-20s | %-10s | %-12s | %-13s | %-10s\n" \
             "UniqueID" "Original filename" "Path" "Deletion date" "File size" "File type" "Permissions" "Owner"
 
-        # Exibição dos dados
+        # All the data
         grep -vE '^\s*#|^\s*$' "${METADATA_FILE}" | tail -n +2 | while IFS=',' read -r id name path date size type perms owner; do
             printf "%-26s | %-23s | %-80s | %-20s | %-10s | %-12s | %-13s | %-10s\n" \
                 "${id}" "${name}" "${path}" "${date}" "${size}" "${type}" "${perms}" "${owner}"
