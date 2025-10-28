@@ -668,8 +668,9 @@ test_restore_to_readonly_directory() {
         assert_fail "Restore succeeded unexpectedly in read-only directory"
     fi
 }
-
+    #################################
     #ERROR HANDLING
+    #############################
     test_invalid_command() {
         echo -e "\n=== Test: Invalid command line arguments ==="
 
@@ -821,6 +822,10 @@ test_restore_to_readonly_directory() {
         fi
     }
 
+        #################################
+        #  PERFORMANCE
+        #############################
+
     test_delete_100_files() {
         echo -e "\n=== Test: Deleting 100+ files ==="
 
@@ -965,7 +970,7 @@ test_restore_to_readonly_directory() {
     test_restore_to_readonly_directory
 
 
-    #Erros Handling (11)
+    #Erros Handling (7)
     test_invalid_command
     test_missing_required_parameters
     test_corrupted_metadata_file
@@ -973,6 +978,8 @@ test_restore_to_readonly_directory() {
     test_permission_denied_errors
     test_delete_recycle_bin_itself
     test_concurrent_operations
+
+    #Performance (4)
     test_delete_100_files
     test_list_recyclebin_100_items
     test_search_in_large_metadata
@@ -987,7 +994,7 @@ test_restore_to_readonly_directory() {
 
     echo "=========================================" 
     echo "Results: $PASS passed, $FAIL failed"
-    
+
     echo "========================================="
 
     [ $FAIL -eq 0 ] && exit 0 || exit 1 
