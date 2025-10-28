@@ -1,15 +1,47 @@
-========= System architecture diagram =======
+## ========= System architecture diagram =======
 
 
 ![System architecture diagram](/BernardoTiago_RecycleBin/diagrams/Systemdiagram.png)
 
 
-========= Data flow diagrams ===========
+## ========= Data flow diagrams ===========
 
-![De]
+### File deletion Flow: 
 
+![File Deletion Flow](diagrams/FileDeletionFlow.jpg)
 
-============ Metadata schema explanation ===========
+### File Restauration Flow:
+
+![File Restauration Flow](diagrams/FileRestorationFlow.jpg)
+
+### File List Flow
+
+![File List Flow](diagrams/FileListFlow1.jpg)
+
+### File Search Flow
+
+![File Search Flow](diagrams/FileSearchFlow.jpg)
+
+### Empty Recycle Bin Flow
+
+![Empty Recycle Bin Flow](diagrams/EmptyRecycleBinFlow.jpg)
+
+### Display Help Flow
+
+![Display Help Flow](diagrams/DisplayHelpFlow.jpg)
+
+### Show statistics Flow
+
+![Display Help Flow](diagrams/ShowStatisticsFlow.jpg)
+
+### Cleanup Flow
+
+![Cleanup Flow](diagrams/CleanupFlow.jpg)
+
+### Preview File Flow
+
+![Preview File Flow](diagrams/PreviewFileFlow.jpg)
+## ============ Metadata schema explanation ===========
 
 O sistema de Lixeira (Recycle Bin) mantém informações sobre os arquivos que são "deletados" de maneira segura e podem ser recuperados posteriormente. Para isso, utilizamos um banco de dados (ou estrutura semelhante) para armazenar os metadados desses arquivos.
 
@@ -37,64 +69,64 @@ PERMISSIONS: Permissões do arquivo (como leitura, gravação, execução). Isso
 
 OWNER: Proprietário do arquivo. Esse campo indica quem é o usuário ou grupo proprietário do arquivo, o que é útil para garantir que os direitos de acesso sejam restaurados corretamente.
 
-======== Function descriptions =============
+## ======== Function descriptions =============
 
-## `initialize_recyclebin`
+### `initialize_recyclebin`
 - **Description**: Creates the directory structure and necessary files to initialize the recycle bin if it doesn’t exist yet.
 - **Parameters**: None.
 - **Return**: Returns `0` on success and `1` on failure.
 
-## `delete_file`
+### `delete_file`
 - **Description**: Moves files or directories to the recycle bin, storing their metadata (such as original name, path, deletion date, etc.) in the `metadata.db` file.
 - **Parameters**: Path to the file/directory to be moved to the recycle bin.
 - **Return**: Returns `0` on success and `1` on failure.
 
-## `list_recycled`
+### `list_recycled`
 - **Description**: Lists all files in the recycle bin, displaying metadata such as original name, path, deletion date, size, etc.
 - **Parameters**: (Optional) `--detailed` for detailed view.
 - **Return**: Returns `0` on success.
 
-## `restore_file`
+### `restore_file`
 - **Description**: Restores a file from the recycle bin to its original location. If the file already exists in the destination, it is renamed automatically.
 - **Parameters**: ID or original name of the file.
 - **Return**: Returns `0` on success and `1` on failure.
 
-## `search_recycled`
+### `search_recycled`
 - **Description**: Searches for files in the recycle bin that match the pattern provided by the user.
 - **Parameters**: Search pattern, can be case-insensitive with the `-i` option.
 - **Return**: Returns `0` on success and `1` on failure.
 
-## `empty_recyclebin`
+### `empty_recyclebin`
 - **Description**: Permanently deletes all files in the recycle bin or a specified file, depending on the provided parameter.
 - **Parameters**: (Optional) `--force` to delete without confirmation.
 - **Return**: Returns `0` on success and `1` on failure.
 
-## `verif_rbin`
+### `verif_rbin`
 - **Description**: Auxiliary function to check if the recycle bin has been initialized.
 - **Parameters**: None.
 - **Return**: Returns `0` if the recycle bin is initialized.
 
-## `display_help`
+### `display_help`
 - **Description**: Displays a help message with the description of available commands.
 - **Parameters**: None.
 - **Return**: Returns `0`.
 
-## `show_statistics`
+### `show_statistics`
 - **Description**: Displays general statistics about the recycle bin, such as total items, total space used, and the count of files and directories.
 - **Parameters**: None.
 - **Return**: Returns `0` on success and `1` on failure.
 
-## `auto_cleanup`
+### `auto_cleanup`
 - **Description**: Automatically deletes files older than X days from the recycle bin, as configured in the settings file.
 - **Parameters**: None.
 - **Return**: Returns `0` on success and `1` on failure.
 
-## `check_quota`
+### `check_quota`
 - **Description**: Checks if the total usage of the recycle bin exceeds the configured size limit. If exceeded, it prompts the user to perform an auto-cleanup.
 - **Parameters**: None.
 - **Return**: Returns `0` if usage does not exceed the limit, `1` if exceeded.
 
-## `preview_file`
+### `preview_file`
 - **Description**: Displays the first 10 lines of a file in the recycle bin, if it's a text file.
 - **Parameters**: File ID.
 - **Return**: Returns `0` on success and `1` on failure.
@@ -102,58 +134,58 @@ OWNER: Proprietário do arquivo. Esse campo indica quem é o usuário ou grupo p
 
 
 
-======== Design decisions and rationale ========== 
+## ======== Design decisions and rationale ========== 
 
-## 1. **Directory and File Structure**
+### 1. **Directory and File Structure**
 - **Decision**: The system creates a directory structure to store the files in the recycle bin (`$HOME/BernardoTiago_RecycleBin`) and metadata files (`metadata.db`).
 - **Rationale**: Keeping an organized structure for both files and metadata is essential for easy maintenance and recovery of data. Separating files from the database allows for scalability and ensures data integrity.
 
-## 2. **Use of Metadata for File Storage**
+### 2. **Use of Metadata for File Storage**
 - **Decision**: The system uses a metadata file (`metadata.db`) to store information about the files moved to the recycle bin, including name, path, deletion date, type, permissions, owner, and size.
 - **Rationale**: Metadata allows for the restoration of files to their original location with all original permissions and attributes intact. It also enables searching and listing files in the recycle bin without the need to manually check each file.
 
-## 3. **File Naming with Unique ID**
+### 3. **File Naming with Unique ID**
 - **Decision**: When moving a file to the recycle bin, it is renamed with a unique ID generated from a timestamp and a random string (`$(date +%s%N)_$(tr -dc 'a-z0-9' </dev/urandom | head -c 6)`).
 - **Rationale**: Creating a unique identifier for each file prevents conflicts when files have the same name. It also makes managing files in the recycle bin easier since each file can be uniquely identified for restoration or deletion.
 
-## 4. **Secure File Deletion**
+### 4. **Secure File Deletion**
 - **Decision**: Before moving a file to the recycle bin, the system checks its existence, read/write permissions, and ensures that the recycle bin itself cannot be deleted.
 - **Rationale**: Security checks prevent accidental deletion of important system files or directories. The protection against deleting the recycle bin itself ensures the system doesn't fail if a user accidentally tries to clear the entire recycle bin.
 
-## 5. **Size Quota Configuration**
+### 5. **Size Quota Configuration**
 - **Decision**: The recycle bin has a size limit (`MAX_SIZE_MB`) that restricts the space used by files.
 - **Rationale**: The size limit ensures the recycle bin doesn't grow indefinitely and consume all system space. When the limit is reached, the system can prompt the user to clean up, maintaining an efficient file management system.
 
-## 6. **File Retention**
+### 6. **File Retention**
 - **Decision**: Files in the recycle bin are retained for a configured period (`RETENTION_DAYS`), after which they are automatically deleted.
 - **Rationale**: File retention prevents the recycle bin from accumulating unnecessary files over time, freeing up space and keeping the system organized. Automatic deletion after a retention period helps manage storage and avoid old, unused data taking up space.
 
-## 7. **Permanent Deletion with Confirmation**
+### 7. **Permanent Deletion with Confirmation**
 - **Decision**: Permanent file deletion requires user confirmation (unless using the `--force` mode).
 - **Rationale**: The confirmation step prevents accidental deletion of important files. The `--force` option provides a faster way for advanced users to delete files without confirmation, but this option is restricted to prevent unintended data loss.
 
-## 8. **Backup and Recovery**
+### 8. **Backup and Recovery**
 - **Decision**: The restore function (`restore_file`) allows files to be restored to their original location, keeping their permissions and owner intact.
 - **Rationale**: Ensuring files can be restored with the same attributes and permissions as when deleted is critical to maintaining data integrity. Renaming files automatically in case of naming conflicts prevents overwriting existing files.
 
-## 9. **File Search**
+### 9. **File Search**
 - **Decision**: The system allows searching for files in the recycle bin by ID or name, with the option for case-insensitive searches.
 - **Rationale**: The search functionality allows users to quickly find files in the recycle bin without manually browsing through all files. Case-insensitive search improves flexibility and user convenience.
 
-## 10. **Log File Keeping**
+### 10. **Log File Keeping**
 - **Decision**: The system maintains a log file (`recyclebin.log`) that records all actions performed on the recycle bin, including deletions, restorations, and failures.
 - **Rationale**: Keeping a log of actions provides an audit trail and helps with troubleshooting. It also allows the system administrator or user to track operations, identifying errors or unexpected behaviors.
 
-## Conclusion
+### Conclusion
 These design decisions ensure that the recycle bin system is efficient, secure, and user-friendly. The focus on preventing accidental deletions, maintaining data integrity, and controlling storage usage guarantees that the system operates smoothly and predictably.
 
 
 
-=========== Algorithm explanations ================
+## =========== Algorithm explanations ================
 
-## 1. **File Management in the Recycle Bin**
+### 1. **File Management in the Recycle Bin**
 
-### **File Deletion Algorithm**
+#### **File Deletion Algorithm**
 1. **Input**: Path of the file or directory to be moved to the recycle bin.
 2. **Process**:
    - Checks if the recycle bin directory exists. If not, initializes the recycle bin.
@@ -164,7 +196,7 @@ These design decisions ensure that the recycle bin system is efficient, secure, 
    - Stores the metadata in the `metadata.db` file.
 3. **Output**: The file is moved to the recycle bin, and its metadata is recorded in the `metadata.db` file.
 
-### **File Restoration Algorithm**
+#### **File Restoration Algorithm**
 1. **Input**: ID or original name of the file to be restored.
 2. **Process**:
    - Searches for the file in the recycle bin, using the ID or original name.
@@ -175,7 +207,7 @@ These design decisions ensure that the recycle bin system is efficient, secure, 
    - Removes the metadata of the restored file from the `metadata.db` file.
 3. **Output**: The file is restored to its original location with permissions and owner restored.
 
-## 2. **File Search Algorithm**
+### 2. **File Search Algorithm**
 
 1. **Input**: The search pattern provided by the user.
 2. **Process**:
@@ -184,7 +216,7 @@ These design decisions ensure that the recycle bin system is efficient, secure, 
    - Displays the search results with details such as name, path, deletion date, size, and type.
 3. **Output**: List of files that match the provided search pattern, with details.
 
-## 3. **Automatic Cleanup Algorithm**
+### 3. **Automatic Cleanup Algorithm**
 
 1. **Input**: None (configured by default with `RETENTION_DAYS`).
 2. **Process**:
@@ -194,7 +226,7 @@ These design decisions ensure that the recycle bin system is efficient, secure, 
    - Updates the `metadata.db` file by removing deleted files.
 3. **Output**: Old files are permanently deleted, and the metadata database is updated.
 
-## 4. **Quota Check Algorithm**
+### 4. **Quota Check Algorithm**
 
 1. **Input**: None.
 2. **Process**:
@@ -203,7 +235,7 @@ These design decisions ensure that the recycle bin system is efficient, secure, 
    - If the total usage exceeds the quota, prompts the user to initiate automatic cleanup.
 3. **Output**: Returns a warning message if the quota is exceeded and prompts the user to clean up.
 
-## 5. **Permanent Deletion Algorithm**
+### 5. **Permanent Deletion Algorithm**
 
 1. **Input**: ID of the file to be permanently deleted.
 2. **Process**:
