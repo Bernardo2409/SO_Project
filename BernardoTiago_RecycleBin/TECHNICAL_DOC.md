@@ -6,41 +6,41 @@
 
 ## ============ Data flow diagrams ================
 
-### File deletion Flow: 
+### File deletion Data flow: 
 
-- ![File Deletion Flow](DFDs/DeleteFileDFD.jpg)
+- ![File Deletion Data flow](DFDs/DeleteFileDFD.jpg)
 
-### File Restauration Flow:
+### File Restauration Data flow:
 
-- ![File Restauration Flow](diagrams/FileRestorationDFD.jpg)
+- ![File Restauration Data flow](DFDs/FileRestorationDFD.jpg)
 
-### File List Flow
+### File List Data flow
 
-- ![File List Flow](diagrams/FileListDFD.jpg)
+- ![File List Data flow](DFDs/FileListDFD.jpg)
 
-### File Search Flow
+### File Search Data flow
 
-- ![File Search Flow](diagrams/FileSearchDFD.jpg)
+- ![File Search Data flow](DFDs/FileSearchDFD.jpg)
 
-### Empty Recycle Bin Flow
+### Empty Recycle Bin Data flow
 
-- ![Empty Recycle Bin Flow](diagrams/EmptyRecycleBinDFD.jpg)
+- ![Empty Recycle Bin Data flow](DFDs/EmptyRecycleBinDFD.jpg)
 
-### Display Help Flow
+### Display Help Data flow
 
-- ![Display Help Flow](diagrams/DisplayHelpDFD.jpg)
+- ![Display Help Data flowlow](DFDs/DisplayHelpDFD.jpg)
 
-### Show statistics Flow
+### Show statistics Data flow
 
-- ![Display Help Flow](diagrams/ShowStatisticsDFD.jpg)
+- ![Display Help Data flow](DFDs/ShowStatisticsDFD.jpg)
 
-### Cleanup Flow
+### Cleanup Data flow
 
-- ![Cleanup Flow](diagrams/CleanupDFD.jpg)
+- ![Cleanup Data flow](DFDs/CleanupDFD.jpg)
 
-### Preview File Flow
+### Preview File Data flow
 
-- ![Preview File Flow](diagrams/PreviewFileDFD.jpg)
+- ![Preview File Data flow](DFDs/PreviewFileDFD.jpg)
 
 
 ## ============ Metadata schema explanation ===========
