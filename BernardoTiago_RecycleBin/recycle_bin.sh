@@ -687,36 +687,54 @@ check_quota() {
 #################################################
 # Function: preview_file
 # Description: Show first 10 lines for text files in recycle bin
-# Parameters: $1 fileID (not full path)
+# Parameters: $1 fileID or original filename
 # Returns: 0 on success, 1 on failure
 #################################################
 preview_file() {
 
     verif_rbin
 
-    local fileID="$1"
-    local file_path="$FILES_DIR/$fileID"
+    local query="$1"
+    local file_path
 
-    # Verify if fileID is null
-    if [[ -z "$fileID" ]]; then
-        echo -e "${YELLOW}Usage:${NC} preview_file <fileID>"
+    # Verify if query (fileID or original name) is null
+    if [[ -z "$query" ]]; then
+        echo -e "${YELLOW}Usage:${NC} preview_file <fileID or original filename>"
         return 1
     fi
 
-    # Verify if file exists
+    # Check if query is a valid file ID or original filename
+    # Look for the file by ID in metadata
+    entry=$(grep -F -- "$query," "$METADATA_FILE" 2>/dev/null || grep -F -- ",$query," "$METADATA_FILE" 2>/dev/null | head -n 1)
+
+    # If not found by ID, try using the original name
+    if [[ -z "$entry" ]]; then
+        entry=$(grep -F -- "$query" "$METADATA_FILE" | head -n 1)
+    fi
+
+    if [[ -z "$entry" ]]; then
+        echo -e "${RED}ERROR:${NC} File with ID or name '$query' does not exist in the Recycle Bin."
+        return 1
+    fi
+
+    # Extract file path from metadata entry (second field: original path)
+    IFS=',' read -r id original_name original_path _ _ _ _ _ <<< "$entry"
+    file_path="${FILES_DIR}/${id}"
+
+    # Verify if file exists in the Recycle Bin
     if [[ ! -f "$file_path" ]]; then
-        echo -e "${RED}ERROR:${NC} File id '$fileID' does not exist."
+        echo -e "${RED}ERROR:${NC} The file '$original_name' no longer exists in the Recycle Bin."
         return 1
     fi
 
-    # Verify if is a text file
+    # Verify if the file is a text file
     if file "$file_path" | grep -qi "text"; then
         echo "---------------------------------------------"
         head -n 10 "$file_path"
         echo "---------------------------------------------"
         return 0
     else
-        echo -e "${YELLOW}Warning:${NC} '$fileID' Is in binary format."
+        echo -e "${YELLOW}Warning:${NC} '$file_path' is in binary format and cannot be previewed."
         return 1
     fi
 }

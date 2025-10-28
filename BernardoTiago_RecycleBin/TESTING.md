@@ -220,8 +220,7 @@ Average file size:     141B
 
 ### Test Case 12: Preview File
 1. You want to know whats the content of a specific file
-2. You'll need to know the file ID, run `./recycle_bin search <fileName>` to acknowledge the file unique ID
-3. Run `./recycle_bin preview <fileUniqueID>`
+1. Run `./recycle_bin preview <fileUniqueID/fileName>`
 
 **Expected Result:**
 - Return the first 10 lines present in the file
@@ -242,3 +241,61 @@ Maecenas faucibus nisi fermentum sapien ornare, id pretium nisi porta ----------
 **Status:** x Pass ☐ Fail
 
 **Screenshots:** 
+![TestCase12](/BernardoTiago_RecycleBin/screenshots/TestCase12.png)
+
+
+### Test Case 13: Delete a non-existent file
+1. You want to delete a file that does not exist.
+2. Run ./recycle_bin delete <fileName> to attempt deleting the non-existent file.
+
+**Expected Result:**
+- An error message is displayed, indicating that the file does not exist and cannot be deleted.
+
+**ActualResult**  
+Error: 'nonexistentfile.txt' doesn't exist.
+
+
+**Status:** x Pass ☐ Fail
+
+**Screenshots:** 
+![TestCase13](/BernardoTiago_RecycleBin/screenshots/TestCase13.png)
+
+
+### Test Case 14: Delete file without permissions
+1. You want to delete a file that you don't have sufficient permissions to delete.
+2. Run ./recycle_bin delete <fileName> to attempt deleting the file without the required permissions.
+
+**Expected Result:**
+- An error message is displayed, indicating that the user does not have sufficient permissions to delete the file.
+
+**ActualResult**  
+Error: Insufficient permissions for 'restrictedfile.txt'.
+
+
+**Status:** x Pass ☐ Fail
+
+**Screenshots:** 
+![TestCase14](/BernardoTiago_RecycleBin/screenshots/TestCase14.png)
+
+
+### Test Case 15: Restore when original location has same filename
+1. You want to restore a file from the recycle bin to its original location.
+2. Ensure that there is already a file with the same name in the original location.
+3. Run ./recycle_bin restore <fileID or originalName> to restore the file from the recycle bin.
+
+**Expected Result:**
+- The file should be restored successfully to the original location, but if a file with the same name already exists, the restored file should be renamed.
+
+**ActualResult**  
+Warning: File already exists. Restoring as 'myfile.txt_restored_1633045393'.
+Success: 'myfile.txt' restored to '/home/user/Documents/myfile.txt_restored_1633045393'.
+
+
+**Status:** x Pass ☐ Fail
+
+**Screenshots:** 
+![TestCase15](/BernardoTiago_RecycleBin/screenshots/TestCase15.png)
+
+
+
+
