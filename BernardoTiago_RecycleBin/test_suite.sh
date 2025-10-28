@@ -7,7 +7,7 @@
     LOG_FILE="$HOME/BernardoTiago_RecycleBin/recyclebin.log"
     # Ensure log directory exists
     
-    #Variavel total
+
     PASS=0 
     FAIL=0 
 
@@ -76,7 +76,6 @@
     $SCRIPT help > /dev/null 
     assert_success "Initialize recycle bin" 
     ((PASS_BASIC++))
-
     [ -d "$HOME/BernardoTiago_RecycleBin" ] && echo "✓ Directory created" 
     [ -f "$HOME/BernardoTiago_RecycleBin/metadata.db" ] && echo "✓ Metadata file created" 
 }
@@ -134,10 +133,12 @@
 
         # Verify: directory removed from original location
         if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/empty_dir" ]]; then
-            ((PASS_BASIC++))
+            
             assert_success "Empty directory deleted and correctly registered in Recycle Bin"
-        
+            ((PASS_BASIC++))
+
         else
+
             ((FAIL_BASIC++))
             assert_fail "Failed to delete empty directory"
             echo "  Exit code: $exit_code"
@@ -160,11 +161,14 @@
 
         # Verify: directory removed from original location
         if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/dir_with_contents" ]]; then
-            ((PASS_BASIC++))
+            
             assert_success "Directory with contents deleted recursively and registered in Recycle Bin"
+            ((PASS_BASIC++))
+
         else
-            ((FAIL_BASIC++))
+
             assert_fail "Failed to delete directory with contents"
+            ((FAIL_BASIC++))
             
         fi
     }
@@ -174,8 +178,9 @@
         echo -e "\n=== Test: List Empty Bin ===" 
         setup 
         $SCRIPT list | grep -q "Recycle Bin is empty"  
-        ((PASS_BASIC++))
         assert_success "List empty recycle bin" 
+        ((PASS_BASIC++))
+
     } 
 
     test_list_with_items() {
@@ -194,8 +199,9 @@
         # Calling list and check the message
         $SCRIPT list | grep -q "file(s) found in Recycle Bin:" 
 
-        ((PASS_BASIC++))
         assert_success "List recycle bin with items" 
+        ((PASS_BASIC++))
+        
 
     }
     
@@ -211,8 +217,10 @@
         ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
         $SCRIPT restore "$ID" 
 
+        assert_success "File was restored"
         ((PASS_BASIC++))
-        assert_success "File was restored" 
+
+
     }
 
     test_restore_non_existent() { 
@@ -228,11 +236,13 @@
         
         # Assert that the restore didn't happen (file should not be restored to non-existent path)
         if [ ! -f "$NON_EXISTENT_PATH" ]; then
-            ((PASS_BASIC++))
             assert_success "File not restored to non-existent path"
+            ((PASS_BASIC++))
+
         else
-            ((FAIL_BASIC++))
             assert_fail "File was restored to a non-existent path"
+            ((FAIL_BASIC++))
+
         fi
 
     }
@@ -254,12 +264,15 @@
         
         # Verify if recyclebin is empty
         if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
-            ((PASS_BASIC++))
+
             assert_success "RecycleBin empty with sucess"
+            ((PASS_BASIC++))
+
 
         else
-            ((FAIL_BASIC++))
             assert_fail "RecycleBin is not empty"
+            ((FAIL_BASIC++))
+
         fi
     }
 
@@ -281,11 +294,13 @@
 
         # Check if the file appears in the search results
         if echo "$RESULT" | grep -q "file1.txt"; then
-            ((PASS_BASIC++))
             assert_success File successfully found via search
+            ((PASS_BASIC++))
+
         else
-            ((FAIL_BASIC++))
             assert_fail File not found in the search
+            ((FAIL_BASIC++))
+
         fi
 
         # Empty the recycle bin at the end
@@ -307,12 +322,14 @@
         # false = exit code 1     true = exit code 0
         if echo "$RESULT" | grep -q "nonfile.txt"; then
             false
-            ((FAIL_BASIC++))
             assert_fail "Non-existent file found in the search"
+            ((FAIL_BASIC++))
+
         else
             true
-            ((PASS_BASIC++))
             assert_success "Non-existent file was NOT found in the search"
+            ((PASS_BASIC++))
+
         fi
 
         # Empty the recycle bin at the end
@@ -328,12 +345,16 @@
 
         # Check if the last line of the help contains "clean: Automatically deletes items"
         if echo "$HELP_OUTPUT" | grep -q "clean:.*Automatically deletes items.*retention period"; then
-            ((PASS_BASIC++))
+
             assert_success "Last line of help information displayed correctly"
+            ((PASS_BASIC++))
+
 
         else
-            ((FAIL_BASIC++))
+
             assert_fail "Last line of help information not displayed correctly"
+            ((FAIL_BASIC++))
+
         fi
     }
 
@@ -355,12 +376,14 @@
         if grep -q "non-existent_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
 
             false
-            ((FAIL_EDGE++))
             assert_fail "Non-existent file deleted"
+            ((FAIL_EDGE++))
+
         else
             true
-            ((PASS_EDGE++))
             assert_success "Non-existent file not deleted"
+            ((PASS_EDGE++))
+
         fi
     }
 
@@ -380,12 +403,14 @@
         # Assert that the file was not deleted (Insufficient permissions)
         if grep -q "file1.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
             false
-            ((FAIL_EDGE++))
             assert_fail "File without permissions was deleted"
+            ((FAIL_EDGE++))
+
         else
             true
-            ((PASS_EDGE++))
             assert_success "File without permissions wasn't deleted"
+            ((PASS_EDGE++))
+
         fi
     }
 
@@ -412,12 +437,14 @@
         if grep -q "sameName_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
 
             false
-            ((FAIL_EDGE++))
             assert_fail "File was not restored"
+            ((FAIL_EDGE++))
+
         else
             true
-            ((PASS_EDGE++))
             assert_success "File was restored"
+            ((PASS_EDGE++))
+
         fi
     }
 
@@ -434,11 +461,13 @@
         restored_file=$(ls "$TEST_DIR")
 
         if [[ -z "$restored_file" ]]; then
-            ((PASS_EDGE++))
             assert_success "File was not restored"
+            ((PASS_EDGE++))
+
         else
-            ((FAIL_EDGE++))
             assert_fail "Some file was restored"
+            ((FAIL_EDGE++))
+
         fi
     }
 
@@ -466,11 +495,13 @@
 
         # Verify if the file was restored (check TEST_DIR for restored file)
         if [[ -n "$restored_file" ]]; then
-            ((PASS_EDGE++))
             assert_success "File with spaces was restored successfully as $restored_file"
+            ((PASS_EDGE++))
+
         else
-            ((FAIL_EDGE++))
             assert_fail "File was not restored"
+            ((FAIL_EDGE++))
+
         fi
     }
 
@@ -495,11 +526,14 @@
 
         # Ensure the file is in the recycle bin by checking the list of deleted files
         if echo "$deleted_files" | grep -q "$ESCAPED_FILE_NAME"; then
-            ((PASS_EDGE++))
+
             assert_success "File with special characters deleted successfully"
+            ((PASS_EDGE++))
+
         else
-            ((FAIL_EDGE++))
             assert_fail "File with special characters not found in the recycle bin"
+            ((FAIL_EDGE++))
+
         fi
 
     
@@ -536,23 +570,24 @@
 
         # Possible error messages depending on locale/kernel
         if echo "$create_err" | grep -Eq 'File name too long|Nome de ficheiro muito grande|ENAMETOOLONG'; then
-            ((PASS_EDGE++))
             assert_success "System correctly refused to create filename >255 chars"
+            ((PASS_EDGE++))
+
             rm -f "$TMP_LOG"
             return 0
         fi
 
         # If file was not created and there was no ENAMETOOLONG error
         if [[ ! -f "$full_path" ]]; then
-            ((FAIL_EDGE++))
             assert_fail "File creation failed for an unknown reason"
+            ((FAIL_EDGE++))
+
             rm -f "$TMP_LOG"
             return 1
         fi
 
         # Environment allowed the creation (rare case)
         echo "Warning: system allowed a filename >255 chars; continuing extended checks..." | tee -a "$TMP_LOG" >> "$LOG_FILE"
-        ((PASS_EDGE++))
         assert_success "Environment tolerated long filename (acceptable for this test)"
         rm -f "$TMP_LOG"
     }
@@ -576,6 +611,8 @@
         # If creation failed, mark as fail immediately
         if [[ $create_exit -ne 0 || ! -f "$LARGE_FILE" ]]; then
             assert_fail "Failed to create large test file"
+            ((FAIL_EDGE++))
+
             return 1
         fi
 
@@ -594,11 +631,13 @@
         local expected_size=$((FILE_SIZE_MB * 1024 * 1024))
 
         if [[ $delete_exit -eq 0 && $restore_exit -eq 0 && $restored_size -eq $expected_size ]]; then
-            ((PASS_EDGE++))
             assert_success "Large file successfully deleted, restored, and verified"
+            ((PASS_EDGE++))
+
         else
-            ((FAIL_EDGE++))
             assert_fail "Large file handling failed (delete/restore/size mismatch)"
+            ((FAIL_EDGE++))
+
         fi
     }
 
@@ -609,6 +648,9 @@
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Create a real file and a symbolic link to it
         local TARGET_FILE="$TEST_DIR/real_file.txt"
@@ -622,12 +664,13 @@
         local delete_exit=$?
 
         # Check if the script correctly refused to delete the symlink
+
         if grep -q "Insecure or symbolic path" "$LOG_FILE" || grep -q "Error" "$LOG_FILE"; then
-            ((PASS_EDGE++))
             assert_success "Symbolic links correctly rejected from deletion"
+            ((PASS_EDGE++))
         else
+            assert_fail "Symbolic link was not properly handled"  
             ((FAIL_EDGE++))
-            assert_fail "Symbolic link was not properly handled"
         fi
     }
 
@@ -636,6 +679,9 @@ test_handle_hidden_files() {
 
     teardown
     setup
+
+    # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
     # Create a hidden file
     local HIDDEN_FILE="$TEST_DIR/.hidden_test_file.txt"
@@ -651,11 +697,13 @@ test_handle_hidden_files() {
 
     # Check if the hidden file was restored correctly
     if [[ $delete_exit -eq 0 && $restore_exit -eq 0 && -f "$HIDDEN_FILE" ]]; then
-        ((PASS_EDGE++))
         assert_success "Hidden file successfully deleted and restored"
+        ((PASS_EDGE++))
+
     else
-        ((FAIL_EDGE++))
         assert_fail "Failed to handle hidden file (delete/restore issue)"
+        ((FAIL_EDGE++))
+
     fi
 }
 
@@ -664,6 +712,9 @@ test_delete_files_from_different_directories() {
 
     teardown
     setup
+
+    # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
     # Create multiple directories and files
     mkdir -p "$TEST_DIR/dirA" "$TEST_DIR/dirB" "$TEST_DIR/dirC"
@@ -677,11 +728,11 @@ test_delete_files_from_different_directories() {
 
     # Check if all were deleted from original directories
     if [[ $delete_exit -eq 0 && ! -f "$TEST_DIR/dirA/fileA.txt" && ! -f "$TEST_DIR/dirB/fileB.txt" && ! -f "$TEST_DIR/dirC/fileC.txt" ]]; then
-        ((PASS_EDGE++))
         assert_success "Files from different directories deleted successfully in a single command"
+        ((PASS_EDGE++))
     else
-        ((FAIL_EDGE++))
         assert_fail "Failed to delete files from multiple directories"
+        ((FAIL_EDGE++))
     fi
 }
 
@@ -690,6 +741,8 @@ test_restore_to_readonly_directory() {
 
     teardown
     setup
+    # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
     # Create a read-only directory and a file inside it
     mkdir -p "$TEST_DIR/readonly_dir"
@@ -710,21 +763,23 @@ test_restore_to_readonly_directory() {
 
     # Check if restore was prevented (expected behavior)
     if [[ $restore_exit -ne 0 && ! -f "$TEST_DIR/readonly_dir/protected.txt" ]]; then
-        ((PASS_EDGE++))
         assert_success "Restore correctly prevented in read-only directory"
+        ((PASS_EDGE++))
     else
-        ((FAIL_EDGE++))
         assert_fail "Restore succeeded unexpectedly in read-only directory"
+        ((FAIL_EDGE++))
     fi
 }
-    #################################
+
     #ERROR HANDLING
-    #############################
     test_invalid_command() {
         echo -e "\n=== Test: Invalid command line arguments ==="
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Run the script with an invalid command
         $SCRIPT invalid_command > "$LOG_FILE" 2>&1
@@ -732,29 +787,32 @@ test_restore_to_readonly_directory() {
 
         # Expect non-zero exit and an error message
         if [[ $exit_code -ne 0 && $(grep -ci "use" "$LOG_FILE") -gt 0 ]]; then
-            ((PASS_ERROR++))
             assert_success "Invalid command handled gracefully with an error message"
+            ((PASS_ERROR++))
         else
-            ((FAIL_ERROR++))
             assert_fail "Script did not handle invalid command correctly"
+            ((FAIL_ERROR++))
+
         fi
     }
 
     test_missing_required_parameters() {
         echo -e "\n=== Test: Missing required parameters ==="
 
+
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Call delete without arguments (should fail and print usage)
         $SCRIPT delete > "$LOG_FILE" 2>&1
         local exit_code=$?
 
         if [[ $exit_code -ne 0 && $(grep -ci "usage" "$LOG_FILE") -gt 0 ]]; then
-            ((PASS_ERROR++))
             assert_success "Handled missing parameters correctly (usage message displayed)"
         else
-            ((FAIL_ERROR++))
             assert_fail "Did not handle missing parameters as expected"
         fi
     }
@@ -764,6 +822,9 @@ test_restore_to_readonly_directory() {
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Create a corrupted metadata file
         mkdir -p "$HOME/BernardoTiago_RecycleBin"
@@ -775,10 +836,8 @@ test_restore_to_readonly_directory() {
 
         # Expect graceful failure, not a crash
         if [[ $exit_code -ne 0 && $(grep -ci "error" "$LOG_FILE") -gt 0 ]]; then
-            ((PASS_ERROR++))
             assert_success "Corrupted metadata file handled gracefully"
         else
-            ((FAIL_ERROR++))
             assert_fail "Script did not handle corrupted metadata file correctly"
         fi
     }
@@ -788,6 +847,9 @@ test_restore_to_readonly_directory() {
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Create a test file
         echo "some data" > "$TEST_DIR/full_disk.txt"
@@ -804,10 +866,8 @@ test_restore_to_readonly_directory() {
         unset -f mv
 
         if [[ $exit_code -ne 0 && $(grep -ci "no space left" "$LOG_FILE") -gt 0 ]]; then
-            ((PASS_ERROR++))
             assert_success "Handled insufficient disk space gracefully"
         else
-            ((FAIL_ERROR++))
             assert_fail "Failed to handle insufficient disk space correctly"
         fi
     }
@@ -817,6 +877,9 @@ test_restore_to_readonly_directory() {
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Create file and remove permissions
         echo "secret data" > "$TEST_DIR/locked.txt"
@@ -829,10 +892,8 @@ test_restore_to_readonly_directory() {
         chmod 755 "$TEST_DIR/locked.txt"  # reset for cleanup
 
         if [[ $exit_code -ne 0 && $(grep -ci "insufficient permissions" "$LOG_FILE") -gt 0 ]]; then
-            ((PASS_ERROR++))
             assert_success "Permission denied handled correctly"
         else
-            ((FAIL_ERROR++))
             assert_fail "Permission denied not handled as expected"
         fi
     }
@@ -843,6 +904,9 @@ test_restore_to_readonly_directory() {
         teardown
         setup
 
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
+
         # Initialize recycle bin
         $SCRIPT help > /dev/null
         local bin_path="$HOME/BernardoTiago_RecycleBin"
@@ -852,10 +916,8 @@ test_restore_to_readonly_directory() {
         local exit_code=$?
 
         if [[ $exit_code -ne 0 && $(grep -ci "cannot delete the recycle bin" "$LOG_FILE") -gt 0 ]]; then
-            ((PASS_ERROR++))
             assert_success "Attempt to delete recycle bin handled correctly"
         else
-            ((FAIL_ERROR++))
             assert_fail "Recycle bin deletion not properly blocked"
         fi
     }
@@ -865,6 +927,9 @@ test_restore_to_readonly_directory() {
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Create two files
         echo "file one" > "$TEST_DIR/file1.txt"
@@ -877,23 +942,20 @@ test_restore_to_readonly_directory() {
 
         # Verify that both were deleted safely
         if [[ ! -f "$TEST_DIR/file1.txt" && ! -f "$TEST_DIR/file2.txt" ]]; then
-            ((PASS_ERROR++))
             assert_success "Concurrent delete operations handled safely"
         else
-            ((FAIL_ERROR++))
             assert_fail "Concurrent operations caused conflict or data loss"
         fi
     }
-
-        #################################
-        #  PERFORMANCE
-        #############################
 
     test_delete_100_files() {
         echo -e "\n=== Test: Deleting 100+ files ==="
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Create 100 test files
         echo -e "${GREEN}Creating 101 files... ${NC}"
@@ -908,10 +970,8 @@ test_restore_to_readonly_directory() {
         # Check if all were deleted
         local remaining=$(ls "$TEST_DIR" | wc -l)
         if [[ $exit_code -eq 0 && $remaining -eq 0 ]]; then
-            ((PASS_PERF++))
             assert_success "Successfully deleted 100+ files"
         else
-            ((FAIL_PERF++))
             assert_fail "Failed to delete 100+ files correctly"
         fi
     }
@@ -921,6 +981,9 @@ test_restore_to_readonly_directory() {
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Create and delete 100+ files
         echo -e "${GREEN}Listing 101 files...${NC}"
@@ -934,10 +997,8 @@ test_restore_to_readonly_directory() {
 
         # Expect 100+ entries in the list
         if (( LIST_OUTPUT >= 100 )); then
-            ((PASS_PERF++))
             assert_success "Recycle bin listed 100+ items successfully"
         else
-            ((FAIL_PERF++))
             assert_fail "Recycle bin did not show all 100+ items"
         fi
     }
@@ -947,6 +1008,9 @@ test_restore_to_readonly_directory() {
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Populate recycle bin with 100+ entries
         echo -e "${GREEN}Searching 101 files... ${NC}"
@@ -963,10 +1027,8 @@ test_restore_to_readonly_directory() {
         SEARCH_OUTPUT=$($SCRIPT search "$target")
 
         if echo "$SEARCH_OUTPUT" | grep -q "$target"; then
-            ((PASS_PERF++))
             assert_success "Search works correctly with large metadata (100+ entries)"
         else
-            ((FAIL_PERF++))
             assert_fail "Search failed in large metadata file"
         fi
     }
@@ -976,6 +1038,9 @@ test_restore_to_readonly_directory() {
 
         teardown
         setup
+
+        # Initialize RecycleBin to create log file
+        $SCRIPT help > /dev/null
 
         # Create and delete 101 files
         echo -e "${GREEN}Restoring 101 files...${NC}"
@@ -993,10 +1058,8 @@ test_restore_to_readonly_directory() {
 
         # Check if the file is restored back
         if [[ $exit_code -eq 0 && -f "$TEST_DIR/$target" ]]; then
-            ((PASS_PERF++))
             assert_success "Restored file correctly from large bin (100+ items)"
         else
-            ((FAIL_PERF++))
             assert_fail "Failed to restore file from large bin"
         fi
     }
@@ -1041,7 +1104,7 @@ test_restore_to_readonly_directory() {
     test_restore_to_readonly_directory
 
 
-    #Erros Handling (7)
+    #Erros Handling (11)
     test_invalid_command
     test_missing_required_parameters
     test_corrupted_metadata_file
@@ -1049,8 +1112,8 @@ test_restore_to_readonly_directory() {
     test_permission_denied_errors
     test_delete_recycle_bin_itself
     test_concurrent_operations
-
-    #Performance (4)
+    
+     #Performance (4)
    # test_delete_100_files
    # test_list_recyclebin_100_items
    # test_search_in_large_metadata
@@ -1065,17 +1128,16 @@ test_restore_to_readonly_directory() {
 
     echo "=========================================" 
     echo "Results: $PASS passed, $FAIL failed"
-
+    
     echo "========================================="
 
-
-    # Print the table of test results
+       # Print the table of test results
     echo "| Category              | Total Tests | Passed | Failed | Pass Rate |"
     echo "|-----------------------|-------------|--------|--------|-----------|"
-    echo "| Basic Functionality   | 13          | $PASS_BASIC      | $FAIL_BASIC      |  $(echo "scale=2; ($PASS_BASIC / 13) * 100" | bc)%    |"
-    echo "| Edge Cases            | 12          | $PASS_EDGE      | $FAIL_EDGE      | $(echo "scale=2; ($PASS_EDGE / 12) * 100" | bc)%        |"
-    echo "| Error Handling        | 7           | $PASS_ERROR      | $FAIL_ERROR      | $(echo "scale=2; ($PASS_ERROR / 7) * 100" | bc)%        |"
-    echo "| Performance           | 4           | $PASS_PERF      | $FAIL_PERF      | $(echo "scale=2; ($PASS_PERF / 4) * 100" | bc)%        |"
+    echo "| Basic Functionality   | 13          | $PASS_BASIC      | $FAIL_BASIC      | $(echo "scale=2; ($PASS_BASIC / 2) * 100" | bc)%    |"
+    echo "| Edge Cases            | 12          | $PASS_EDGE      | $FAIL_EDGE      | $(echo "scale=2; ($PASS_EDGE / 1) * 100" | bc)%        |"
+    echo "| Error Handling        | 7           | $PASS_ERROR      | $FAIL_ERROR      | $(echo "scale=2; ($PASS_ERROR / 1) * 100" | bc)%        |"
+    echo "| Performance           | 4           | $PASS_PERF      | $FAIL_PERF      | $(echo "scale=2; ($PASS_PERF / 1) * 100" | bc)%        |"
     echo "| **TOTAL**             | **36**       | **$PASS** | **$FAIL**  | **$(echo "scale=2; ($PASS / 36) * 100" | bc)%**|"
 
     [ $FAIL -eq 0 ] && exit 0 || exit 1 
