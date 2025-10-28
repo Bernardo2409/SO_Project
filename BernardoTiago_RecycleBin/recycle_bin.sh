@@ -1,9 +1,12 @@
+#!/bin/bash
 #################################################
 # Linux Recycle Bin Simulation
 # Author: Bernardo Coelho n125059; Tiago Vale n125913 
 # Date: 28-10-2025
 # Description: Shell-based recycle bin system
+# Version number: I
 #################################################
+
 
 set -e
 trap 'echo -e "${RED}Operation aborted."; exit 1' SIGINT SIGTERM 
