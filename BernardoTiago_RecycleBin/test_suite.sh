@@ -88,6 +88,7 @@
         setup 
         echo "test content" > "$TEST_DIR/test.txt" 
         $SCRIPT delete "$TEST_DIR/test.txt" 
+        ((PASS_BASIC++))
         assert_success "Delete existing file" 
         [ ! -f "$TEST_DIR/test.txt" ] && echo "✓ File removed from original location" 
     } 
@@ -112,6 +113,7 @@
             
         fi
 
+        ((PASS_BASIC++))
         assert_success "Multiple files deleted with sucess"
     }
 
@@ -132,11 +134,11 @@
 
         # Verify: directory removed from original location
         if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/empty_dir" ]]; then
-            
+            ((PASS_BASIC++))
             assert_success "Empty directory deleted and correctly registered in Recycle Bin"
         
         else
-
+            ((FAIL_BASIC++))
             assert_fail "Failed to delete empty directory"
             echo "  Exit code: $exit_code"
         fi
@@ -158,10 +160,10 @@
 
         # Verify: directory removed from original location
         if [[ $exit_code -eq 0 && ! -d "$TEST_DIR/dir_with_contents" ]]; then
-            
+            ((PASS_BASIC++))
             assert_success "Directory with contents deleted recursively and registered in Recycle Bin"
         else
-
+            ((FAIL_BASIC++))
             assert_fail "Failed to delete directory with contents"
             
         fi
@@ -172,6 +174,7 @@
         echo -e "\n=== Test: List Empty Bin ===" 
         setup 
         $SCRIPT list | grep -q "Recycle Bin is empty"  
+        ((PASS_BASIC++))
         assert_success "List empty recycle bin" 
     } 
 
@@ -191,6 +194,7 @@
         # Calling list and check the message
         $SCRIPT list | grep -q "file(s) found in Recycle Bin:" 
 
+        ((PASS_BASIC++))
         assert_success "List recycle bin with items" 
 
     }
@@ -207,8 +211,8 @@
         ID=$($SCRIPT list | grep "restore_test" | awk '{print $1}') 
         $SCRIPT restore "$ID" 
 
+        ((PASS_BASIC++))
         assert_success "File was restored" 
-
     }
 
     test_restore_non_existent() { 
@@ -224,8 +228,10 @@
         
         # Assert that the restore didn't happen (file should not be restored to non-existent path)
         if [ ! -f "$NON_EXISTENT_PATH" ]; then
+            ((PASS_BASIC++))
             assert_success "File not restored to non-existent path"
         else
+            ((FAIL_BASIC++))
             assert_fail "File was restored to a non-existent path"
         fi
 
@@ -248,10 +254,11 @@
         
         # Verify if recyclebin is empty
         if [[ ! -f "$RECYCLE_BIN_DIR/file1.txt" && ! -f "$RECYCLE_BIN_DIR/file2.txt" && ! -f "$RECYCLE_BIN_DIR/file3.txt" ]]; then
-
+            ((PASS_BASIC++))
             assert_success "RecycleBin empty with sucess"
 
         else
+            ((FAIL_BASIC++))
             assert_fail "RecycleBin is not empty"
         fi
     }
@@ -274,8 +281,10 @@
 
         # Check if the file appears in the search results
         if echo "$RESULT" | grep -q "file1.txt"; then
+            ((PASS_BASIC++))
             assert_success File successfully found via search
         else
+            ((FAIL_BASIC++))
             assert_fail File not found in the search
         fi
 
@@ -298,9 +307,11 @@
         # false = exit code 1     true = exit code 0
         if echo "$RESULT" | grep -q "nonfile.txt"; then
             false
+            ((FAIL_BASIC++))
             assert_fail "Non-existent file found in the search"
         else
             true
+            ((PASS_BASIC++))
             assert_success "Non-existent file was NOT found in the search"
         fi
 
@@ -317,11 +328,11 @@
 
         # Check if the last line of the help contains "clean: Automatically deletes items"
         if echo "$HELP_OUTPUT" | grep -q "clean:.*Automatically deletes items.*retention period"; then
-
+            ((PASS_BASIC++))
             assert_success "Last line of help information displayed correctly"
 
         else
-
+            ((FAIL_BASIC++))
             assert_fail "Last line of help information not displayed correctly"
         fi
     }
@@ -344,9 +355,11 @@
         if grep -q "non-existent_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
 
             false
+            ((FAIL_EDGE++))
             assert_fail "Non-existent file deleted"
         else
             true
+            ((PASS_EDGE++))
             assert_success "Non-existent file not deleted"
         fi
     }
@@ -367,9 +380,11 @@
         # Assert that the file was not deleted (Insufficient permissions)
         if grep -q "file1.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
             false
+            ((FAIL_EDGE++))
             assert_fail "File without permissions was deleted"
         else
             true
+            ((PASS_EDGE++))
             assert_success "File without permissions wasn't deleted"
         fi
     }
@@ -397,9 +412,11 @@
         if grep -q "sameName_file.txt" "$HOME/BernardoTiago_RecycleBin/metadata.db"; then
 
             false
+            ((FAIL_EDGE++))
             assert_fail "File was not restored"
         else
             true
+            ((PASS_EDGE++))
             assert_success "File was restored"
         fi
     }
@@ -417,8 +434,10 @@
         restored_file=$(ls "$TEST_DIR")
 
         if [[ -z "$restored_file" ]]; then
+            ((PASS_EDGE++))
             assert_success "File was not restored"
         else
+            ((FAIL_EDGE++))
             assert_fail "Some file was restored"
         fi
     }
@@ -447,8 +466,10 @@
 
         # Verify if the file was restored (check TEST_DIR for restored file)
         if [[ -n "$restored_file" ]]; then
+            ((PASS_EDGE++))
             assert_success "File with spaces was restored successfully as $restored_file"
         else
+            ((FAIL_EDGE++))
             assert_fail "File was not restored"
         fi
     }
@@ -474,9 +495,10 @@
 
         # Ensure the file is in the recycle bin by checking the list of deleted files
         if echo "$deleted_files" | grep -q "$ESCAPED_FILE_NAME"; then
-
+            ((PASS_EDGE++))
             assert_success "File with special characters deleted successfully"
         else
+            ((FAIL_EDGE++))
             assert_fail "File with special characters not found in the recycle bin"
         fi
 
@@ -514,6 +536,7 @@
 
         # Possible error messages depending on locale/kernel
         if echo "$create_err" | grep -Eq 'File name too long|Nome de ficheiro muito grande|ENAMETOOLONG'; then
+            ((PASS_EDGE++))
             assert_success "System correctly refused to create filename >255 chars"
             rm -f "$TMP_LOG"
             return 0
@@ -521,6 +544,7 @@
 
         # If file was not created and there was no ENAMETOOLONG error
         if [[ ! -f "$full_path" ]]; then
+            ((FAIL_EDGE++))
             assert_fail "File creation failed for an unknown reason"
             rm -f "$TMP_LOG"
             return 1
@@ -528,6 +552,7 @@
 
         # Environment allowed the creation (rare case)
         echo "Warning: system allowed a filename >255 chars; continuing extended checks..." | tee -a "$TMP_LOG" >> "$LOG_FILE"
+        ((PASS_EDGE++))
         assert_success "Environment tolerated long filename (acceptable for this test)"
         rm -f "$TMP_LOG"
     }
@@ -569,8 +594,10 @@
         local expected_size=$((FILE_SIZE_MB * 1024 * 1024))
 
         if [[ $delete_exit -eq 0 && $restore_exit -eq 0 && $restored_size -eq $expected_size ]]; then
+            ((PASS_EDGE++))
             assert_success "Large file successfully deleted, restored, and verified"
         else
+            ((FAIL_EDGE++))
             assert_fail "Large file handling failed (delete/restore/size mismatch)"
         fi
     }
@@ -596,8 +623,10 @@
 
         # Check if the script correctly refused to delete the symlink
         if grep -q "Insecure or symbolic path" "$LOG_FILE" || grep -q "Error" "$LOG_FILE"; then
+            ((PASS_EDGE++))
             assert_success "Symbolic links correctly rejected from deletion"
         else
+            ((FAIL_EDGE++))
             assert_fail "Symbolic link was not properly handled"
         fi
     }
@@ -622,8 +651,10 @@ test_handle_hidden_files() {
 
     # Check if the hidden file was restored correctly
     if [[ $delete_exit -eq 0 && $restore_exit -eq 0 && -f "$HIDDEN_FILE" ]]; then
+        ((PASS_EDGE++))
         assert_success "Hidden file successfully deleted and restored"
     else
+        ((FAIL_EDGE++))
         assert_fail "Failed to handle hidden file (delete/restore issue)"
     fi
 }
@@ -646,8 +677,10 @@ test_delete_files_from_different_directories() {
 
     # Check if all were deleted from original directories
     if [[ $delete_exit -eq 0 && ! -f "$TEST_DIR/dirA/fileA.txt" && ! -f "$TEST_DIR/dirB/fileB.txt" && ! -f "$TEST_DIR/dirC/fileC.txt" ]]; then
+        ((PASS_EDGE++))
         assert_success "Files from different directories deleted successfully in a single command"
     else
+        ((FAIL_EDGE++))
         assert_fail "Failed to delete files from multiple directories"
     fi
 }
@@ -677,8 +710,10 @@ test_restore_to_readonly_directory() {
 
     # Check if restore was prevented (expected behavior)
     if [[ $restore_exit -ne 0 && ! -f "$TEST_DIR/readonly_dir/protected.txt" ]]; then
+        ((PASS_EDGE++))
         assert_success "Restore correctly prevented in read-only directory"
     else
+        ((FAIL_EDGE++))
         assert_fail "Restore succeeded unexpectedly in read-only directory"
     fi
 }
@@ -697,8 +732,10 @@ test_restore_to_readonly_directory() {
 
         # Expect non-zero exit and an error message
         if [[ $exit_code -ne 0 && $(grep -ci "use" "$LOG_FILE") -gt 0 ]]; then
+            ((PASS_ERROR++))
             assert_success "Invalid command handled gracefully with an error message"
         else
+            ((FAIL_ERROR++))
             assert_fail "Script did not handle invalid command correctly"
         fi
     }
@@ -714,8 +751,10 @@ test_restore_to_readonly_directory() {
         local exit_code=$?
 
         if [[ $exit_code -ne 0 && $(grep -ci "usage" "$LOG_FILE") -gt 0 ]]; then
+            ((PASS_ERROR++))
             assert_success "Handled missing parameters correctly (usage message displayed)"
         else
+            ((FAIL_ERROR++))
             assert_fail "Did not handle missing parameters as expected"
         fi
     }
@@ -736,8 +775,10 @@ test_restore_to_readonly_directory() {
 
         # Expect graceful failure, not a crash
         if [[ $exit_code -ne 0 && $(grep -ci "error" "$LOG_FILE") -gt 0 ]]; then
+            ((PASS_ERROR++))
             assert_success "Corrupted metadata file handled gracefully"
         else
+            ((FAIL_ERROR++))
             assert_fail "Script did not handle corrupted metadata file correctly"
         fi
     }
@@ -763,8 +804,10 @@ test_restore_to_readonly_directory() {
         unset -f mv
 
         if [[ $exit_code -ne 0 && $(grep -ci "no space left" "$LOG_FILE") -gt 0 ]]; then
+            ((PASS_ERROR++))
             assert_success "Handled insufficient disk space gracefully"
         else
+            ((FAIL_ERROR++))
             assert_fail "Failed to handle insufficient disk space correctly"
         fi
     }
@@ -786,8 +829,10 @@ test_restore_to_readonly_directory() {
         chmod 755 "$TEST_DIR/locked.txt"  # reset for cleanup
 
         if [[ $exit_code -ne 0 && $(grep -ci "insufficient permissions" "$LOG_FILE") -gt 0 ]]; then
+            ((PASS_ERROR++))
             assert_success "Permission denied handled correctly"
         else
+            ((FAIL_ERROR++))
             assert_fail "Permission denied not handled as expected"
         fi
     }
@@ -807,8 +852,10 @@ test_restore_to_readonly_directory() {
         local exit_code=$?
 
         if [[ $exit_code -ne 0 && $(grep -ci "cannot delete the recycle bin" "$LOG_FILE") -gt 0 ]]; then
+            ((PASS_ERROR++))
             assert_success "Attempt to delete recycle bin handled correctly"
         else
+            ((FAIL_ERROR++))
             assert_fail "Recycle bin deletion not properly blocked"
         fi
     }
@@ -830,8 +877,10 @@ test_restore_to_readonly_directory() {
 
         # Verify that both were deleted safely
         if [[ ! -f "$TEST_DIR/file1.txt" && ! -f "$TEST_DIR/file2.txt" ]]; then
+            ((PASS_ERROR++))
             assert_success "Concurrent delete operations handled safely"
         else
+            ((FAIL_ERROR++))
             assert_fail "Concurrent operations caused conflict or data loss"
         fi
     }
@@ -859,8 +908,10 @@ test_restore_to_readonly_directory() {
         # Check if all were deleted
         local remaining=$(ls "$TEST_DIR" | wc -l)
         if [[ $exit_code -eq 0 && $remaining -eq 0 ]]; then
+            ((PASS_PERF++))
             assert_success "Successfully deleted 100+ files"
         else
+            ((FAIL_PERF++))
             assert_fail "Failed to delete 100+ files correctly"
         fi
     }
@@ -883,8 +934,10 @@ test_restore_to_readonly_directory() {
 
         # Expect 100+ entries in the list
         if (( LIST_OUTPUT >= 100 )); then
+            ((PASS_PERF++))
             assert_success "Recycle bin listed 100+ items successfully"
         else
+            ((FAIL_PERF++))
             assert_fail "Recycle bin did not show all 100+ items"
         fi
     }
@@ -910,8 +963,10 @@ test_restore_to_readonly_directory() {
         SEARCH_OUTPUT=$($SCRIPT search "$target")
 
         if echo "$SEARCH_OUTPUT" | grep -q "$target"; then
+            ((PASS_PERF++))
             assert_success "Search works correctly with large metadata (100+ entries)"
         else
+            ((FAIL_PERF++))
             assert_fail "Search failed in large metadata file"
         fi
     }
@@ -938,8 +993,10 @@ test_restore_to_readonly_directory() {
 
         # Check if the file is restored back
         if [[ $exit_code -eq 0 && -f "$TEST_DIR/$target" ]]; then
+            ((PASS_PERF++))
             assert_success "Restored file correctly from large bin (100+ items)"
         else
+            ((FAIL_PERF++))
             assert_fail "Failed to restore file from large bin"
         fi
     }
