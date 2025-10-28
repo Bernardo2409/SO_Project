@@ -987,6 +987,7 @@ test_restore_to_readonly_directory() {
 
     echo "=========================================" 
     echo "Results: $PASS passed, $FAIL failed"
+    
     echo "========================================="
 
     [ $FAIL -eq 0 ] && exit 0 || exit 1 
