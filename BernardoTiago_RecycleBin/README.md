@@ -82,7 +82,6 @@ Retention days: 30
 
 ![Example1](/BernardoTiago_RecycleBin/screenshots/Example1.png)
 
-## Known Issues 
  
 ## References 
 
