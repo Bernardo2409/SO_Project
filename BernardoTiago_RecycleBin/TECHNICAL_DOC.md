@@ -8,39 +8,39 @@
 
 ### File deletion Flow: 
 
-![File Deletion Flow](diagrams/FileDeletionFlow.jpg)
+- ![File Deletion Flow](diagrams/FileDeletionFlow.jpg)
 
 ### File Restauration Flow:
 
-![File Restauration Flow](diagrams/FileRestorationFlow.jpg)
+- ![File Restauration Flow](diagrams/FileRestorationFlow.jpg)
 
 ### File List Flow
 
-![File List Flow](diagrams/FileListFlow1.jpg)
+- ![File List Flow](diagrams/FileListFlow1.jpg)
 
 ### File Search Flow
 
-![File Search Flow](diagrams/FileSearchFlow.jpg)
+- ![File Search Flow](diagrams/FileSearchFlow.jpg)
 
 ### Empty Recycle Bin Flow
 
-![Empty Recycle Bin Flow](diagrams/EmptyRecycleBinFlow.jpg)
+- ![Empty Recycle Bin Flow](diagrams/EmptyRecycleBinFlow.jpg)
 
 ### Display Help Flow
 
-![Display Help Flow](diagrams/DisplayHelpFlow.jpg)
+- ![Display Help Flow](diagrams/DisplayHelpFlow.jpg)
 
 ### Show statistics Flow
 
-![Display Help Flow](diagrams/ShowStatisticsFlow.jpg)
+- ![Display Help Flow](diagrams/ShowStatisticsFlow.jpg)
 
 ### Cleanup Flow
 
-![Cleanup Flow](diagrams/CleanupFlow.jpg)
+- ![Cleanup Flow](diagrams/CleanupFlow.jpg)
 
 ### Preview File Flow
 
-![Preview File Flow](diagrams/PreviewFileFlow.jpg)
+- ![Preview File Flow](diagrams/PreviewFileFlow.jpg)
 
 ## ============ Metadata schema explanation ===========
 
@@ -245,4 +245,4 @@ These design decisions ensure that the recycle bin system is efficient, secure, 
 
 These algorithms ensure that the recycle bin system efficiently manages deleted files, restores files, and controls storage usage, while also providing options for automatic cleanup and quota management.
 
-============ Flowcharts for complex operations ================
+## ============ Flowcharts for complex operations ================
