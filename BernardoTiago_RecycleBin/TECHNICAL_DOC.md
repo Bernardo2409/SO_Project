@@ -41,7 +41,7 @@
 
 ## ============ Metadata schema explanation ===========
 
-The system (Recycle Bin) have informations about the files that were deleted in a secure way and could me recovered after(posteriori). Metadata.db has a data base that storage the inforation of the files.
+The system (Recycle Bin) stores informations about files that have been deleted securely and can be recovered later. The Metadata.db file contains the data base that stores the details of the files.
 
 Metadata table:
 
@@ -66,66 +66,75 @@ OWNER: The owner of the file.
 ## ======== Function descriptions =============
 
 ### `initialize_recyclebin`
-- **Description**: Creates the directory structure and necessary files to initialize the recycle bin if it doesn’t exist yet.
-- **Parameters**: None.
-- **Return**: Returns `0` on success and `1` on failure.
+- **Description**: Creates recycle bin directory structure;
+- **Parameters**: None;
+- **Return**: Returns 0 on success and 1 on failure.
+
 
 ### `delete_file`
-- **Description**: Moves files or directories to the recycle bin, storing their metadata (such as original name, path, deletion date, etc.) in the `metadata.db` file.
-- **Parameters**: Path to the file/directory to be moved to the recycle bin.
-- **Return**: Returns `0` on success and `1` on failure.
+- **Description**: Moves file/directory to recycle bin;
+- **Parameters**: path to file/directory;
+- **Return**: Returns 0 on success and 1 on failure.
+
 
 ### `list_recycled`
-- **Description**: Lists all files in the recycle bin, displaying metadata such as original name, path, deletion date, size, etc.
-- **Parameters**: (Optional) `--detailed` for detailed view.
-- **Return**: Returns `0` on success.
+- **Description**: Lists all items in recycle bin;
+- **Parameters**: (Optional) --detailed for detailed view;
+- **Return**: Returns 0 on success.
+
 
 ### `restore_file`
-- **Description**: Restores a file from the recycle bin to its original location. If the file already exists in the destination, it is renamed automatically.
-- **Parameters**: ID or original name of the file.
-- **Return**: Returns `0` on success and `1` on failure.
+- **Description**: Restores a file from recycle bin to its original location;
+- **Parameters**: file ID or original name;
+- **Return**: Returns 0 on success and 1 on failure.
+
 
 ### `search_recycled`
-- **Description**: Searches for files in the recycle bin that match the pattern provided by the user.
-- **Parameters**: Search pattern, can be case-insensitive with the `-i` option.
-- **Return**: Returns `0` on success and `1` on failure.
+- **Description**: Display all the files that contains the pattern given by the user;
+- **Parameters**: search patterns;
+- **Return**: Returns 0 on success and 1 on failure.
+
 
 ### `empty_recyclebin`
-- **Description**: Permanently deletes all files in the recycle bin or a specified file, depending on the provided parameter.
-- **Parameters**: (Optional) `--force` to delete without confirmation.
-- **Return**: Returns `0` on success and `1` on failure.
+- **Description**: Permanently deletes all items in recycle bin;
+- **Parameters**: (Optional) --force to delete without confirmation;
+- **Return**: Returns 0 on success and 1 on failure.
+
 
 ### `verif_rbin`
-- **Description**: Auxiliary function to check if the recycle bin has been initialized.
-- **Parameters**: None.
-- **Return**: Returns `0` if the recycle bin is initialized.
+- **Description**: Auxiliary funtion to verify if the recycle bin was initialized;
+- **Parameters**: None;
+- **Return**: Returns 0 if the recycle bin is initialized.
+
 
 ### `display_help`
-- **Description**: Displays a help message with the description of available commands.
-- **Parameters**: None.
-- **Return**: Returns `0`.
+- **Description**: Displays comprehensive usage information and examples;
+- **Parameters**: None;
+- **Return**: Returns 0.
+
 
 ### `show_statistics`
-- **Description**: Displays general statistics about the recycle bin, such as total items, total space used, and the count of files and directories.
-- **Parameters**: None.
-- **Return**: Returns `0` on success and `1` on failure.
+- **Description**: Displays overall statistics of the recycle bin;
+- **Parameters**: None;
+- **Return**: Returns 0 on success and 1 on failure.
+
 
 ### `auto_cleanup`
-- **Description**: Automatically deletes files older than X days from the recycle bin, as configured in the settings file.
-- **Parameters**: None.
-- **Return**: Returns `0` on success and `1` on failure.
+- **Description**: Automatically deletes items older than the configured retention period;
+- **Parameters**: None;
+- **Return**: Returns 0 on success and 1 on failure.
+
 
 ### `check_quota`
-- **Description**: Checks if the total usage of the recycle bin exceeds the configured size limit. If exceeded, it prompts the user to perform an auto-cleanup.
-- **Parameters**: None.
-- **Return**: Returns `0` if usage does not exceed the limit, `1` if exceeded.
+- **Description**: Check if recycle bin exceeds MAX_SIZE_MB;
+- **Parameters**: None;
+- **Return**: Returns 0 if usage does not exceed the limit, 1 if exceeded.
+
 
 ### `preview_file`
-- **Description**: Displays the first 10 lines of a file in the recycle bin, if it's a text file.
-- **Parameters**: File ID.
-- **Return**: Returns `0` on success and `1` on failure.
-
-
+- **Description**: Show first 10 lines for text files in recycle bin;
+- **Parameters**: fileID or original filename
+- **Return**: Returns 0 on success and 1 on failure.
 
 
 ## ======== Design decisions and rationale ========== 
@@ -139,7 +148,7 @@ OWNER: The owner of the file.
 - **Rationale**: Metadata allows for the restoration of files to their original location with all original permissions and attributes intact. It also enables searching and listing files in the recycle bin without the need to manually check each file.
 
 ### 3. **File Naming with Unique ID**
-- **Decision**: When moving a file to the recycle bin, it is renamed with a unique ID generated from a timestamp and a random string (`$(date +%s%N)_$(tr -dc 'a-z0-9' </dev/urandom | head -c 6)`).
+- **Decision**: When moving a file to the recycle bin, it is renamed with a unique ID generated from a timestamp and a random string.
 - **Rationale**: Creating a unique identifier for each file prevents conflicts when files have the same name. It also makes managing files in the recycle bin easier since each file can be uniquely identified for restoration or deletion.
 
 ### 4. **Secure File Deletion**

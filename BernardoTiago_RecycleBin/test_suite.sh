@@ -1183,7 +1183,7 @@ EOF
        # Print the table of test results
     echo "| Category              | Total Tests | Passed | Failed | Pass Rate  |"
     echo "|-----------------------|-------------|--------|--------|----------- |"
-    echo "| Basic Functionality   | 13          | $PASS_BASIC     | $FAIL_BASIC      |  $(echo "scale=2; ($PASS_BASIC / 13) * 100" | bc)%   |"
+    echo "| Basic Functionality   | 13          | $PASS_BASIC     | $FAIL_BASIC      | $(echo "scale=2; ($PASS_BASIC / 13) * 100" | bc)%    |"
     echo "| Edge Cases            | 12          | $PASS_EDGE     | $FAIL_EDGE      | $(echo "scale=2; ($PASS_EDGE / 12) * 100" | bc)%    |"
     echo "| Error Handling        | 7           | $PASS_ERROR      | $FAIL_ERROR      | $(echo "scale=2; ($PASS_ERROR / 7) * 100" | bc)%    |"
     echo "| Performance           | 4           | $PASS_PERF      | $FAIL_PERF      | $(echo "scale=2; ($PASS_PERF / 4) * 100" | bc)%    |"

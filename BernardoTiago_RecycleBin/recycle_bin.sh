@@ -669,7 +669,7 @@ auto_cleanup() {
 #################################################
 # Function: check_quota
 # Description: Check if recycle bin exceeds MAX_SIZE_MB
-# Parameters: 0
+# Parameters: None
 # Returns: 0 on success, 1 on max size exceeded
 #################################################
 check_quota() {
