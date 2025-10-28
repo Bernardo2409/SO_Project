@@ -1,7 +1,7 @@
 ## ========= System architecture diagram =======
 
 
-![System architecture diagram](/BernardoTiago_RecycleBin/diagrams/Systemdiagram.png)
+![System architecture diagram](/BernardoTiago_RecycleBin/Flowcharts/Systemdiagram.png)
 
 
 ## ============ Data flow diagrams ================
