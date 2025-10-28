@@ -296,6 +296,3 @@ Success: 'myfile.txt' restored to '/home/user/Documents/myfile.txt_restored_1633
 **Screenshots:** 
 ![TestCase15](/BernardoTiago_RecycleBin/screenshots/TestCase15.png)
 
-
-
-
