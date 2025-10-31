@@ -525,6 +525,7 @@ display_help() {
     echo "  clean:     Automatically deletes items older than the configured retention period"
     echo "  preview:   display first 10 lines of a file existent in the recycle bin"
     echo "  report:    Generate detailed text report with statistics"
+    echo "  issue:     Report any know error by generating a text document"
     echo
 }
 
@@ -880,7 +881,7 @@ recycle_report() {
 
     echo -e "${GREEN}Report generated:${NC} $report_file"
     return 0
-}
+}     
 
     #################################################
     # Function: report_error
@@ -888,38 +889,38 @@ recycle_report() {
     # Parameters: Optional message (if not provided, prompts user)
     # Returns: 0 on success
     #################################################
-    report_error() {
-        verif_rbin
+report_error() {
+    verif_rbin
 
-        local report_file="${RECYCLE_BIN_DIR}/user_reports.txt"
-        local message="$*"
+    local report_file="${RECYCLE_BIN_DIR}/user_reports.txt"
+    local message="$*"
 
-        echo -e "\n${YELLOW}=== Report an Issue ===${NC}"
+    echo -e "\n${YELLOW}=== Report an Issue ===${NC}"
 
-        # If no message provided, ask interactively
-        if [[ -z "$message" ]]; then
-            echo "Please describe the issue you encountered:"
-            read -r message
-        fi
+    # If no message provided, ask interactively
+    if [[ -z "$message" ]]; then
+        echo "Please describe the issue you encountered:"
+        read -r message
+    fi
 
-        if [[ -z "$message" ]]; then
-            echo -e "${RED}Error:${NC} Empty message. No report created."
-            return 1
-        fi
+    if [[ -z "$message" ]]; then
+        echo -e "${RED}Error:${NC} Empty message. No report created."
+        return 1
+    fi
 
-        # Append report with timestamp and user info
-        {
-            echo "----------------------------------------------------"
-            echo "Date: $(date '+%Y-%m-%d %H:%M:%S')"
-            echo "User: $(whoami)"
-            echo "Message: $message"
-            echo "----------------------------------------------------"
-            echo
-        } >> "$report_file"
+    # Append report with timestamp and user info
+    {
+        echo "----------------------------------------------------"
+        echo "Date: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo "User: $(whoami)"
+        echo "Message: $message"
+        echo "----------------------------------------------------"
+        echo
+    } >> "$report_file"
 
-        echo -e "${GREEN}Your report has been saved to:${NC} $report_file"
-        return 0
-    }
+    echo -e "${GREEN}Your report has been saved to:${NC} $report_file"
+    return 0
+}
 
 
 
