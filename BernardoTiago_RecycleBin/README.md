@@ -69,6 +69,10 @@ Optional or advanced features:
 
 - Custom storage directory via configuration file.
 
+- Automatic report generation that creates a detailed text report with all statistics.
+
+- User report that allows the user to submit feedback.
+
 
 ## Configuration 
 

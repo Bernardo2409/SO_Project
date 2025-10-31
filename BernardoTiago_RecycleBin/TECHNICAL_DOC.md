@@ -144,6 +144,18 @@ OWNER: The owner of the file.
 - **Return**: Returns 0 on success and 1 on failure.
 
 
+### `recycle_report`
+* **Description**: Generates a detailed text report containing Recycle Bin statistics and metadata for all deleted files;
+* **Parameters**: None
+* **Return**: Returns 0 on success and 1 on failure.
+
+
+### `report_error`
+* **Description**: Allows the user to report errors or issues, saving the message with timestamp and username to a dedicated log file;
+* **Parameters**: Optional message (if not provided, prompts user for input)
+* **Return**: Returns 0 on success and 1 on failure.
+
+
 ## ======== Design decisions and rationale ========== 
 
 ### 1. **Directory and File Structure**
