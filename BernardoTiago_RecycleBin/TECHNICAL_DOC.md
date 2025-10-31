@@ -322,3 +322,15 @@ These algorithms ensure that the recycle bin system efficiently manages deleted 
 
 ### **Preview File Flow**  
 ![Preview File Flow](Flowcharts/PreviewFileFlow.jpg)
+
+---
+
+### **Recycle Report**
+![Recycle Report](Flowcharts/RecycleReport.png)
+
+---
+
+### **Report Error**
+![Report Error](Flowcharts/FeedbackFlow.png)
+
+
