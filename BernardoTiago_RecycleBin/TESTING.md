@@ -1,3 +1,10 @@
+## Author
+Bernardo Mota Coelho 
+125059
+
+Tiago Francisco Crespo do Vale
+125913
+
 ### Test Case 1: Delete Single File
 
 **Objective:** Verify that a single file can be deleted successfully

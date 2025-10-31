@@ -1,3 +1,10 @@
+## Author 
+Bernardo Mota Coelho 
+125059
+
+Tiago Francisco Crespo do Vale
+125913
+
 ## ========= System Architecture Diagram =======
 
 ![System Architecture Diagram](/BernardoTiago_RecycleBin/Flowcharts/Systemdiagram.png)
