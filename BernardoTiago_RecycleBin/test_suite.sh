@@ -569,7 +569,7 @@
         echo "$create_err" | tee -a "$TMP_LOG" >> "$LOG_FILE" >/dev/null
 
         # Possible error messages depending on locale/kernel
-        if echo "$create_err" | grep -Eq 'File name too long|Nome de ficheiro muito grande|ENAMETOOLONG'; then
+        if echo "$create_err" | grep -Eq 'File name too long|Nome de ficheiro muito grande|ENAMETOOLONG'; then #various languages because of each pc idiom
             assert_success "System correctly refused to create filename >255 chars"
             ((PASS_EDGE++))
 
