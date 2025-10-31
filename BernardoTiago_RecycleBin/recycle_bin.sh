@@ -69,6 +69,9 @@ main() {
         preview)
             preview_file "${@:2}"
             ;;
+        report)
+            recycle_report
+            ;;
         *)
             echo -e "   Use: ${YELLOW}$0 help${NC}"
             echo "   It shows all available commands!" 
@@ -518,6 +521,7 @@ display_help() {
     echo "  show:      Displays overall statistics of the recycle bin"
     echo "  clean:     Automatically deletes items older than the configured retention period"
     echo "  preview:   display first 10 lines of a file existent in the recycle bin"
+    echo "  report:    Generate detailed text report with statistics"
     echo
 }
 
@@ -759,5 +763,121 @@ preview_file() {
         return 1
     fi
 }
+
+#################################################
+# Function: recycle_report
+# Description: Generates a simple text report with ALL statistics and file details
+# Parameters: None
+# Returns: 0 on success, 1 on failure
+#################################################
+
+recycle_report() {
+    verif_rbin
+
+    if [[ ! -f "$METADATA_FILE" ]]; then
+        echo -e "${RED}Error:${NC} metadata file not found."
+        return 1
+    fi
+
+    local report_dir="${RECYCLE_BIN_DIR}/reports"
+    local timestamp=$(date '+%Y-%m-%d_%H-%M-%S')
+    local report_file="${report_dir}/recycle_report_${timestamp}.txt"
+    
+    # Create reports directory
+    mkdir -p "$report_dir" || {
+        echo -e "${RED}Error:${NC} Failed to create reports directory."
+        return 1
+    }
+
+    echo -e "${YELLOW}Generating recycle bin report...${NC}"
+
+    # Get ALL statistics (same as show_statistics)
+    total_items=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | wc -l)
+
+    # Total size in bytes
+    total_size_bytes=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | awk -F',' '
+        {
+            size=$5
+            gsub(/[^0-9.]/,"",size)
+            if ($5 ~ /K/) size *= 1024
+            else if ($5 ~ /M/) size *= 1024*1024
+            else if ($5 ~ /G/) size *= 1024*1024*1024
+            total += size
+        }
+        END {print total}
+    ')
+
+    readable_total=$(numfmt --to=iec-i --suffix=B $total_size_bytes 2>/dev/null)
+
+    # Calculate quota (MAX_SIZE_MB)
+    quota_mb=$(grep "MAX_SIZE_MB" "$CONFIG_FILE" | cut -d'=' -f2)
+    quota_bytes=$((quota_mb * 1024 * 1024))
+    quota_percent=$(awk -v used="$total_size_bytes" -v quota="$quota_bytes" 'BEGIN {printf "%.2f", (used/quota)*100}')
+
+    # Counter by type
+    file_count=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | awk -F',' '$6 ~ /file/ {count++} END {print count+0}')
+    dir_count=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | awk -F',' '$6 ~ /directory/ {count++} END {print count+0}')
+
+    # Oldest and Newest
+    oldest_line=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | sort -t',' -k4 | head -n 1)
+    newest_line=$(grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | sort -t',' -k4 | tail -n 1)
+
+    oldest_name=$(echo "$oldest_line" | awk -F',' '{print $2}')
+    oldest_date=$(echo "$oldest_line" | awk -F',' '{print $4}')
+    newest_name=$(echo "$newest_line" | awk -F',' '{print $2}')
+    newest_date=$(echo "$newest_line" | awk -F',' '{print $4}')
+
+    # Average Size
+    avg_size=$(awk -v total="$total_size_bytes" -v n="$total_items" 'BEGIN {if (n>0) printf "%.0f", total/n; else print 0}')
+    readable_avg=$(numfmt --to=iec-i --suffix=B $avg_size 2>/dev/null)
+
+    # Generate the report
+    {
+        echo "================================================"
+        echo "           RECYCLE BIN REPORT"
+        echo "================================================"
+        echo "Generated: $(date '+%Y-%m-%d at %H:%M:%S')"
+        echo "Report ID: $timestamp"
+        echo ""
+        
+        echo "STATISTICS SUMMARY"
+        echo "=================="
+        echo "Total items:           $total_items"
+        echo "Total storage used:    $readable_total (${quota_percent}% of ${quota_mb}MB quota)"
+        echo "Files:                 $file_count"
+        echo "Directories:           $dir_count"
+        echo "Oldest item:           $oldest_name ($oldest_date)"
+        echo "Newest item:           $newest_name ($newest_date)"
+        echo "Average file size:     $readable_avg"
+        echo ""
+        
+        echo "DETAILED FILE LIST"
+        echo "=================="
+        
+        if [[ "$total_items" -eq 0 ]]; then
+            echo "Recycle bin is empty"
+        else
+            grep -vE '^\s*#|^\s*$' "$METADATA_FILE" | tail -n +2 | while IFS=',' read -r id name path date size type perms owner; do
+                echo "ID: $id"
+                echo "Name: $name"
+                echo "Original Path: $path"
+                echo "Deleted: $date"
+                echo "Size: $size"
+                echo "Type: $type"
+                echo "Permissions: $perms"
+                echo "Owner: $owner"
+                echo "----------------------------------------"
+            done
+        fi
+        
+        echo ""
+        echo "--- End of Report ---"
+        
+    } > "$report_file"
+
+    echo -e "${GREEN}Report generated:${NC} $report_file"
+    return 0
+}
+
 
 main "$@"
