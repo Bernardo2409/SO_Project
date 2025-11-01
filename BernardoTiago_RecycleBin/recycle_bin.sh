@@ -30,7 +30,7 @@ NC='\033[0m' # No Color
 
 main() {
    
-    # auto-init if not already created
+    # Optional auto-init if not already created
     if [[ ! -d "$RECYCLE_BIN_DIR" ]]; then
         echo -e "\n ${YELLOW}Recycle Bin not found. Initializing automatically...\n ${NC}"
         initialize_recyclebin
